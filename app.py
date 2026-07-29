@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 
-# 1. 全局配置：Mobile-First 響應式
+# 1. 全局配置
 st.set_page_config(
     page_title="Cabinet of Curiosities ‧ 診間去敏拋接面板",
     page_icon="💎",
@@ -9,7 +9,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# 2. 注入夢境珍奇櫃 ‧ 莫蘭迪淺藍 CSS
+# 2. 莫蘭迪淺藍 CSS 樣式
 st.markdown(
     """
     <style>
@@ -29,35 +29,22 @@ st.markdown(
         border: 1px solid #7188A6;
         margin-bottom: 22px;
     }
-    .curio-hero-card h1 {
-        color: #FFFFFF !important;
-        font-size: 1.45rem !important;
-        font-weight: 600 !important;
-        margin: 0 0 6px 0 !important;
-    }
-    .curio-hero-card p {
-        color: #D6E1EF !important;
-        font-size: 0.85rem !important;
-        margin: 0 !important;
-    }
+    .curio-hero-card h1 { color: #FFFFFF !important; font-size: 1.45rem !important; font-weight: 600 !important; margin: 0 0 6px 0 !important; }
+    .curio-hero-card p { color: #D6E1EF !important; font-size: 0.85rem !important; margin: 0 !important; }
 
-    .curio-meta-bar {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 22px;
-        flex-wrap: wrap;
-    }
-    .curio-pill {
+    .login-box {
         background: #FFFFFF;
-        border: 1px solid #D2DCED;
-        border-radius: 30px;
-        padding: 8px 18px;
-        font-size: 0.83rem;
-        color: #334763;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        border: 1px solid #D8E2EE;
+        padding: 35px;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(59, 78, 104, 0.08);
+        max-width: 480px;
+        margin: 60px auto;
+        text-align: center;
     }
-
-    /* 法規資安防衛宣告盒 */
+    .login-box h2 { color: #3B4E68; font-size: 1.3rem; margin-bottom: 10px; }
+    .login-box p { color: #627792; font-size: 0.88rem; margin-bottom: 20px; }
+    
     .security-notice-box {
         background-color: #EBF2FA;
         border: 1px solid #C5D8ED;
@@ -76,18 +63,51 @@ st.markdown(
         border-radius: 18px;
         box-shadow: 0 6px 16px rgba(59, 78, 104, 0.04);
     }
-    div[data-testid="stMetricLabel"] p { color: #627792 !important; font-size: 0.88rem !important; }
-    div[data-testid="stMetricValue"] div { color: #25354A !important; font-size: 2.1rem !important; }
-
-    .stTextInput input {
-        border-radius: 14px !important;
-        border: 1.5px solid #C8D6E5 !important;
-        padding: 12px 18px !important;
-    }
     </style>
 """,
     unsafe_allow_html=True,
 )
+
+# 3. 密碼驗證邏輯 (Session State)
+DOCTOR_PASSWORD = "NYJAZZ-8519"  # 郭醫師專屬密碼
+MASTER_KEY = "CURIO-999"  # 玥如緊急救援金鑰
+
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
+
+# --- 未驗證時顯示登入鎖定畫面 ---
+if not st.session_state["authenticated"]:
+    st.markdown(
+        """
+        <div class="login-box">
+            <div style="font-size: 2.5rem; margin-bottom: 10px;">🔒</div>
+            <h2>交感身心診所 ‧ 門診安全驗證</h2>
+            <p>請輸入郭家穎院長專屬診間金鑰，解鎖去敏身心軌跡拋接面板。</p>
+        </div>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        pwd_input = st.text_input(
+            "請輸入診間密碼：", type="password", key="pwd_field"
+        )
+        if st.button("🔓 開鎖登入", use_container_width=True):
+            if pwd_input == DOCTOR_PASSWORD or pwd_input == MASTER_KEY:
+                st.session_state["authenticated"] = True
+                st.rerun()
+            else:
+                st.error("⚠️ 密碼錯誤！請重新輸入或確認門診金鑰小卡。")
+
+        # 忘記密碼溫柔提示
+        with st.expander("❓ 忘記診間密碼？"):
+            st.info(
+                "💡 **密碼提示**：GOOGLE帳號 + 西元出生年分（如：`KA-2000`）\n\n若仍無法登入，請使用紙本同意書資料夾內之「門診金鑰小卡」，或聯繫居里研創專屬服務團隊。"
+            )
+    st.stop()
+
+# --- 驗證成功後顯示的主面板 ---
 
 
 def fetch_patient_data(user_key):
@@ -105,7 +125,7 @@ def fetch_patient_data(user_key):
     return mock_db.get(user_key, None)
 
 
-# --- 夢境珍奇櫃 典藏 Header ---
+# --- Header & 驗證狀態列 ---
 st.markdown(
     """
     <div class="curio-hero-card">
@@ -116,13 +136,11 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --- 膠囊標籤 ---
 st.markdown(
     """
-    <div class="curio-meta-bar">
-        <div class="curio-pill"><b>🏛️ 合作機構</b> ｜ 交感身心診所</div>
-        <div class="curio-pill"><b>🩺 看診醫師</b> ｜ 郭家穎 院長</div>
-        <div class="curio-pill" style="border-color:#5A7292; color:#25354A; background:#EBF2FA;"><b>🛡️ 物理隔離防線</b> ｜ A4 保險箱機制 [已死鎖]</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; background:#FFFFFF; border:1px solid #D2DCED; border-radius:30px; padding:8px 20px; margin-bottom:22px; font-size:0.85rem; color:#334763;">
+        <div>🟢 <b>郭家穎 院長</b>（交感身心診所）已通過診間安全認證 ｜ 🏛️ 診間號：C701</div>
+        <div>🛡️ <b>0 個資死鎖狀態</b></div>
     </div>
 """,
     unsafe_allow_html=True,
@@ -137,7 +155,6 @@ user_key = st.text_input(
 
 if user_key:
     data = fetch_patient_data(user_key)
-
     if data:
         st.markdown(
             f"""
@@ -167,7 +184,6 @@ if user_key:
         tab1, tab2 = st.tabs(
             ["📈 近 7 日心流平穩度曲線", "📄 診前 15 秒去敏摘要"]
         )
-
         with tab1:
             st.markdown(
                 "<h4 style='color:#25354A; font-size:1.05rem; margin-top:10px;'>近 7 日心流一致性調息曲線 (Coherence Score)</h4>",
@@ -197,18 +213,16 @@ if user_key:
             st.write(f"**【去敏軌跡摘要】**\n\n{data['summary']}")
             st.caption(f"🕒 數據傳輸時間戳記：{data['timestamp']}")
 
-        # --- 新增：法規與資安嚴密宣告區塊 ---
         st.markdown(
             """
             <div class="security-notice-box">
                 <b>🛡️ 零知識架構與個資法規合規宣告 (Zero-Knowledge & Privacy Compliance)</b><br>
                 1. <b>符合個資法規</b>：本系統嚴格遵循中華民國《個人資料保護法》第 2 條之去識別化標準。<b>系統全流程絕不收集、記錄或存儲病患之真實姓名、身分證字號、出生年月日、聯絡電話、醫療病歷號碼或 IP 位址</b>。<br>
-                2. <b>資安傳輸與儲存防護</b>：前端至雲端中繼站之數據傳輸全數採用 <b>HTTPS (TLS 1.3) 高階加密通道</b>，靜態快取數據皆實施 <b>AES-256 演算法加密</b>；雲端中繼數據實施 244 分鐘動態時間鎖（Time-Lock）與每日 24 小時剛性銷毀（Data TTL）。
+                2. <b>資安傳輸與儲存防護</b>：前端至雲端中繼站之數據傳輸全數採用 <b>HTTPS (TLS 1.3) 高階加密通道</b>，靜態快取數據皆實施 <b>AES-256 演算法加密</b>；雲端中繼數據實施 240 分鐘動態時間鎖（Time-Lock）與每日 24 小時剛性銷毀（Data TTL）。
             </div>
             """,
             unsafe_allow_html=True,
         )
-
     else:
         st.error(
             f"⚠️ 找不到密鑰 `{user_key}` 之當日資料，請確認代碼是否輸入正確。"
