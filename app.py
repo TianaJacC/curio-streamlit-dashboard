@@ -10,95 +10,115 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# 2. 高奢莫蘭迪 & 醫材級 UI / CSS 設計
+# 2. 全面重構：法式優雅生活美學 CSS (French Salon Aesthetics)
 st.markdown(
     """
     <style>
-    /* 全域背景：莫蘭迪極簡霧灰藍 */
+    /* 法式柔和背景：香氣亞麻白 (Oatmeal Linen) */
     .stApp {
-        background-color: #F0F4F8;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Helvetica Neue", sans-serif;
+        background-color: #F9F8F6;
+        font-family: -apple-system, BlinkMacSystemFont, "Garamond", "Georgia", "PingFang TC", "微軟正黑體", sans-serif;
     }
     header[data-testid="stHeader"] { background-color: rgba(0,0,0,0); }
     footer { visibility: hidden; }
 
-    /* 主頂樓高奢卡片 */
+    /* 法式高奢主頂樓卡片 (Smoky Slate & Silk Gold) */
     .curio-hero-card {
-        background: linear-gradient(135deg, #2D3E50 0%, #4A637D 100%);
-        color: #FFFFFF;
-        padding: 28px 36px;
-        border-radius: 24px;
-        box-shadow: 0 12px 30px rgba(45, 62, 80, 0.12);
-        border: 1px solid #5C7693;
-        margin-bottom: 24px;
+        background: linear-gradient(135deg, #324353 0%, #4A5D70 100%);
+        color: #F8F6F0;
+        padding: 32px 40px;
+        border-radius: 28px;
+        box-shadow: 0 16px 36px rgba(50, 67, 83, 0.08);
+        border: 1px solid #C5B396; /* 細微金絲邊框 */
+        margin-bottom: 28px;
     }
-    .curio-hero-card h1 { color: #FFFFFF !important; font-size: 1.55rem !important; font-weight: 600 !important; margin: 0 0 8px 0 !important; letter-spacing: 0.5px; }
-    .curio-hero-card p { color: #D1DFEE !important; font-size: 0.88rem !important; margin: 0 !important; font-weight: 300; }
+    .curio-hero-card h1 { 
+        font-family: "Georgia", "PingFang TC", serif !important;
+        color: #FAF8F5 !important; 
+        font-size: 1.65rem !important; 
+        font-weight: 500 !important; 
+        letter-spacing: 1px !important;
+        margin: 0 0 10px 0 !important; 
+    }
+    .curio-hero-card p { 
+        color: #D3DCB8 !important; 
+        font-size: 0.88rem !important; 
+        margin: 0 !important; 
+        font-weight: 300; 
+        letter-spacing: 0.5px;
+    }
 
-    /* 重構：高奢診間登入卡片 (Glassmorphism 視覺) */
-    .login-container {
-        background: #FFFFFF;
-        border: 1px solid #DCE5EE;
-        padding: 42px 40px 32px 40px;
-        border-radius: 24px;
-        box-shadow: 0 18px 40px rgba(45, 62, 80, 0.07);
-        max-width: 460px;
-        margin: 50px auto 20px auto;
+    /* 法式沙龍登入卡片 (Pearl Glassmorphism) */
+    .french-login-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        border: 1px solid #E6DFD5;
+        padding: 48px 42px 36px 42px;
+        border-radius: 28px;
+        box-shadow: 0 20px 48px rgba(74, 93, 112, 0.06);
+        max-width: 480px;
+        margin: 40px auto 20px auto;
         text-align: center;
     }
-    .login-icon-badge {
-        width: 60px;
-        height: 60px;
-        background: #EBF2FA;
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 20px auto;
-        font-size: 1.8rem;
-        box-shadow: inset 0 2px 4px rgba(255,255,255,0.8);
+    .salon-logo-subtitle {
+        font-family: "Georgia", serif;
+        font-style: italic;
+        color: #928370;
+        font-size: 0.9rem;
+        letter-spacing: 1.5px;
+        margin-bottom: 6px;
+        text-transform: uppercase;
     }
-    .login-title {
-        color: #2D3E50;
-        font-size: 1.35rem;
+    .salon-title {
+        color: #324353;
+        font-family: "Georgia", "PingFang TC", serif;
+        font-size: 1.45rem;
         font-weight: 600;
-        letter-spacing: -0.3px;
-        margin-bottom: 8px;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
     }
-    .login-subtitle {
-        color: #6C829B;
+    .salon-divider {
+        width: 36px;
+        height: 2px;
+        background-color: #C5B396;
+        margin: 16px auto 22px auto;
+        border-radius: 2px;
+    }
+    .salon-desc {
+        color: #6E7C8C;
         font-size: 0.86rem;
-        line-height: 1.5;
-        margin-bottom: 24px;
+        line-height: 1.6;
+        margin-bottom: 28px;
+        font-weight: 300;
     }
 
-    /* 資安警告區塊 */
-    .security-notice-box {
-        background-color: #EBF2FA;
-        border: 1px solid #C8DAEB;
-        border-radius: 16px;
-        padding: 18px 22px;
-        margin-top: 25px;
+    /* 優雅資訊區塊 */
+    .salon-notice-box {
+        background-color: #F2EFEA;
+        border-left: 3px solid #C5B396;
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-top: 28px;
         font-size: 0.85rem;
-        color: #2D3E50;
-        line-height: 1.65;
+        color: #324353;
+        line-height: 1.7;
     }
 
     div[data-testid="stMetric"] {
         background: #FFFFFF;
-        border: 1px solid #DCE5EE;
-        padding: 22px 24px;
-        border-radius: 20px;
-        box-shadow: 0 6px 20px rgba(45, 62, 80, 0.03);
+        border: 1px solid #EBE5DC;
+        padding: 24px 26px;
+        border-radius: 22px;
+        box-shadow: 0 8px 24px rgba(50, 67, 83, 0.03);
     }
     </style>
 """,
     unsafe_allow_html=True,
 )
 
-# 3. 初始化 Session State 狀態與醫生專屬密碼
+# 3. 初始化 Session State 狀態與醫生金鑰
 if "doctor_password" not in st.session_state:
-    st.session_state["doctor_password"] = "NYJAZZ-8519"  # 郭醫師專屬密碼
+    st.session_state["doctor_password"] = "NYJAZZ-8519"
 
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
@@ -106,26 +126,26 @@ if "authenticated" not in st.session_state:
 if "selected_token" not in st.session_state:
     st.session_state["selected_token"] = "#SYM-C701"
 
-# 雲端雙盲中繼站模擬資料庫
+# 模擬中繼站資料庫
 if "mock_db" not in st.session_state:
     st.session_state["mock_db"] = {
         "#SYM-C701": {
-            "status": "已完成診前 15s 調息",
+            "status": "已完成診前 15s 共振調息",
             "coherence_score": 92.5,
-            "stress_index": "Morandi Soft Blue (平穩)",
+            "stress_index": "Morandi Soft Blue (心流平穩)",
             "sleep_hours": 7.2,
             "timestamp": "2026-07-30 01:20:15",
             "weekly_trend": [82, 85, 87, 84, 89, 91, 92.5],
-            "summary": "【去敏軌跡摘要】個案於看診前 15 秒於候診區完成 0.067 Hz 心流共振調息。連續 7 日數據顯示夜間無應激爆發，心流一致性維持於 90% 以上良好區間。",
+            "summary": "【法式身心軌跡摘要】個案於看診前 15 秒於候診區完成 0.067 Hz 心流共振調息。連續 7 日數據顯示夜間無應激爆發，心流一致性維持於 90% 以上高諧振區間。",
         },
         "#SYM-A302": {
-            "status": "已完成診前 15s 調息",
+            "status": "已完成診前 15s 共振調息",
             "coherence_score": 88.0,
-            "stress_index": "Morandi Sage (輕度應激)",
+            "stress_index": "Morandi Sage (輕度交感活性)",
             "sleep_hours": 6.1,
             "timestamp": "2026-07-30 01:25:00",
             "weekly_trend": [70, 75, 78, 80, 82, 85, 88.0],
-            "summary": "【去敏軌跡摘要】個案於候診區完成心流調息。近 7 日睡眠時數偏低，生理指標顯示交感神經活性略微上升。",
+            "summary": "【法式身心軌跡摘要】個案於候診區完成心流調息。近 7 日睡眠時數偏低，生理指標顯示交感神經活性略微上升。",
         },
     }
 
@@ -143,7 +163,7 @@ if "checkin_queue" not in st.session_state:
         },
     ]
 
-MASTER_KEY = "CURIO-999"  # 玥如緊急救援金鑰
+MASTER_KEY = "CURIO-999"
 
 # --- 4. 變更密碼 Modal 彈窗 ---
 if hasattr(st, "dialog"):
@@ -168,15 +188,15 @@ if hasattr(st, "dialog"):
                 st.rerun()
 
 
-# --- 5. 重構：高奢診間登入驗證畫面 ---
+# --- 5. 法式優雅沙龍 登入驗證畫面 ---
 if not st.session_state["authenticated"]:
-    # 居中優雅登入卡片
     st.markdown(
         """
-        <div class="login-container">
-            <div class="login-icon-badge">🛡️</div>
-            <div class="login-title">交感身心診所 ‧ 門診安全驗證</div>
-            <div class="login-subtitle">Cabinet of Curiosities ‧ 診間去敏身心軌跡拋接面板<br><span style="font-size:0.78rem; color:#8FA3B8;">零知識架構 ‧ 雙盲機制加密防護</span></div>
+        <div class="french-login-card">
+            <div class="salon-logo-subtitle">Cabinet of Curiosities</div>
+            <div class="salon-title">交感身心診所 ‧ 門診安全驗證</div>
+            <div class="salon-divider"></div>
+            <div class="salon-desc">0 個資法規合規 ‧ 雙盲去敏身心軌跡拋接<br>請輸入郭家穎院長專屬診間金鑰，解鎖身心調息曲線</div>
         </div>
     """,
         unsafe_allow_html=True,
@@ -185,17 +205,17 @@ if not st.session_state["authenticated"]:
     col1, col2, col3 = st.columns([1.2, 1.8, 1.2])
     with col2:
         pwd_input = st.text_input(
-            "診間驗證金鑰",
+            "院長診間金鑰",
             type="password",
             key="pwd_field",
-            placeholder="請輸入院長專屬金鑰",
+            placeholder="請輸入金鑰 (例如：NYJAZZ-8519)",
         )
 
         st.markdown(
-            "<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True
+            "<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True
         )
 
-        if st.button("🔓 解鎖診間面板", use_container_width=True):
+        if st.button("✨ 解鎖沙龍診間面板", use_container_width=True):
             if (
                 pwd_input == st.session_state["doctor_password"]
                 or pwd_input == MASTER_KEY
@@ -203,16 +223,15 @@ if not st.session_state["authenticated"]:
                 st.session_state["authenticated"] = True
                 st.rerun()
             else:
-                st.error("⚠️ 金鑰驗證失敗，請確認後重新輸入。")
+                st.error("⚠️ 金鑰驗證未通過，請確認後重新輸入。")
 
         st.markdown(
-            "<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True
+            "<div style='margin-bottom: 16px;'></div>", unsafe_allow_html=True
         )
 
-        # 依需求修改之密碼提示區塊
         with st.expander("❓ 忘記診間金鑰密碼？"):
             st.info(
-                f"💡 **密碼提示**：GOOGLE帳號 + 西元出生年份（當前預設：`{st.session_state['doctor_password']}`）\n\n如需技術支援，請聯繫居里研創專屬服務團隊。"
+                f"💡 **密碼提示**：GOOGLE帳號 + 西元出生年份（當前預設：`{st.session_state['doctor_password']}`）\n\n如需緊急技術支援，請聯繫居里研創專屬服務團隊。"
             )
 
     st.stop()
@@ -231,13 +250,13 @@ with st.sidebar:
     if st.button("📡 [路徑 A] 模擬 App 拋接 API"):
         current_time_str = time.strftime("%H:%M")
         st.session_state["mock_db"][token_a] = {
-            "status": "已完成診前 15s 調息",
+            "status": "已完成診前 15s 共振調息",
             "coherence_score": score_a,
-            "stress_index": "Morandi Soft Blue (平穩)",
+            "stress_index": "Morandi Soft Blue (心流平穩)",
             "sleep_hours": 7.5,
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "weekly_trend": [80, 82, 85, 88, 90, 92, score_a],
-            "summary": f"【去敏軌跡摘要】經由 LINE LIFF 拋接之短碼 {token_a}。個案完成診前調息，心流表現極佳。",
+            "summary": f"【法式身心軌跡摘要】經由 LINE LIFF 拋接之短碼 {token_a}。個案完成診前調息，心流表現極佳。",
         }
         st.session_state["checkin_queue"].append(
             {
@@ -283,19 +302,19 @@ def fetch_patient_data(user_key):
 st.markdown(
     """
     <div class="curio-hero-card">
-        <h1>🔮 夢境珍奇櫃 ‧ 診間去敏拋接面板</h1>
+        <h1>💎 Cabinet of Curiosities ‧ 診間去敏拋接面板</h1>
         <p>Cabinet of Curiosities x 交感身心診所 ｜ Zero-Knowledge Architecture ‧ 0 個資 ‧ 診前 15 秒身心軌跡拋接</p>
     </div>
 """,
     unsafe_allow_html=True,
 )
 
-# 頂部狀態列與密碼齒輪
+# 頂部狀態列
 top_col1, top_col2 = st.columns([3, 1])
 with top_col1:
     st.markdown(
         """
-        <div style="background:#FFFFFF; border:1px solid #DCE5EE; border-radius:30px; padding:10px 24px; font-size:0.86rem; color:#2D3E50;">
+        <div style="background:#FFFFFF; border:1px solid #EBE5DC; border-radius:30px; padding:10px 26px; font-size:0.86rem; color:#324353;">
             🟢 <b>郭家穎 院長</b>（交感身心診所）已通過診間安全認證 ｜ 🏛️ 診間號：C701 ｜ 🛡️ <b>0 個資死鎖狀態</b>
         </div>
     """,
@@ -307,7 +326,7 @@ with top_col2:
             change_password_dialog()
 
 st.markdown(
-    "<div style='margin-bottom: 20px;'></div>", unsafe_allow_html=True
+    "<div style='margin-bottom: 22px;'></div>", unsafe_allow_html=True
 )
 
 # 搜尋輸入框
@@ -322,7 +341,7 @@ if user_key:
     if data:
         st.markdown(
             f"""
-            <div style="background-color: #EBF2FA; border-left: 4px solid #4A637D; padding: 14px 20px; border-radius: 14px; margin-bottom: 24px; font-size: 0.92rem; color: #2D3E50;">
+            <div style="background-color: #F2EFEA; border-left: 4px solid #C5B396; padding: 14px 22px; border-radius: 14px; margin-bottom: 24px; font-size: 0.92rem; color: #324353;">
                 <b>💎 成功連線至去敏密鑰 <code>{user_key}</code></b> ｜ 狀態：{data['status']} ｜ 更新時間：{data['timestamp']}
             </div>
             """,
@@ -350,7 +369,7 @@ if user_key:
         )
         with tab1:
             st.markdown(
-                "<h4 style='color:#2D3E50; font-size:1.05rem; margin-top:12px;'>近 7 日心流一致性調息曲線 (Coherence Score)</h4>",
+                "<h4 style='color:#324353; font-size:1.05rem; margin-top:12px;'>近 7 日心流一致性調息曲線 (Coherence Score)</h4>",
                 unsafe_allow_html=True,
             )
             chart_data = pd.DataFrame(
@@ -367,11 +386,11 @@ if user_key:
                     "心流分數": data["weekly_trend"],
                 }
             ).set_index("日期")
-            st.line_chart(chart_data, color="#4A637D")
+            st.line_chart(chart_data, color="#4A5D70")
 
         with tab2:
             st.markdown(
-                "<h4 style='color:#2D3E50; font-size:1.05rem; margin-top:12px;'>邊緣端 15 秒去敏化身心軌跡</h4>",
+                "<h4 style='color:#324353; font-size:1.05rem; margin-top:10px;'>邊緣端 15 秒去敏化身心軌跡</h4>",
                 unsafe_allow_html=True,
             )
             st.write(f"**【去敏軌跡摘要】**\n\n{data['summary']}")
@@ -379,7 +398,7 @@ if user_key:
 
         st.markdown(
             """
-            <div class="security-notice-box">
+            <div class="salon-notice-box">
                 <b>🛡️ 零知識架構與個資法規合規宣告 (Zero-Knowledge & Privacy Compliance)</b><br>
                 1. <b>符合個資法規</b>：本系統嚴格遵循中華民國《個人資料保護法》第 2 條之去識別化標準。<b>系統全流程絕不收集、記錄或存儲病患之真實姓名、身分證字號、出生年月日、聯絡電話、醫療病歷號碼或 IP 位址</b>。<br>
                 2. <b>資安傳輸與儲存防護</b>：前端至雲端中繼站之數據傳輸全數採用 <b>HTTPS (TLS 1.3) 高階加密通道</b>，靜態快取數據皆實施 <b>AES-256 演算法加密</b>；雲端中繼數據實施 240 分鐘動態時間鎖（Time-Lock）與每日 24 小時剛性銷毀（Data TTL）。
