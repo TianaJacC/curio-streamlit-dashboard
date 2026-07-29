@@ -68,14 +68,40 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 3. 密碼驗證邏輯 (Session State)
-DOCTOR_PASSWORD = "NYJAZZ-8519"  # 郭醫師專屬密碼
-MASTER_KEY = "CURIO-999"  # 玥如緊急救援金鑰
+# 3. 初始化 Session State 變數（確保動態修改密碼後不會流失）
+if "doctor_password" not in st.session_state:
+    st.session_state["doctor_password"] = "NYJAZZ-8519"  # 預設診間密碼
 
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
-# --- 未驗證時顯示登入鎖定畫面 ---
+MASTER_KEY = "CURIO-999"  # 玥如緊急救援金鑰
+
+# --- 4. 變更密碼 Modal 彈窗對話盒 (st.dialog) ---
+if hasattr(st, "dialog"):
+
+    @st.dialog("⚙️ 變更診間金鑰（郭家穎院長專屬）")
+    def change_password_dialog():
+        st.write("為了維持門診安全，請輸入原密碼並設定新金鑰：")
+        old_pwd = st.text_input("輸入原診間密碼：", type="password")
+        new_pwd = st.text_input("設定新診間密碼：", type="password")
+        confirm_pwd = st.text_input("再次確認新診間密碼：", type="password")
+
+        if st.button("🔒 確認更新金鑰", use_container_width=True):
+            if old_pwd != st.session_state["doctor_password"]:
+                st.error("❌ 原密碼輸入錯誤，請重新確認！")
+            elif not new_pwd:
+                st.warning("⚠️ 新密碼不能為空！")
+            elif new_pwd != confirm_pwd:
+                st.error("❌ 兩次新密碼輸入不一致！")
+            else:
+                # 即刻更新密碼並儲存
+                st.session_state["doctor_password"] = new_pwd
+                st.success("🎉 診間金鑰已成功變更！舊密碼已即刻失效。")
+                st.rerun()
+
+
+# --- 5. 未登入時顯示安全驗證畫面 ---
 if not st.session_state["authenticated"]:
     st.markdown(
         """
@@ -94,22 +120,24 @@ if not st.session_state["authenticated"]:
             "請輸入診間密碼：", type="password", key="pwd_field"
         )
         if st.button("🔓 開鎖登入", use_container_width=True):
-            if pwd_input == DOCTOR_PASSWORD or pwd_input == MASTER_KEY:
+            if (
+                pwd_input == st.session_state["doctor_password"]
+                or pwd_input == MASTER_KEY
+            ):
                 st.session_state["authenticated"] = True
                 st.rerun()
             else:
                 st.error("⚠️ 密碼錯誤！請重新輸入或確認門診金鑰小卡。")
 
-        # 忘記密碼溫柔提示
+        # 忘記密碼提示
         with st.expander("❓ 忘記診間密碼？"):
             st.info(
-                "💡 **密碼提示**：GOOGLE帳號 + 西元出生年分（如：`KA-2000`）\n\n若仍無法登入，請使用紙本同意書資料夾內之「門診金鑰小卡」，或聯繫居里研創專屬服務團隊。"
+                f"💡 **密碼提示**：交感身心英文縮寫 + 診間號（當前預設：`{st.session_state['doctor_password']}`）\n\n若仍無法登入，請使用紙本同意書資料夾內之「門診金鑰小卡」，或聯繫居里研創專屬服務團隊。"
             )
     st.stop()
 
-# --- 驗證成功後顯示的主面板 ---
 
-
+# --- 6. 驗證成功後之主面板 ---
 def fetch_patient_data(user_key):
     mock_db = {
         "#C701": {
@@ -125,7 +153,7 @@ def fetch_patient_data(user_key):
     return mock_db.get(user_key, None)
 
 
-# --- Header & 驗證狀態列 ---
+# --- Header ---
 st.markdown(
     """
     <div class="curio-hero-card">
@@ -136,14 +164,26 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# --- 頂部狀態欄與「⚙️ 變更診間金鑰」按鈕列 ---
+top_col1, top_col2 = st.columns([3, 1])
+with top_col1:
+    st.markdown(
+        """
+        <div style="background:#FFFFFF; border:1px solid #D2DCED; border-radius:30px; padding:8px 20px; font-size:0.85rem; color:#334763;">
+            🟢 <b>郭家穎 院長</b>（交感身心診所）已通過診間安全認證 ｜ 🏛️ 診間號：C701 ｜ 🛡️ <b>0 個資死鎖狀態</b>
+        </div>
+    """,
+        unsafe_allow_html=True,
+    )
+with top_col2:
+    if st.button("⚙️ 變更診間金鑰", use_container_width=True):
+        if hasattr(st, "dialog"):
+            change_password_dialog()
+        else:
+            st.toast("⚙️ 請透過後台管理員重置金鑰")
+
 st.markdown(
-    """
-    <div style="display:flex; justify-content:space-between; align-items:center; background:#FFFFFF; border:1px solid #D2DCED; border-radius:30px; padding:8px 20px; margin-bottom:22px; font-size:0.85rem; color:#334763;">
-        <div>🟢 <b>郭家穎 院長</b>（交感身心診所）已通過診間安全認證 ｜ 🏛️ 診間號：C701</div>
-        <div>🛡️ <b>0 個資死鎖狀態</b></div>
-    </div>
-""",
-    unsafe_allow_html=True,
+    "<div style='margin-bottom: 18px;'></div>", unsafe_allow_html=True
 )
 
 # 搜尋欄
