@@ -132,7 +132,7 @@ if not st.session_state["authenticated"]:
         # 忘記密碼提示
         with st.expander("❓ 忘記診間密碼？"):
             st.info(
-                f"💡 **密碼提示**：交感身心英文縮寫 + 診間號（當前預設：`{st.session_state['doctor_password']}`）\n\n若仍無法登入，請使用紙本同意書資料夾內之「門診金鑰小卡」，或聯繫居里研創專屬服務團隊。"
+                f"💡 **密碼提示**：GOOGLE帳號 + 西元出身年份（當前預設：`{st.session_state['doctor_password']}`）\n\n若仍無法登入，請使用紙本同意書資料夾內之「門診金鑰小卡」，或聯繫居里研創專屬服務團隊。"
             )
     st.stop()
 
