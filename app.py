@@ -6,7 +6,7 @@ st.set_page_config(
     page_title="Cabinet of Curiosities ‧ 診間去敏拋接面板",
     page_icon="💎",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",  # 開啟側邊欄作為櫃檯/佇列區
 )
 
 # 2. 莫蘭迪淺藍 CSS 樣式
@@ -68,16 +68,34 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 3. 初始化 Session State 變數（確保動態修改密碼後不會流失）
+# 3. 初始化 Session State
 if "doctor_password" not in st.session_state:
-    st.session_state["doctor_password"] = "NYJAZZ-8519"  # 預設診間密碼
+    st.session_state["doctor_password"] = "NYJAZZ-8519"
 
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
-MASTER_KEY = "CURIO-999"  # 玥如緊急救援金鑰
+if "selected_token" not in st.session_state:
+    st.session_state["selected_token"] = "#SYM-C701"
 
-# --- 4. 變更密碼 Modal 彈窗對話盒 (st.dialog) ---
+# 模擬中繼站之櫃檯報到佇列 (Mock Broker Queue)
+if "checkin_queue" not in st.session_state:
+    st.session_state["checkin_queue"] = [
+        {
+            "token": "#SYM-C701",
+            "time": "12:20",
+            "status": "已報到 (診前15s調息畢)",
+        },
+        {
+            "token": "#SYM-A302",
+            "time": "12:25",
+            "status": "已報到 (診前15s調息畢)",
+        },
+    ]
+
+MASTER_KEY = "CURIO-999"
+
+# --- 4. 變更密碼 Modal 彈窗 ---
 if hasattr(st, "dialog"):
 
     @st.dialog("⚙️ 變更診間金鑰（郭家穎院長專屬）")
@@ -95,13 +113,12 @@ if hasattr(st, "dialog"):
             elif new_pwd != confirm_pwd:
                 st.error("❌ 兩次新密碼輸入不一致！")
             else:
-                # 即刻更新密碼並儲存
                 st.session_state["doctor_password"] = new_pwd
                 st.success("🎉 診間金鑰已成功變更！舊密碼已即刻失效。")
                 st.rerun()
 
 
-# --- 5. 未登入時顯示安全驗證畫面 ---
+# --- 5. 安全驗證畫面 ---
 if not st.session_state["authenticated"]:
     st.markdown(
         """
@@ -129,18 +146,48 @@ if not st.session_state["authenticated"]:
             else:
                 st.error("⚠️ 密碼錯誤！請重新輸入或確認門診金鑰小卡。")
 
-        # 忘記密碼提示
         with st.expander("❓ 忘記診間密碼？"):
             st.info(
-                f"💡 **密碼提示**：GOOGLE帳號 + 西元出身年份（當前預設：`{st.session_state['doctor_password']}`）\n\n若仍無法登入，請使用紙本同意書資料夾內之「門診金鑰小卡」，或聯繫居里研創專屬服務團隊。"
+                f"💡 **密碼提示**：GOOGLE帳號 + 西元出身年分（當前預設：`{st.session_state['doctor_password']}`）\n\n若仍無法登入，請使用紙本同意書資料夾內之「門診金鑰小卡」，或聯繫居里研創專屬服務團隊。"
             )
     st.stop()
 
+# --- 6. 側邊欄：實體櫃檯無聲報到模擬控制台 ---
+with st.sidebar:
+    st.markdown("### 🏛️ 實體櫃檯無聲報到模擬")
+    st.caption("【功能 07】候診區去敏密鑰掛載")
 
-# --- 6. 驗證成功後之主面板 ---
+    new_code = st.text_input("輸入探險家出示之去敏短碼：", value="#SYM-")
+    if st.button("➕ 櫃檯完成無聲報到"):
+        if len(new_code) >= 6:
+            st.session_state["checkin_queue"].append(
+                {
+                    "token": new_code,
+                    "time": "12:30",
+                    "status": "已報到 (診前15s調息畢)",
+                }
+            )
+            st.success(f"已無聲掛載短碼 `{new_code}` 至中繼站！")
+            st.rerun()
+
+    st.markdown("---")
+    st.markdown("### 📋 診間待拋接佇列 (Queue)")
+    st.caption("郭醫師可點擊下方代碼快速解鎖：")
+
+    for item in st.session_state["checkin_queue"]:
+        if st.button(
+            f"🔓 載入 {item['token']} ({item['time']})",
+            key=f"btn_{item['token']}",
+            use_container_width=True,
+        ):
+            st.session_state["selected_token"] = item["token"]
+            st.rerun()
+
+
+# --- 7. 主面板邏輯 ---
 def fetch_patient_data(user_key):
     mock_db = {
-        "#C701": {
+        "#SYM-C701": {
             "status": "已完成診前 15s 調息",
             "coherence_score": 92.5,
             "stress_index": "Morandi Soft Blue (平穩)",
@@ -148,12 +195,21 @@ def fetch_patient_data(user_key):
             "timestamp": "2026-07-29 12:20:15",
             "weekly_trend": [82, 85, 87, 84, 89, 91, 92.5],
             "summary": "【去敏軌跡摘要】個案於看診前 15 秒於候診區完成 0.067 Hz 心流共振調息。連續 7 日數據顯示夜間無應激爆發，心流一致性維持於 90% 以上良好區間。",
-        }
+        },
+        "#SYM-A302": {
+            "status": "已完成診前 15s 調息",
+            "coherence_score": 88.0,
+            "stress_index": "Morandi Sage (輕度應激)",
+            "sleep_hours": 6.1,
+            "timestamp": "2026-07-29 12:25:00",
+            "weekly_trend": [70, 75, 78, 80, 82, 85, 88.0],
+            "summary": "【去敏軌跡摘要】個案於候診區完成心流調息。近 7 日睡眠時數偏低，生理指標顯示交感神經活性略微上升。",
+        },
     }
     return mock_db.get(user_key, None)
 
 
-# --- Header ---
+# Header
 st.markdown(
     """
     <div class="curio-hero-card">
@@ -164,7 +220,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --- 頂部狀態欄與「⚙️ 變更診間金鑰」按鈕列 ---
+# 頂部狀態列與密碼齒輪
 top_col1, top_col2 = st.columns([3, 1])
 with top_col1:
     st.markdown(
@@ -179,18 +235,16 @@ with top_col2:
     if st.button("⚙️ 變更診間金鑰", use_container_width=True):
         if hasattr(st, "dialog"):
             change_password_dialog()
-        else:
-            st.toast("⚙️ 請透過後台管理員重置金鑰")
 
 st.markdown(
     "<div style='margin-bottom: 18px;'></div>", unsafe_allow_html=True
 )
 
-# 搜尋欄
+# 搜尋輸入框（與側邊欄同步）
 user_key = st.text_input(
-    "請輸入探險家去敏密鑰 (例如：#C701) :",
-    value="#C701",
-    placeholder="輸入密鑰代碼，例如 #C701",
+    "請輸入探險家去敏密鑰 (例如：#SYM-C701) :",
+    value=st.session_state["selected_token"],
+    placeholder="輸入密鑰代碼，例如 #SYM-C701",
 )
 
 if user_key:
@@ -213,7 +267,7 @@ if user_key:
                 "↑ 3.2% 穩定共振",
             )
         with col2:
-            st.metric("🌿 身心應激狀態", data["stress_index"], "莫蘭迪淺藍放鬆區")
+            st.metric("🌿 身心應激狀態", data["stress_index"], "莫蘭迪區域")
         with col3:
             st.metric("🌙 本機睡眠時數", f"{data['sleep_hours']} hr", "達標 7 小時")
 
