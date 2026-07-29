@@ -1,3 +1,4 @@
+import time
 import pandas as pd
 import streamlit as st
 
@@ -6,10 +7,10 @@ st.set_page_config(
     page_title="Cabinet of Curiosities ‧ 診間去敏拋接面板",
     page_icon="💎",
     layout="wide",
-    initial_sidebar_state="expanded",  # 開啟側邊欄作為櫃檯/佇列區
+    initial_sidebar_state="expanded",
 )
 
-# 2. 莫蘭迪淺藍 CSS 樣式
+# 2. 莫蘭迪淺藍高奢 CSS 樣式
 st.markdown(
     """
     <style>
@@ -68,7 +69,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 3. 初始化 Session State
+# 3. 初始化 Session State 狀態與模擬資料庫
 if "doctor_password" not in st.session_state:
     st.session_state["doctor_password"] = "NYJAZZ-8519"
 
@@ -78,18 +79,41 @@ if "authenticated" not in st.session_state:
 if "selected_token" not in st.session_state:
     st.session_state["selected_token"] = "#SYM-C701"
 
-# 模擬中繼站之櫃檯報到佇列 (Mock Broker Queue)
+# 雲端雙盲中繼站模擬資料庫 (Mock Broker Database)
+if "mock_db" not in st.session_state:
+    st.session_state["mock_db"] = {
+        "#SYM-C701": {
+            "status": "已完成診前 15s 調息",
+            "coherence_score": 92.5,
+            "stress_index": "Morandi Soft Blue (平穩)",
+            "sleep_hours": 7.2,
+            "timestamp": "2026-07-30 01:20:15",
+            "weekly_trend": [82, 85, 87, 84, 89, 91, 92.5],
+            "summary": "【去敏軌跡摘要】個案於看診前 15 秒於候診區完成 0.067 Hz 心流共振調息。連續 7 日數據顯示夜間無應激爆發，心流一致性維持於 90% 以上良好區間。",
+        },
+        "#SYM-A302": {
+            "status": "已完成診前 15s 調息",
+            "coherence_score": 88.0,
+            "stress_index": "Morandi Sage (輕度應激)",
+            "sleep_hours": 6.1,
+            "timestamp": "2026-07-30 01:25:00",
+            "weekly_trend": [70, 75, 78, 80, 82, 85, 88.0],
+            "summary": "【去敏軌跡摘要】個案於候診區完成心流調息。近 7 日睡眠時數偏低，生理指標顯示交感神經活性略微上升。",
+        },
+    }
+
+# 待拋接佇列 (Queue)
 if "checkin_queue" not in st.session_state:
     st.session_state["checkin_queue"] = [
         {
             "token": "#SYM-C701",
-            "time": "12:20",
-            "status": "已報到 (診前15s調息畢)",
+            "time": "01:20",
+            "source": "LINE LIFF / App",
         },
         {
             "token": "#SYM-A302",
-            "time": "12:25",
-            "status": "已報到 (診前15s調息畢)",
+            "time": "01:25",
+            "source": "LINE LIFF / App",
         },
     ]
 
@@ -118,7 +142,7 @@ if hasattr(st, "dialog"):
                 st.rerun()
 
 
-# --- 5. 安全驗證畫面 ---
+# --- 5. 門診安全驗證畫面 ---
 if not st.session_state["authenticated"]:
     st.markdown(
         """
@@ -148,35 +172,61 @@ if not st.session_state["authenticated"]:
 
         with st.expander("❓ 忘記診間密碼？"):
             st.info(
-                f"💡 **密碼提示**：GOOGLE帳號 + 西元出身年分（當前預設：`{st.session_state['doctor_password']}`）\n\n若仍無法登入，請使用紙本同意書資料夾內之「門診金鑰小卡」，或聯繫居里研創專屬服務團隊。"
+                f"💡 **密碼提示**：GOOGLE帳號 + 西元出身年份（當前預設：`{st.session_state['doctor_password']}`）\n\n若仍無法登入，請使用紙本同意書資料夾內之「門診金鑰小卡」，或聯繫居里研創專屬服務團隊。"
             )
     st.stop()
 
-# --- 6. 側邊欄：實體櫃檯無聲報到模擬控制台 ---
-with st.sidebar:
-    st.markdown("### 🏛️ 實體櫃檯無聲報到模擬")
-    st.caption("【功能 07】候診區去敏密鑰掛載")
 
-    new_code = st.text_input("輸入探險家出示之去敏短碼：", value="#SYM-")
-    if st.button("➕ 櫃檯完成無聲報到"):
-        if len(new_code) >= 6:
-            st.session_state["checkin_queue"].append(
-                {
-                    "token": new_code,
-                    "time": "12:30",
-                    "status": "已報到 (診前15s調息畢)",
-                }
+# --- 6. 側邊欄：【路徑 A 與路徑 B】模擬控制台 ---
+with st.sidebar:
+    st.markdown("### 🔌 背景 API 與 Webhook 模擬器")
+    st.caption("用於向郭醫師演示 LINE LIFF 與叫號系統無縫 Push")
+
+    st.markdown("---")
+    st.markdown("#### 📱 路徑 A：LINE LIFF / App 資料拋接")
+    token_a = st.text_input("去敏短碼 (Token):", value="#SYM-B888")
+    score_a = st.slider("心流分數:", 60.0, 100.0, 94.0)
+
+    if st.button("📡 [路徑 A] 模擬 App 拋接 API"):
+        current_time_str = time.strftime("%H:%M")
+        # 寫入模擬資料庫
+        st.session_state["mock_db"][token_a] = {
+            "status": "已完成診前 15s 調息",
+            "coherence_score": score_a,
+            "stress_index": "Morandi Soft Blue (平穩)",
+            "sleep_hours": 7.5,
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "weekly_trend": [80, 82, 85, 88, 90, 92, score_a],
+            "summary": f"【去敏軌跡摘要】經由 LINE LIFF 拋接之短碼 {token_a}。個案完成診前調息，心流表現極佳。",
+        }
+        st.session_state["checkin_queue"].append(
+            {
+                "token": token_a,
+                "time": current_time_str,
+                "source": "LINE LIFF API",
+            }
+        )
+        st.toast(f"✅ [路徑 A] 已收到 {token_a} 數據！")
+        st.rerun()
+
+    st.markdown("---")
+    st.markdown("#### 🔔 路徑 B：叫號系統 Webhook 觸發")
+    st.caption("當護理師在 HIS/LINE 點擊『下一位進診間』：")
+
+    if st.button("🚀 [路徑 B] 模擬 HIS 叫號 Webhook"):
+        if st.session_state["checkin_queue"]:
+            latest_token = st.session_state["checkin_queue"][-1]["token"]
+            st.session_state["selected_token"] = latest_token
+            st.toast(
+                f"🔔 [路徑 B Webhook] 收到叫號事件！已自動載入 {latest_token}"
             )
-            st.success(f"已無聲掛載短碼 `{new_code}` 至中繼站！")
             st.rerun()
 
     st.markdown("---")
-    st.markdown("### 📋 診間待拋接佇列 (Queue)")
-    st.caption("郭醫師可點擊下方代碼快速解鎖：")
-
+    st.markdown("### 📋 診間待看診佇列 (Queue)")
     for item in st.session_state["checkin_queue"]:
         if st.button(
-            f"🔓 載入 {item['token']} ({item['time']})",
+            f"🔓 {item['token']} ({item['time']})",
             key=f"btn_{item['token']}",
             use_container_width=True,
         ):
@@ -186,27 +236,7 @@ with st.sidebar:
 
 # --- 7. 主面板邏輯 ---
 def fetch_patient_data(user_key):
-    mock_db = {
-        "#SYM-C701": {
-            "status": "已完成診前 15s 調息",
-            "coherence_score": 92.5,
-            "stress_index": "Morandi Soft Blue (平穩)",
-            "sleep_hours": 7.2,
-            "timestamp": "2026-07-29 12:20:15",
-            "weekly_trend": [82, 85, 87, 84, 89, 91, 92.5],
-            "summary": "【去敏軌跡摘要】個案於看診前 15 秒於候診區完成 0.067 Hz 心流共振調息。連續 7 日數據顯示夜間無應激爆發，心流一致性維持於 90% 以上良好區間。",
-        },
-        "#SYM-A302": {
-            "status": "已完成診前 15s 調息",
-            "coherence_score": 88.0,
-            "stress_index": "Morandi Sage (輕度應激)",
-            "sleep_hours": 6.1,
-            "timestamp": "2026-07-29 12:25:00",
-            "weekly_trend": [70, 75, 78, 80, 82, 85, 88.0],
-            "summary": "【去敏軌跡摘要】個案於候診區完成心流調息。近 7 日睡眠時數偏低，生理指標顯示交感神經活性略微上升。",
-        },
-    }
-    return mock_db.get(user_key, None)
+    return st.session_state["mock_db"].get(user_key, None)
 
 
 # Header
@@ -240,7 +270,7 @@ st.markdown(
     "<div style='margin-bottom: 18px;'></div>", unsafe_allow_html=True
 )
 
-# 搜尋輸入框（與側邊欄同步）
+# 搜尋輸入框
 user_key = st.text_input(
     "請輸入探險家去敏密鑰 (例如：#SYM-C701) :",
     value=st.session_state["selected_token"],
