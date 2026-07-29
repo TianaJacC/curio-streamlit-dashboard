@@ -1,42 +1,82 @@
 import pandas as pd
 import streamlit as st
 
-# 1. 頁面配置與主題
+# 1. 全局配置：預設展開、自動適應手機
 st.set_page_config(
-    page_title="居里研創 ‧ 機構端去敏管理面板",
+    page_title="夢境珍奇櫃 ‧ 診間拋接後台",
     page_icon="🏛️",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
-# 2. 注入高奢莫蘭迪 CSS 樣式
+# 2. 手機與電腦強效 RWD 莫蘭迪 CSS
 st.markdown(
     """
     <style>
-    /* 全局背景色：燕麥莫蘭迪溫柔白 */
+    /* 莫蘭迪平靜燕麥色背景 */
     .stApp {
-        background-color: #F8F9F8;
+        background-color: #F6F7F5;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     
-    /* 高奢卡片邊框 */
-    div[data-testid="stMetric"] {
-        background-color: #FFFFFF;
-        border: 1px solid #E2E8E2;
-        padding: 18px 22px;
-        border-radius: 16px;
-        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.03);
+    /* 頂部標頭卡片 */
+    .header-card {
+        background: #3D4A41;
+        color: #F6F7F5;
+        padding: 16px 20px;
+        border-radius: 14px;
+        margin-bottom: 16px;
     }
-    
-    /* 標題與內文顏色 */
-    h1 {
-        color: #2D3732 !important;
+    .header-card h2 {
+        color: #FFFFFF !important;
+        font-size: 1.25rem !important;
+        margin: 0 0 4px 0 !important;
         font-weight: 600;
     }
-    
-    /* 側邊欄樣式 */
-    section[data-testid="stSidebar"] {
-        background-color: #EEF1EE;
+    .header-card p {
+        color: #C2CBC5 !important;
+        font-size: 0.8rem !important;
+        margin: 0 !important;
+    }
+
+    /* 醫師與診所資訊膠囊標籤 */
+    .info-pill {
+        background: #FFFFFF;
+        border: 1px solid #E1E6E1;
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: #4A584F;
+    }
+
+    /* 數據卡片（自動適應手機寬度） */
+    div[data-testid="stMetric"] {
+        background-color: #FFFFFF;
+        border: 1px solid #E1E6E1;
+        padding: 16px;
+        border-radius: 14px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.02);
+        margin-bottom: 10px;
+    }
+    div[data-testid="stMetricLabel"] p {
+        color: #7A8A80 !important;
+        font-size: 0.85rem !important;
+    }
+    div[data-testid="stMetricValue"] div {
+        color: #2C3631 !important;
+        font-size: 1.8rem !important;
+        font-weight: 700;
+    }
+
+    /* 輸入框適應手機手指點擊 */
+    .stTextInput input {
+        border-radius: 10px;
+        border: 1px solid #D1D8D2;
+        padding: 10px 14px;
+        font-size: 0.95rem;
     }
     </style>
 """,
@@ -44,117 +84,81 @@ st.markdown(
 )
 
 
-# 3. 去敏模擬資料庫
+# 3. 資料庫模擬
 def fetch_patient_data(user_key):
     mock_db = {
         "#C701": {
-            "status": "🟢 已完成診前 15s 心流調息",
+            "status": "已完成診前 15s 調息",
             "coherence_score": 92.5,
-            "stress_index": "莫蘭迪綠 (穩定放鬆)",
+            "stress_index": "Morandi Sage",
             "sleep_hours": 7.2,
-            "timestamp": "2026-07-29 12:20:15",
-            "weekly_trend": [82, 84, 88, 79, 89, 91, 92.5],
-            "note_summary": "個案近 3 日於 App 端完成 0.067 Hz 共振調息，夜間無應激爆發。心情結晶呈 Morandi Jade 莫蘭迪玉色。",
+            "timestamp": "2026-07-29 12:20",
+            "weekly_trend": [82, 85, 87, 84, 89, 91, 92.5],
+            "summary": "【去敏軌跡】看診前 15 秒於候診區完成 0.067 Hz 心流調息。近 7 日夜間無應激爆發，心流一致性保持高水準平穩。",
         }
     }
     return mock_db.get(user_key, None)
 
 
-# --- 側邊欄：機構與醫師資訊 ---
-with st.sidebar:
-    st.markdown("### 🏛️ 居里研創 Curio & Studio")
-    st.caption("SaMD 臨床去敏拋接系統 v2.4")
-    st.markdown("---")
-    st.markdown("**合作診所**：交感身心診所")
-    st.markdown("**看診醫師**：郭家穎醫師")
-    st.markdown("**物理隔離防線**：`A4 保險箱機制 [已死鎖]`")
-    st.markdown("---")
-    st.info("💡 **提示**：輸入個案 A4 知情同意書右上角之探險家密鑰（如 `#C701`）即可載入 15 秒去敏身心軌跡。")
-
-# --- 主介面 ---
-st.title("🏛️ 夢境珍奇櫃 ‧ 機構端去敏管理面板")
-st.caption(
-    "Zero-Knowledge Architecture ｜ 0 個資 ‧ 零知識證明 ‧ 診前 15 秒去敏軌跡自動拋接"
+# --- 頂部黑森林綠標頭 ---
+st.markdown(
+    """
+    <div class="header-card">
+        <h2>🏛️ 夢境珍奇櫃 ‧ 診間拋接面板</h2>
+        <p>SaMD 0 個資 ‧ 診前 15 秒身心軌跡拋接</p>
+    </div>
+""",
+    unsafe_allow_html=True,
 )
 
-st.markdown("---")
+# --- 診所資訊條 ---
+st.markdown(
+    """
+    <div class="info-pill">
+        <span><b>診所</b>: 交感身心診所</span>
+        <span><b>醫師</b>: 郭家穎 院長</span>
+        <span style="color:#2A7A4C;"><b>防線</b>: 物理隔離死鎖</span>
+    </div>
+""",
+    unsafe_allow_html=True,
+)
 
-# 搜尋列
-col_search, col_btn = st.columns([4, 1])
-with col_search:
-    user_key = st.text_input(
-        "請輸入探險家去敏密鑰 :",
-        value="#C701",
-        placeholder="例如：#C701",
-    )
+# 搜尋輸入框
+user_key = st.text_input("輸入探險家去敏密鑰 :", value="#C701")
 
 if user_key:
     data = fetch_patient_data(user_key)
 
     if data:
-        st.success(
-            f"連線成功 ｜ 去敏標籤：`{user_key}` ｜ 狀態：{data['status']}"
+        st.caption(
+            f"🟢 密鑰 `{user_key}` ｜ 狀態：{data['status']} ｜ 更新：{data['timestamp']}"
         )
 
-        # 3 大指標卡片
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            st.metric(
-                label="心流一致性評分 (0.067Hz)",
-                value=f"{data['coherence_score']} %",
-                delta="↑ 3.2% (穩定)",
-            )
-        with c2:
-            st.metric(
-                label="身心應激狀態",
-                value=data["stress_index"],
-                delta="Morandi Green",
-            )
-        with c3:
-            st.metric(
-                label="本機睡眠時數",
-                value=f"{data['sleep_hours']} hr",
-                delta="達標",
-            )
+        # 自動適應手機與電腦的卡片排版
+        col1, col2, col3 = st.columns([1, 1, 1])
+        with col1:
+            st.metric("心流一致性 (0.067Hz)", f"{data['coherence_score']} %", "↑ 3.2%")
+        with col2:
+            st.metric("身心應激狀態", data["stress_index"], "放鬆區")
+        with col3:
+            st.metric("本機睡眠時數", f"{data['sleep_hours']} hr", "達標")
 
-        st.markdown("###")
+        st.markdown("---")
 
-        # 兩大核心功能展示區
-        tab1, tab2 = st.tabs(
-            ["📈 近 7 日身心軌跡趨勢", "📄 診前 15 秒去敏 PDF 摘要觀看"]
-        )
+        # 頁籤
+        tab1, tab2 = st.tabs(["📈 7日心流曲線", "📄 15s 摘要"])
 
         with tab1:
-            st.subheader("近 7 日心流調息穩定度 (Coherence Trend)")
             chart_data = pd.DataFrame(
                 {
-                    "日期": [
-                        "Mon",
-                        "Tue",
-                        "Wed",
-                        "Thu",
-                        "Fri",
-                        "Sat",
-                        "Sun",
-                    ],
-                    "心流分數": data["weekly_trend"],
+                    "日": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+                    "分數": data["weekly_trend"],
                 }
-            ).set_index("日期")
-            st.line_chart(chart_data, color="#8A9A86")
+            ).set_index("日")
+            st.line_chart(chart_data, color="#3D4A41")
 
         with tab2:
-            st.subheader("診前 15 秒去敏身心軌跡 (PDF 摘要模擬)")
-            st.warning(
-                "🛡️ 本頁面資料 100% 經邊緣端去敏化，不含任何個資、姓名或私密日誌筆跡。"
-            )
-            st.text_area(
-                "邊緣端特徵解算摘要",
-                value=data["note_summary"],
-                height=100,
-            )
-            st.caption(f"🕒 數據傳輸時間戳記：{data['timestamp']}")
-
+            st.info("🛡️ 數據 100% 經邊緣端去敏化，絕無個人個資。")
+            st.write(data["summary"])
     else:
-        st.error(
-            f"⚠️ 找不到密鑰 `{user_key}` 之當日資料，請確認代碼是否輸入正確。"
-        )
+        st.error(f"⚠️ 找不到代碼 `{user_key}` 之資料。")
