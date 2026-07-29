@@ -10,68 +10,95 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# 2. 莫蘭迪淺藍高奢 CSS 樣式
+# 2. 高奢莫蘭迪 & 醫材級 UI / CSS 設計
 st.markdown(
     """
     <style>
+    /* 全域背景：莫蘭迪極簡霧灰藍 */
     .stApp {
-        background-color: #F2F5F8;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", sans-serif;
+        background-color: #F0F4F8;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Helvetica Neue", sans-serif;
     }
     header[data-testid="stHeader"] { background-color: rgba(0,0,0,0); }
     footer { visibility: hidden; }
 
+    /* 主頂樓高奢卡片 */
     .curio-hero-card {
-        background: linear-gradient(135deg, #3B4E68 0%, #5A7292 100%);
+        background: linear-gradient(135deg, #2D3E50 0%, #4A637D 100%);
         color: #FFFFFF;
-        padding: 26px 30px;
-        border-radius: 20px;
-        box-shadow: 0 10px 24px rgba(59, 78, 104, 0.15);
-        border: 1px solid #7188A6;
-        margin-bottom: 22px;
+        padding: 28px 36px;
+        border-radius: 24px;
+        box-shadow: 0 12px 30px rgba(45, 62, 80, 0.12);
+        border: 1px solid #5C7693;
+        margin-bottom: 24px;
     }
-    .curio-hero-card h1 { color: #FFFFFF !important; font-size: 1.45rem !important; font-weight: 600 !important; margin: 0 0 6px 0 !important; }
-    .curio-hero-card p { color: #D6E1EF !important; font-size: 0.85rem !important; margin: 0 !important; }
+    .curio-hero-card h1 { color: #FFFFFF !important; font-size: 1.55rem !important; font-weight: 600 !important; margin: 0 0 8px 0 !important; letter-spacing: 0.5px; }
+    .curio-hero-card p { color: #D1DFEE !important; font-size: 0.88rem !important; margin: 0 !important; font-weight: 300; }
 
-    .login-box {
+    /* 重構：高奢診間登入卡片 (Glassmorphism 視覺) */
+    .login-container {
         background: #FFFFFF;
-        border: 1px solid #D8E2EE;
-        padding: 35px;
-        border-radius: 20px;
-        box-shadow: 0 10px 25px rgba(59, 78, 104, 0.08);
-        max-width: 480px;
-        margin: 60px auto;
+        border: 1px solid #DCE5EE;
+        padding: 42px 40px 32px 40px;
+        border-radius: 24px;
+        box-shadow: 0 18px 40px rgba(45, 62, 80, 0.07);
+        max-width: 460px;
+        margin: 50px auto 20px auto;
         text-align: center;
     }
-    .login-box h2 { color: #3B4E68; font-size: 1.3rem; margin-bottom: 10px; }
-    .login-box p { color: #627792; font-size: 0.88rem; margin-bottom: 20px; }
-    
+    .login-icon-badge {
+        width: 60px;
+        height: 60px;
+        background: #EBF2FA;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px auto;
+        font-size: 1.8rem;
+        box-shadow: inset 0 2px 4px rgba(255,255,255,0.8);
+    }
+    .login-title {
+        color: #2D3E50;
+        font-size: 1.35rem;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+        margin-bottom: 8px;
+    }
+    .login-subtitle {
+        color: #6C829B;
+        font-size: 0.86rem;
+        line-height: 1.5;
+        margin-bottom: 24px;
+    }
+
+    /* 資安警告區塊 */
     .security-notice-box {
         background-color: #EBF2FA;
-        border: 1px solid #C5D8ED;
-        border-radius: 14px;
-        padding: 16px 20px;
+        border: 1px solid #C8DAEB;
+        border-radius: 16px;
+        padding: 18px 22px;
         margin-top: 25px;
         font-size: 0.85rem;
-        color: #25354A;
-        line-height: 1.6;
+        color: #2D3E50;
+        line-height: 1.65;
     }
 
     div[data-testid="stMetric"] {
         background: #FFFFFF;
-        border: 1px solid #D8E2EE;
-        padding: 20px 22px;
-        border-radius: 18px;
-        box-shadow: 0 6px 16px rgba(59, 78, 104, 0.04);
+        border: 1px solid #DCE5EE;
+        padding: 22px 24px;
+        border-radius: 20px;
+        box-shadow: 0 6px 20px rgba(45, 62, 80, 0.03);
     }
     </style>
 """,
     unsafe_allow_html=True,
 )
 
-# 3. 初始化 Session State 狀態與模擬資料庫
+# 3. 初始化 Session State 狀態與醫生專屬密碼
 if "doctor_password" not in st.session_state:
-    st.session_state["doctor_password"] = "NYJAZZ-8519"
+    st.session_state["doctor_password"] = "NYJAZZ-8519"  # 郭醫師專屬密碼
 
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
@@ -79,7 +106,7 @@ if "authenticated" not in st.session_state:
 if "selected_token" not in st.session_state:
     st.session_state["selected_token"] = "#SYM-C701"
 
-# 雲端雙盲中繼站模擬資料庫 (Mock Broker Database)
+# 雲端雙盲中繼站模擬資料庫
 if "mock_db" not in st.session_state:
     st.session_state["mock_db"] = {
         "#SYM-C701": {
@@ -102,7 +129,6 @@ if "mock_db" not in st.session_state:
         },
     }
 
-# 待拋接佇列 (Queue)
 if "checkin_queue" not in st.session_state:
     st.session_state["checkin_queue"] = [
         {
@@ -117,7 +143,7 @@ if "checkin_queue" not in st.session_state:
         },
     ]
 
-MASTER_KEY = "CURIO-999"
+MASTER_KEY = "CURIO-999"  # 玥如緊急救援金鑰
 
 # --- 4. 變更密碼 Modal 彈窗 ---
 if hasattr(st, "dialog"):
@@ -142,25 +168,34 @@ if hasattr(st, "dialog"):
                 st.rerun()
 
 
-# --- 5. 門診安全驗證畫面 ---
+# --- 5. 重構：高奢診間登入驗證畫面 ---
 if not st.session_state["authenticated"]:
+    # 居中優雅登入卡片
     st.markdown(
         """
-        <div class="login-box">
-            <div style="font-size: 2.5rem; margin-bottom: 10px;">🔒</div>
-            <h2>交感身心診所 ‧ 門診安全驗證</h2>
-            <p>請輸入郭家穎院長專屬診間金鑰，解鎖去敏身心軌跡拋接面板。</p>
+        <div class="login-container">
+            <div class="login-icon-badge">🛡️</div>
+            <div class="login-title">交感身心診所 ‧ 門診安全驗證</div>
+            <div class="login-subtitle">Cabinet of Curiosities ‧ 診間去敏身心軌跡拋接面板<br><span style="font-size:0.78rem; color:#8FA3B8;">零知識架構 ‧ 雙盲機制加密防護</span></div>
         </div>
     """,
         unsafe_allow_html=True,
     )
 
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1.2, 1.8, 1.2])
     with col2:
         pwd_input = st.text_input(
-            "請輸入診間密碼：", type="password", key="pwd_field"
+            "診間驗證金鑰",
+            type="password",
+            key="pwd_field",
+            placeholder="請輸入院長專屬金鑰",
         )
-        if st.button("🔓 開鎖登入", use_container_width=True):
+
+        st.markdown(
+            "<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True
+        )
+
+        if st.button("🔓 解鎖診間面板", use_container_width=True):
             if (
                 pwd_input == st.session_state["doctor_password"]
                 or pwd_input == MASTER_KEY
@@ -168,16 +203,22 @@ if not st.session_state["authenticated"]:
                 st.session_state["authenticated"] = True
                 st.rerun()
             else:
-                st.error("⚠️ 密碼錯誤！請重新輸入或確認門診金鑰小卡。")
+                st.error("⚠️ 金鑰驗證失敗，請確認後重新輸入。")
 
-        with st.expander("❓ 忘記診間密碼？"):
+        st.markdown(
+            "<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True
+        )
+
+        # 依需求修改之密碼提示區塊
+        with st.expander("❓ 忘記診間金鑰密碼？"):
             st.info(
-                f"💡 **密碼提示**：GOOGLE帳號 + 西元出身年份（當前預設：`{st.session_state['doctor_password']}`）\n\n若仍無法登入，請使用紙本同意書資料夾內之「門診金鑰小卡」，或聯繫居里研創專屬服務團隊。"
+                f"💡 **密碼提示**：GOOGLE帳號 + 西元出生年份（當前預設：`{st.session_state['doctor_password']}`）\n\n如需技術支援，請聯繫居里研創專屬服務團隊。"
             )
+
     st.stop()
 
 
-# --- 6. 側邊欄：【路徑 A 與路徑 B】模擬控制台 ---
+# --- 6. 側邊欄：API & Webhook 模擬器 ---
 with st.sidebar:
     st.markdown("### 🔌 背景 API 與 Webhook 模擬器")
     st.caption("用於向郭醫師演示 LINE LIFF 與叫號系統無縫 Push")
@@ -189,7 +230,6 @@ with st.sidebar:
 
     if st.button("📡 [路徑 A] 模擬 App 拋接 API"):
         current_time_str = time.strftime("%H:%M")
-        # 寫入模擬資料庫
         st.session_state["mock_db"][token_a] = {
             "status": "已完成診前 15s 調息",
             "coherence_score": score_a,
@@ -255,7 +295,7 @@ top_col1, top_col2 = st.columns([3, 1])
 with top_col1:
     st.markdown(
         """
-        <div style="background:#FFFFFF; border:1px solid #D2DCED; border-radius:30px; padding:8px 20px; font-size:0.85rem; color:#334763;">
+        <div style="background:#FFFFFF; border:1px solid #DCE5EE; border-radius:30px; padding:10px 24px; font-size:0.86rem; color:#2D3E50;">
             🟢 <b>郭家穎 院長</b>（交感身心診所）已通過診間安全認證 ｜ 🏛️ 診間號：C701 ｜ 🛡️ <b>0 個資死鎖狀態</b>
         </div>
     """,
@@ -267,7 +307,7 @@ with top_col2:
             change_password_dialog()
 
 st.markdown(
-    "<div style='margin-bottom: 18px;'></div>", unsafe_allow_html=True
+    "<div style='margin-bottom: 20px;'></div>", unsafe_allow_html=True
 )
 
 # 搜尋輸入框
@@ -282,7 +322,7 @@ if user_key:
     if data:
         st.markdown(
             f"""
-            <div style="background-color: #E8F0F8; border-left: 4px solid #5A7292; padding: 12px 18px; border-radius: 12px; margin-bottom: 22px; font-size: 0.9rem; color: #25354A;">
+            <div style="background-color: #EBF2FA; border-left: 4px solid #4A637D; padding: 14px 20px; border-radius: 14px; margin-bottom: 24px; font-size: 0.92rem; color: #2D3E50;">
                 <b>💎 成功連線至去敏密鑰 <code>{user_key}</code></b> ｜ 狀態：{data['status']} ｜ 更新時間：{data['timestamp']}
             </div>
             """,
@@ -310,7 +350,7 @@ if user_key:
         )
         with tab1:
             st.markdown(
-                "<h4 style='color:#25354A; font-size:1.05rem; margin-top:10px;'>近 7 日心流一致性調息曲線 (Coherence Score)</h4>",
+                "<h4 style='color:#2D3E50; font-size:1.05rem; margin-top:12px;'>近 7 日心流一致性調息曲線 (Coherence Score)</h4>",
                 unsafe_allow_html=True,
             )
             chart_data = pd.DataFrame(
@@ -327,11 +367,11 @@ if user_key:
                     "心流分數": data["weekly_trend"],
                 }
             ).set_index("日期")
-            st.line_chart(chart_data, color="#5A7292")
+            st.line_chart(chart_data, color="#4A637D")
 
         with tab2:
             st.markdown(
-                "<h4 style='color:#25354A; font-size:1.05rem; margin-top:10px;'>邊緣端 15 秒去敏化身心軌跡</h4>",
+                "<h4 style='color:#2D3E50; font-size:1.05rem; margin-top:12px;'>邊緣端 15 秒去敏化身心軌跡</h4>",
                 unsafe_allow_html=True,
             )
             st.write(f"**【去敏軌跡摘要】**\n\n{data['summary']}")
