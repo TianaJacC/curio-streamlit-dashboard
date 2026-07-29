@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# 2. 重構：法式極致奢華藝廊 UI / CSS 設計 (French Fine-Art Gallery & Medical Grade)
+# 2. 法式極致奢華藝廊 UI / CSS 設計
 st.markdown(
     """
     <style>
@@ -29,7 +29,7 @@ st.markdown(
         padding: 36px 44px;
         border-radius: 28px;
         box-shadow: 0 20px 48px rgba(26, 38, 52, 0.08);
-        border: 1px solid #C8B282; /* 精緻香檳金微光邊框 */
+        border: 1px solid #C8B282;
         margin-bottom: 30px;
     }
     .curio-hero-card h1 { 
@@ -48,7 +48,7 @@ st.markdown(
         letter-spacing: 0.6px;
     }
 
-    /* 登入卡片 (High-End Gallery Glass Card) */
+    /* 登入卡片 */
     .gallery-login-card {
         background: #FFFFFF;
         border: 1px solid #E8E2D5;
@@ -91,6 +91,39 @@ st.markdown(
         font-weight: 300;
     }
 
+    /* 客製化高奢 Metric 數據卡片 (解決 st.metric 文字被截斷的問題) */
+    .custom-metric-card {
+        background: #FFFFFF;
+        border: 1px solid #E8E2D5;
+        padding: 24px 26px;
+        border-radius: 24px;
+        box-shadow: 0 10px 28px rgba(26, 38, 52, 0.03);
+        height: 100%;
+    }
+    .custom-metric-label {
+        font-size: 0.86rem;
+        color: #6C7A89;
+        font-weight: 400;
+        margin-bottom: 8px;
+    }
+    .custom-metric-value {
+        font-size: 1.45rem;
+        color: #1A2634;
+        font-weight: 600;
+        font-family: "Georgia", "PingFang TC", serif;
+        margin-bottom: 8px;
+        line-height: 1.2;
+    }
+    .custom-metric-delta {
+        font-size: 0.82rem;
+        color: #5C6B73;
+        background-color: #F4F1EA;
+        padding: 4px 10px;
+        border-radius: 8px;
+        display: inline-block;
+        line-height: 1.4;
+    }
+
     /* 資安公告盒 */
     .security-notice-box {
         background-color: #F4F1EA;
@@ -101,14 +134,6 @@ st.markdown(
         font-size: 0.85rem;
         color: #1A2634;
         line-height: 1.7;
-    }
-
-    div[data-testid="stMetric"] {
-        background: #FFFFFF;
-        border: 1px solid #E8E2D5;
-        padding: 26px 28px;
-        border-radius: 24px;
-        box-shadow: 0 10px 28px rgba(26, 38, 52, 0.03);
     }
     </style>
 """,
@@ -131,7 +156,8 @@ if "mock_db" not in st.session_state:
         "#SYM-C701": {
             "status": "已完成診前 15s 共振調息",
             "coherence_score": 92.5,
-            "stress_index": "Morandi Soft Blue (心流平穩)",
+            "stress_index": "Morandi Soft Blue",
+            "stress_desc": "莫蘭迪藍放縮區 ‧ 平穩",
             "sleep_hours": 7.2,
             "timestamp": "2026-07-30 01:20:15",
             "weekly_trend": [82, 85, 87, 84, 89, 91, 92.5],
@@ -140,7 +166,8 @@ if "mock_db" not in st.session_state:
         "#SYM-A302": {
             "status": "已完成診前 15s 共振調息",
             "coherence_score": 88.0,
-            "stress_index": "Morandi Sage (輕度交感活性)",
+            "stress_index": "Morandi Sage",
+            "stress_desc": "莫蘭迪綠區域 ‧ 輕度交感活性",
             "sleep_hours": 6.1,
             "timestamp": "2026-07-30 01:25:00",
             "weekly_trend": [70, 75, 78, 80, 82, 85, 88.0],
@@ -187,7 +214,7 @@ if hasattr(st, "dialog"):
                 st.rerun()
 
 
-# --- 5. 重構：高奢極簡 門診驗證畫面 ---
+# --- 5. 門診驗證畫面 ---
 if not st.session_state["authenticated"]:
     st.markdown(
         """
@@ -251,7 +278,8 @@ with st.sidebar:
         st.session_state["mock_db"][token_a] = {
             "status": "已完成診前 15s 共振調息",
             "coherence_score": score_a,
-            "stress_index": "Morandi Soft Blue (心流平穩)",
+            "stress_index": "Morandi Soft Blue",
+            "stress_desc": "莫蘭迪藍放縮區 ‧ 平穩",
             "sleep_hours": 7.5,
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "weekly_trend": [80, 82, 85, 88, 90, 92, score_a],
@@ -347,17 +375,43 @@ if user_key:
             unsafe_allow_html=True,
         )
 
+        # 改用完全控制排版之 HTML 客製化卡片 (解決原生 metric 截斷問題)
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric(
-                "🌌 心流一致性 (0.067Hz)",
-                f"{data['coherence_score']} %",
-                "↑ 3.2% 穩定共振",
+            st.markdown(
+                f"""
+                <div class="custom-metric-card">
+                    <div class="custom-metric-label">🌌 心流一致性 (0.067Hz)</div>
+                    <div class="custom-metric-value">{data['coherence_score']} %</div>
+                    <div class="custom-metric-delta">↑ 3.2% 穩定共振</div>
+                </div>
+            """,
+                unsafe_allow_html=True,
             )
+
         with col2:
-            st.metric("🌿 身心應激狀態", data["stress_index"], "莫蘭迪區域")
+            st.markdown(
+                f"""
+                <div class="custom-metric-card">
+                    <div class="custom-metric-label">🌿 身心應激狀態</div>
+                    <div class="custom-metric-value">{data['stress_index']}</div>
+                    <div class="custom-metric-delta">{data.get('stress_desc', '莫蘭迪放鬆區域')}</div>
+                </div>
+            """,
+                unsafe_allow_html=True,
+            )
+
         with col3:
-            st.metric("🌙 本機睡眠時數", f"{data['sleep_hours']} hr", "達標 7 小時")
+            st.markdown(
+                f"""
+                <div class="custom-metric-card">
+                    <div class="custom-metric-label">🌙 本機睡眠時數</div>
+                    <div class="custom-metric-value">{data['sleep_hours']} hr</div>
+                    <div class="custom-metric-delta">達標 7 小時優質睡眠</div>
+                </div>
+            """,
+                unsafe_allow_html=True,
+            )
 
         st.markdown(
             "<div style='margin-bottom: 25px;'></div>", unsafe_allow_html=True
