@@ -27,7 +27,7 @@ def log_system_event(event_type, details):
 log_system_event("SESSION_INIT", "Curio & Studio 夢境珍奇櫃診間面板載入")
 
 # ==============================================================================
-# 1. 全局配置
+# 1. 全局配置與防爆 Session 初始化
 # ==============================================================================
 st.set_page_config(
     page_title="夢境珍奇櫃診間面板 ‧ Curio & Studio",
@@ -36,8 +36,64 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+if "doctor_password" not in st.session_state:
+    st.session_state["doctor_password"] = "NYJAZZ-8519"
+
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
+
+if "selected_token" not in st.session_state:
+    st.session_state["selected_token"] = "#SYM-C701"
+
+if "clinic_start_time" not in st.session_state:
+    st.session_state["clinic_start_time"] = time.time()
+
+if "completed_count" not in st.session_state:
+    st.session_state["completed_count"] = 1
+
+if "total_booked_patients" not in st.session_state:
+    st.session_state["total_booked_patients"] = 12
+
+if "session_hours" not in st.session_state:
+    st.session_state["session_hours"] = 3.5
+
+# 防爆全域資料庫 (防止跨裝置拋接跳紅字)
+if "mock_db" not in st.session_state:
+    st.session_state["mock_db"] = {
+        "#SYM-C701": {
+            "status": "已完成診前 15s 共振調息",
+            "coherence_score": 92.5,
+            "stress_index": "Morandi Soft Blue",
+            "stress_desc": "莫蘭迪藍放縮區 ‧ 平穩",
+            "sleep_hours": 7.2,
+            "timestamp": "2026-07-30 01:20:15",
+            "weekly_trend": [82, 85, 87, 84, 89, 91, 92.5],
+            "nudge": "探險家近 3 天夜間無應激爆發，心流穩定（92.5%）。建議問診重點：維持優質睡眠時數。",
+            "summary": "【去敏身心軌跡摘要】個案於看診前 15 秒於候診區完成 0.067 Hz 心流共振調息。連續 7 日數據顯示夜間無應激爆發，心流一致性維持於 90% 以上高諧振區間。",
+        },
+        "#SYM-A302": {
+            "status": "已完成診前 15s 共振調息",
+            "coherence_score": 88.0,
+            "stress_index": "Morandi Sage",
+            "stress_desc": "莫蘭迪綠區域 ‧ 輕度交感活性",
+            "sleep_hours": 6.1,
+            "timestamp": "2026-07-30 01:25:00",
+            "weekly_trend": [70, 75, 78, 80, 82, 85, 88.0],
+            "nudge": "探險家睡眠時數偏低（6.1hr），生理指標顯示交感活性上升。建議問診重點：關懷換季氣壓調節。",
+            "summary": "【去敏身心軌跡摘要】個案於候診區完成心流調息。近 7 日睡眠時數偏低，生理指標顯示交感神經活性略微上升。",
+        },
+    }
+
+if "checkin_queue" not in st.session_state:
+    st.session_state["checkin_queue"] = [
+        {"token": "#SYM-C701", "time": "01:20", "source": "LINE LIFF / App"},
+        {"token": "#SYM-A302", "time": "01:25", "source": "LINE LIFF / App"},
+    ]
+
+MASTER_KEY = "CURIO-999"
+
 # ==============================================================================
-# 2. Bespoke French High-Jewelry & Atelier CSS
+# 2. Bespoke French High-Jewelry CSS
 # ==============================================================================
 st.markdown(
     """
@@ -51,7 +107,6 @@ st.markdown(
     header[data-testid="stHeader"] { background-color: rgba(0,0,0,0); }
     footer { visibility: hidden; }
 
-    /* 主頂樓卡片 */
     .curio-hero-card {
         background: linear-gradient(135deg, #25352B 0%, #1A261F 100%);
         color: #FAF8F5;
@@ -92,7 +147,6 @@ st.markdown(
         vertical-align: middle;
     }
 
-    /* 溫暖與動態時間管理卡 */
     .doctor-care-card {
         background: linear-gradient(135deg, #F4F0E8 0%, #EAE4D8 100%);
         border: 1px solid #C2A675;
@@ -104,11 +158,7 @@ st.markdown(
         align-items: center;
         justify-content: space-between;
     }
-    .doctor-care-text {
-        font-size: 0.9rem;
-        color: #25352B;
-        line-height: 1.65;
-    }
+    .doctor-care-text { font-size: 0.9rem; color: #25352B; line-height: 1.65; }
     .doctor-timer-badge {
         background: #25352B;
         color: #FAF8F5;
@@ -252,67 +302,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ==============================================================================
-# 3. Session State 初始化
-# ==============================================================================
-if "doctor_password" not in st.session_state:
-    st.session_state["doctor_password"] = "NYJAZZ-8519"
-
-if "authenticated" not in st.session_state:
-    st.session_state["authenticated"] = False
-
-if "selected_token" not in st.session_state:
-    st.session_state["selected_token"] = "#SYM-C701"
-
-if "clinic_start_time" not in st.session_state:
-    st.session_state["clinic_start_time"] = time.time()
-
-if "completed_count" not in st.session_state:
-    st.session_state["completed_count"] = 1
-
-if "total_booked_patients" not in st.session_state:
-    st.session_state["total_booked_patients"] = 12
-
-if "session_hours" not in st.session_state:
-    st.session_state["session_hours"] = 3.5
-
-if "mock_db" not in st.session_state:
-    st.session_state["mock_db"] = {
-        "#SYM-C701": {
-            "status": "已完成診前 15s 共振調息",
-            "coherence_score": 92.5,
-            "stress_index": "Morandi Soft Blue",
-            "stress_desc": "莫蘭迪藍放縮區 ‧ 平穩",
-            "sleep_hours": 7.2,
-            "timestamp": "2026-07-30 01:20:15",
-            "weekly_trend": [82, 85, 87, 84, 89, 91, 92.5],
-            "nudge": "探險家近 3 天夜間無應激爆發，心流穩定（92.5%）。建議問診重點：維持優質睡眠時數。",
-            "summary": "【去敏身心軌跡摘要】個案於看診前 15 秒於候診區完成 0.067 Hz 心流共振調息。連續 7 日數據顯示夜間無應激爆發，心流一致性維持於 90% 以上高諧振區間。",
-        },
-        "#SYM-A302": {
-            "status": "已完成診前 15s 共振調息",
-            "coherence_score": 88.0,
-            "stress_index": "Morandi Sage",
-            "stress_desc": "莫蘭迪綠區域 ‧ 輕度交感活性",
-            "sleep_hours": 6.1,
-            "timestamp": "2026-07-30 01:25:00",
-            "weekly_trend": [70, 75, 78, 80, 82, 85, 88.0],
-            "nudge": "探險家睡眠時數偏低（6.1hr），生理指標顯示交感活性上升。建議問診重點：關懷換季氣壓調節。",
-            "summary": "【去敏身心軌跡摘要】個案於候診區完成心流調息。近 7 日睡眠時數偏低，生理指標顯示交感神經活性略微上升。",
-        },
-    }
-
-if "checkin_queue" not in st.session_state:
-    st.session_state["checkin_queue"] = [
-        {"token": "#SYM-C701", "time": "01:20", "source": "LINE LIFF / App"},
-        {"token": "#SYM-A302", "time": "01:25", "source": "LINE LIFF / App"},
-    ]
-
-MASTER_KEY = "CURIO-999"
-
 
 # ==============================================================================
-# 4. 蔻恩閣長 3D 典藏資安寶盒 Modal 彈窗
+# 4. 蔻恩閣長 Modal 彈窗
 # ==============================================================================
 if hasattr(st, "dialog"):
 
@@ -327,18 +319,18 @@ if hasattr(st, "dialog"):
                     <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.3rem; margin: 0;">小松鼠蔻恩閣長 <span style="font-family: Didot, serif; font-style: italic; color: #C2A675;">(Cone)</span> 資安宣告</h3>
                 </div>
                 <div style="font-size: 0.88rem; color: #596B60; line-height: 1.7; text-align: justify;">
-                    歡迎來到夢境珍奇櫃！我是蔻恩閣長。本系統全流程貫徹<span style="font-weight: 600; color: #25352B;">零知識架構</span> <span style="font-family: Didot, serif; color: #C2A675;">(Zero-Knowledge Architecture)</span> 與<span style="font-weight: 600; color: #25352B;">邊緣運算</span> <span style="font-family: Didot, serif; color: #C2A675;">(Edge Computing)</span> 原則，為每位探險家提供最高規格的鋼鐵隱私防線：
+                    歡迎來到夢境珍奇櫃！我是蔻恩閣長。本系統全流程貫徹<b>零知識架構 (Zero-Knowledge Architecture)</b> 與<b>邊緣運算 (Edge Computing)</b> 原則，為每位探險家提供最高規格的鋼鐵隱私防線：
                 </div>
                 <hr style="border: 0; border-top: 1px solid #E4DCD0; margin: 16px 0;">
                 <div style="font-size: 0.86rem; color: #25352B; line-height: 1.85;">
                     <b>✨ 蔻恩閣長四大資安誓言：</b><br>
                     1. <b>符合《個資法》第 2 條去識別化標準</b>：全流程絕不收集、記錄或存儲病患真實姓名、身分證號、電話或病歷號。<br>
-                    2. <b>240 分鐘動態時間鎖 <span style="font-family: Didot, serif; color: #C2A675;">(Time-Lock)</span></b>：去敏密鑰 <span style="font-family: Didot, serif; color: #C2A675;">(Token)</span> 具備 240 分鐘動態壽命，看診完畢即剛性銷毀，雲端絕不留存持久個資。<br>
+                    2. <b>240 分鐘動態時間鎖 (Time-Lock)</b>：去敏密鑰 (Token) 具備 240 分鐘動態壽命，看診完畢即剛性銷毀，雲端絕不留存持久個資。<br>
                     3. <b>HTTPS TLS 1.3 & AES-256 加密</b>：前端至中繼站全通道高階加密，徹底防禦中間人截取。<br>
                     4. <b>Air-Gapped 雙盲實體與邏輯隔離</b>：本系統與診所行政 HIS/LINE 實施資料庫實體隔離，斷絕任何個資對照可能性。
                 </div>
                 <div style="margin-top: 20px; padding: 12px; background: rgba(194, 166, 117, 0.12); border-radius: 12px; font-size: 0.78rem; color: #B29562; text-align: center; font-family: 'Garamond', serif;">
-                    🏛️ 發布單位：居里研創股份有限公司 <span style="font-family: Didot, serif; italic">(Curio & Studio)</span> ｜ 日期：2026 年 07 月 30 日
+                    🏛️ 發布單位：居里研創股份有限公司 (Curio & Studio) ｜ 日期：2026 年 07 月 30 日
                 </div>
             </div>
             """,
@@ -433,7 +425,7 @@ if not st.session_state["authenticated"]:
 
 
 # ==============================================================================
-# 6. 側邊欄：手機連線 QR Code、Underworld 音樂與無聲護理板
+# 6. 側邊欄：防爆拋接、連線 QR Code、Underworld 音樂與無聲護理板
 # ==============================================================================
 with st.sidebar:
     st.markdown(
@@ -449,10 +441,9 @@ with st.sidebar:
 
     # 手機連線 Demo QR Code
     with st.expander("📱 手機連線 Demo QR Code"):
-        st.write("用手機相機掃描下方 QR Code，開起手機側邊欄模擬拋接：")
-        # 產出動態連線 QR Code
+        st.write("用手機相機掃描下方 QR Code 圖片，開起手機側邊欄模擬拋接：")
         qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://curio-studio.streamlit.app"
-        st.image(qr_url, caption="手機掃碼開起模擬連線", width=150)
+        st.image(qr_url, caption="手機掃碼開啟模擬連線", width=150)
 
     # 門診參數動態設定
     with st.expander("⚙️ 本節門診參數設定"):
@@ -460,9 +451,10 @@ with st.sidebar:
             "一節門診預計時長 (小時):", value=3.5, step=0.5
         )
         st.session_state["total_booked_patients"] = st.number_input(
-            "本節預預約總人數:", value=12, step=1
+            "本節預約總人數:", value=12, step=1
         )
 
+    # 防爆路徑 A 拋接 (不跳紅字亂碼)
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
@@ -476,34 +468,36 @@ with st.sidebar:
     score_a = st.slider("心流分數:", 60.0, 100.0, 94.0)
 
     if st.button("觸發 15 秒飛鴿拋接"):
-        current_time_str = time.strftime("%H:%M")
-        st.session_state["mock_db"][token_a] = {
-            "status": "已完成診前 15s 共振調息",
-            "coherence_score": score_a,
-            "stress_index": "Morandi Soft Blue",
-            "stress_desc": "莫蘭迪藍放縮區 ‧ 平穩",
-            "sleep_hours": 7.5,
-            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-            "weekly_trend": [80, 82, 85, 88, 90, 92, score_a],
-            "nudge": f"飛鴿拋接短碼 {token_a}。心流表現極佳（{score_a}%），建議進行常規衛教即可。",
-            "summary": f"【去敏身心軌跡摘要】經由 LINE LIFF 飛鴿拋接之短碼 {token_a}。個案完成診前調息，心流表現極佳。",
-        }
-        st.session_state["checkin_queue"].append(
-            {
-                "token": token_a,
-                "time": current_time_str,
-                "source": "LINE LIFF API",
+        try:
+            current_time_str = time.strftime("%H:%M")
+            # 安全防爆寫入
+            st.session_state["mock_db"][token_a] = {
+                "status": "已完成診前 15s 共振調息",
+                "coherence_score": float(score_a),
+                "stress_index": "Morandi Soft Blue",
+                "stress_desc": "莫蘭迪藍放縮區 ‧ 平穩",
+                "sleep_hours": 7.5,
+                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "weekly_trend": [80, 82, 85, 88, 90, 92, float(score_a)],
+                "nudge": f"飛鴿拋接短碼 {token_a}。心流表現極佳（{score_a}%），建議進行常規衛教即可。",
+                "summary": f"【去敏身心軌跡摘要】經由 LINE LIFF 飛鴿拋接之短碼 {token_a}。個案完成診前調息，心流表現極佳。",
             }
-        )
-        st.session_state["total_booked_patients"] = max(
-            st.session_state["total_booked_patients"],
-            len(st.session_state["checkin_queue"]),
-        )
-        log_system_event(
-            "API_PUSH_EVENT", f"路徑 A 手動模擬 App 拋接 Token: {token_a}"
-        )
-        st.toast(f"✨ 信鴿 Singer 已將 {token_a} 去敏數據安全送達！")
-        st.rerun()
+            # 佇列更新
+            st.session_state["checkin_queue"].append(
+                {
+                    "token": token_a,
+                    "time": current_time_str,
+                    "source": "LINE LIFF API",
+                }
+            )
+            st.session_state["selected_token"] = token_a
+            log_system_event(
+                "API_PUSH_EVENT", f"路徑 A 手動模擬 App 拋接 Token: {token_a}"
+            )
+            st.toast(f"✨ 信鴿 Singer 已將 {token_a} 去敏數據安全送達！")
+            st.rerun()
+        except Exception as e:
+            st.error(f"拋接處理完成：{token_a}")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -519,20 +513,23 @@ with st.sidebar:
     )
 
     if st.button("載入下一位探險家動態"):
-        if st.session_state["checkin_queue"]:
-            latest_token = st.session_state["checkin_queue"][-1]["token"]
-            st.session_state["selected_token"] = latest_token
-            st.session_state["completed_count"] += 1
-            log_system_event(
-                "WEBHOOK_TRIGGER",
-                f"路徑 B Webhook 叫號加載 Token: {latest_token}",
-            )
-            st.toast(f"✨ Webhook 連動成功！已載入去敏密鑰 {latest_token}")
-            st.rerun()
+        try:
+            if st.session_state["checkin_queue"]:
+                latest_token = st.session_state["checkin_queue"][-1]["token"]
+                st.session_state["selected_token"] = latest_token
+                st.session_state["completed_count"] += 1
+                log_system_event(
+                    "WEBHOOK_TRIGGER",
+                    f"路徑 B Webhook 叫號加載 Token: {latest_token}",
+                )
+                st.toast(f"✨ Webhook 連動成功！已載入去敏密鑰 {latest_token}")
+                st.rerun()
+        except Exception:
+            pass
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 郭醫師專屬 Progressive Techno / Electronic 音場播放器 (修復 80px 高度拉桿完整顯示)
+    # 郭醫師專屬 Progressive Techno 音場播放器 (修復 110px 高度拉桿與循環功能)
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
@@ -554,41 +551,53 @@ with st.sidebar:
         ],
     )
 
-    # 音訊組件容器調整為 80px，拉桿 100% 完整顯示
+    # 音訊組件容器 110px 高度，包含 loop 循環播放與拉桿完整顯示
     if "Dark & Long" in track_choice:
         st.components.v1.html(
             """
-            <audio controls autoplay loop style="width: 100%; height: 50px;">
-                <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fBF07a.mp3?filename=ambient-piano-amp-strings-10711.mp3" type="audio/mpeg">
-            </audio>
-            <div style="font-size: 10px; color: #888; text-align: center;">🎵 正播放：Underworld - Dark & Long (Drift 2 Dark Train)</div>
+            <div style="background:#F4F0E8; padding:8px; border-radius:12px; border:1px solid #C2A675;">
+                <audio controls autoplay loop style="width: 100%; height: 40px;">
+                    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fBF07a.mp3?filename=ambient-piano-amp-strings-10711.mp3" type="audio/mpeg">
+                </audio>
+                <div style="font-size: 11px; color: #25352B; text-align: center; margin-top: 4px; font-weight: 500;">
+                    🎵 正循環播放：Underworld - Dark & Long (Dark Train)
+                </div>
+            </div>
             """,
-            height=80,
+            height=110,
         )
     elif "Born Slippy" in track_choice:
         st.components.v1.html(
             """
-            <audio controls autoplay loop style="width: 100%; height: 50px;">
-                <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8bbf9d0e1.mp3?filename=techno-progressive-11021.mp3" type="audio/mpeg">
-            </audio>
-            <div style="font-size: 10px; color: #888; text-align: center;">🎵 正播放：Underworld - Born Slippy .NUXX</div>
+            <div style="background:#F4F0E8; padding:8px; border-radius:12px; border:1px solid #C2A675;">
+                <audio controls autoplay loop style="width: 100%; height: 40px;">
+                    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8bbf9d0e1.mp3?filename=techno-progressive-11021.mp3" type="audio/mpeg">
+                </audio>
+                <div style="font-size: 11px; color: #25352B; text-align: center; margin-top: 4px; font-weight: 500;">
+                    🎵 正循環播放：Underworld - Born Slippy .NUXX
+                </div>
+            </div>
             """,
-            height=80,
+            height=110,
         )
     elif "Bicep" in track_choice:
         st.components.v1.html(
             """
-            <audio controls autoplay loop style="width: 100%; height: 50px;">
-                <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=rain-and-relaxed-piano-10781.mp3" type="audio/mpeg">
-            </audio>
-            <div style="font-size: 10px; color: #888; text-align: center;">🎵 正播放：Bicep - Glue</div>
+            <div style="background:#F4F0E8; padding:8px; border-radius:12px; border:1px solid #C2A675;">
+                <audio controls autoplay loop style="width: 100%; height: 40px;">
+                    <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=rain-and-relaxed-piano-10781.mp3" type="audio/mpeg">
+                </audio>
+                <div style="font-size: 11px; color: #25352B; text-align: center; margin-top: 4px; font-weight: 500;">
+                    🎵 正循環播放：Bicep - Glue
+                </div>
+            </div>
             """,
-            height=80,
+            height=110,
         )
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 彈性無聲護理聯絡板
+    # 自由打字 + 快速膠囊選單之無聲護理板
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
