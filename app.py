@@ -10,51 +10,52 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# 2. 全面升級：法式高奢珠寶藝廊美學 CSS (French High-Jewelry & Fine-Art Visuals)
+# 2. 全面重構：法式典雅知性美學 CSS (French Atelier & Sage Aesthetics)
 st.markdown(
     """
     <style>
-    /* 全域背景：極致香草珍珠白 */
+    /* 全域背景：溫潤燕麥白 */
     .stApp {
-        background-color: #FAF9F5;
+        background-color: #FAF8F5;
         font-family: -apple-system, BlinkMacSystemFont, "Garamond", "Georgia", "PingFang TC", "Helvetica Neue", sans-serif;
     }
     header[data-testid="stHeader"] { background-color: rgba(0,0,0,0); }
     footer { visibility: hidden; }
 
-    /* 法式沉香深藍與金絲頂樓卡片 */
+    /* 主頂樓卡片：煙燻鼠尾草綠 (Smoky Sage & Warm Gold Accent) */
     .curio-hero-card {
-        background: linear-gradient(135deg, #141E28 0%, #283747 100%);
-        color: #FAF9F5;
+        background: linear-gradient(135deg, #3D5245 0%, #2C3E33 100%);
+        color: #FAF8F5;
         padding: 38px 48px;
         border-radius: 28px;
-        box-shadow: 0 22px 50px rgba(20, 30, 40, 0.12);
-        border: 1px solid #D4AF37; /* 香檳金絲邊框 */
+        box-shadow: 0 20px 48px rgba(61, 82, 69, 0.10);
+        border: 1px solid #C2A675; /* 暖香檳金線 */
         margin-bottom: 32px;
     }
     .curio-hero-card h1 { 
         font-family: "Georgia", "PingFang TC", serif !important;
-        color: #FAF9F5 !important; 
+        color: #FAF8F5 !important; 
         font-size: 1.8rem !important; 
         font-weight: 500 !important; 
         letter-spacing: 1.5px !important;
         margin: 0 0 10px 0 !important; 
     }
     .curio-hero-card p { 
-        color: #D5E1ED !important; 
+        color: #E2EADF !important; 
         font-size: 0.9rem !important; 
         margin: 0 !important; 
         font-weight: 300; 
         letter-spacing: 0.8px;
     }
 
-    /* 高奢法式珍珠卡片 (Gallery Card) */
-    .gallery-login-card {
-        background: #FFFFFF;
-        border: 1px solid #E6DFD3;
+    /* 知性登入卡片 (Atelier Glass Card) */
+    .atelier-login-card {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(16px);
+        border: 1px solid #E3DCD1;
         padding: 56px 52px 36px 52px;
         border-radius: 32px;
-        box-shadow: 0 28px 65px rgba(20, 30, 40, 0.06);
+        box-shadow: 0 24px 60px rgba(61, 82, 69, 0.05);
         max-width: 520px;
         margin: 30px auto 12px auto;
         text-align: center;
@@ -62,14 +63,14 @@ st.markdown(
     .brand-caption {
         font-family: "Georgia", serif;
         font-style: italic;
-        color: #C1A268;
+        color: #B29562;
         font-size: 0.92rem;
         letter-spacing: 2.5px;
         margin-bottom: 10px;
         text-transform: uppercase;
     }
     .medical-title {
-        color: #141E28;
+        color: #2C3E33;
         font-family: "Georgia", "PingFang TC", serif;
         font-size: 1.58rem;
         font-weight: 600;
@@ -77,59 +78,59 @@ st.markdown(
         margin-bottom: 14px;
     }
     .gold-divider {
-        width: 46px;
+        width: 44px;
         height: 2px;
-        background: linear-gradient(90deg, #D4AF37 0%, #F3E5AB 100%);
+        background: linear-gradient(90deg, #C2A675 0%, #E8D8B8 100%);
         margin: 20px auto 26px auto;
         border-radius: 2px;
     }
     .medical-desc {
-        color: #556370;
+        color: #5C6E63;
         font-size: 0.9rem;
         line-height: 1.7;
         margin-bottom: 28px;
         font-weight: 300;
     }
 
-    /* 高奢客製化 Metric 數據卡片 */
+    /* 知性 Metric 數據卡片 */
     .custom-metric-card {
         background: #FFFFFF;
-        border: 1px solid #E6DFD3;
+        border: 1px solid #E3DCD1;
         padding: 26px 28px;
         border-radius: 24px;
-        box-shadow: 0 12px 32px rgba(20, 30, 40, 0.04);
+        box-shadow: 0 12px 32px rgba(61, 82, 69, 0.03);
         height: 100%;
     }
-    .custom-metric-label { font-size: 0.88rem; color: #627282; font-weight: 400; margin-bottom: 10px; }
-    .custom-metric-value { font-size: 1.5rem; color: #141E28; font-weight: 600; font-family: "Georgia", "PingFang TC", serif; margin-bottom: 10px; line-height: 1.2; }
-    .custom-metric-delta { font-size: 0.84rem; color: #4A5865; background-color: #F4F0E8; padding: 5px 12px; border-radius: 10px; display: inline-block; line-height: 1.4; border: 1px solid #E6DFD3; }
+    .custom-metric-label { font-size: 0.88rem; color: #697C70; font-weight: 400; margin-bottom: 10px; }
+    .custom-metric-value { font-size: 1.5rem; color: #2C3E33; font-weight: 600; font-family: "Georgia", "PingFang TC", serif; margin-bottom: 10px; line-height: 1.2; }
+    .custom-metric-delta { font-size: 0.84rem; color: #4E6054; background-color: #F3EFE8; padding: 5px 12px; border-radius: 10px; display: inline-block; line-height: 1.4; border: 1px solid #E3DCD1; }
 
-    /* 法式資安防爆公告盒 */
+    /* 溫和知性資安盒 */
     .security-notice-box {
-        background-color: #F4F0E8;
-        border-left: 4px solid #C1A268;
+        background-color: #F3EFE8;
+        border-left: 4px solid #C2A675;
         border-radius: 16px;
         padding: 24px 28px;
         margin-top: 32px;
         font-size: 0.86rem;
-        color: #141E28;
+        color: #2C3E33;
         line-height: 1.75;
     }
 
-    /* 按鈕高奢美化 */
+    /* 優雅按鈕樣式 */
     .stButton>button {
         border-radius: 14px !important;
-        border: 1px solid #D4AF37 !important;
-        background: linear-gradient(135deg, #FAF9F5 0%, #F4F0E8 100%) !important;
-        color: #141E28 !important;
+        border: 1px solid #C2A675 !important;
+        background: linear-gradient(135deg, #FAF8F5 0%, #F3EFE8 100%) !important;
+        color: #2C3E33 !important;
         font-weight: 500 !important;
         transition: all 0.3s ease !important;
     }
     .stButton>button:hover {
-        background: linear-gradient(135deg, #141E28 0%, #283747 100%) !important;
-        color: #D4AF37 !important;
-        border: 1px solid #D4AF37 !important;
-        box-shadow: 0 6px 18px rgba(20, 30, 40, 0.15) !important;
+        background: linear-gradient(135deg, #3D5245 0%, #2C3E33 100%) !important;
+        color: #FAF8F5 !important;
+        border: 1px solid #3D5245 !important;
+        box-shadow: 0 6px 18px rgba(61, 82, 69, 0.15) !important;
     }
     </style>
 """,
@@ -179,27 +180,27 @@ if "checkin_queue" not in st.session_state:
 MASTER_KEY = "CURIO-999"
 
 
-# --- 4. 奢華黑金 Modal 彈窗集 ---
+# --- 4. 知性法式 Modal 彈窗集 ---
 if hasattr(st, "dialog"):
 
     @st.dialog("📜 居里研創 Zero-Knowledge 資安與合規宣告")
     def security_declaration_dialog():
         st.markdown(
             """
-            <div style="background-color: #141E28; color: #FAF9F5; padding: 28px; border-radius: 20px; border: 1px solid #D4AF37;">
-                <h3 style="color: #D4AF37; font-family: 'Georgia', serif; font-size: 1.3rem; margin-top: 0;">居里研創 (Curio) 零知識資安宣告書</h3>
-                <p style="font-size: 0.88rem; color: #D5E1ED; line-height: 1.7;">
+            <div style="background-color: #FAF8F5; color: #2C3E33; padding: 28px; border-radius: 22px; border: 1px solid #C2A675; box-shadow: 0 10px 30px rgba(61, 82, 69, 0.08);">
+                <h3 style="color: #3D5245; font-family: 'Georgia', serif; font-size: 1.35rem; margin-top: 0;">居里研創 (Curio) 零知識資安宣告書</h3>
+                <p style="font-size: 0.88rem; color: #5C6E63; line-height: 1.75;">
                     本公司研發之「Cabinet of Curiosities 身心軌跡拋接面板與軟體系統」，全流程貫徹<b>零知識架構（Zero-Knowledge Architecture）</b>與<b>邊緣運算（Edge Computing）</b>原則，確保醫療資訊傳輸達到最高規格之資安防線。
                 </p>
-                <hr style="border: 0; border-top: 1px solid #C1A268; margin: 20px 0;">
-                <h4 style="color: #FAF9F5; font-size: 1rem; margin-bottom: 8px;">🛡️ 四大鋼鐵資安承諾：</h4>
-                <ol style="font-size: 0.85rem; color: #D5E1ED; line-height: 1.8; padding-left: 20px;">
+                <hr style="border: 0; border-top: 1px solid #E3DCD1; margin: 20px 0;">
+                <h4 style="color: #2C3E33; font-size: 1rem; margin-bottom: 10px;">🛡️ 四大鋼鐵資安承諾：</h4>
+                <ol style="font-size: 0.86rem; color: #4E6054; line-height: 1.85; padding-left: 20px;">
                     <li><b>符合《個資法》第 2 條去識別化標準</b>：系統全流程絕不收集、記錄或存儲病患之真實姓名、身分證號、電話或病歷號。</li>
                     <li><b>240 分鐘動態時間鎖 (Time-Lock)</b>：去敏密鑰 (Token) 具備 240 分鐘動態壽命，看診完畢即剛性銷毀，雲端絕不留存持久個資。</li>
                     <li><b>HTTPS TLS 1.3 & AES-256 高階加密</b>：前端至中繼站傳輸採用頂級加密通道，徹底防禦中間人截取。</li>
                     <li><b>Air-Gapped 雙盲實體與邏輯隔離</b>：本系統與診所行政 HIS/LINE 實施資料庫隔離，斷絕任何個資對照可能性。</li>
                 </ol>
-                <p style="font-size: 0.78rem; color: #C1A268; margin-top: 20px; text-align: right; margin-bottom: 0;">
+                <p style="font-size: 0.8rem; color: #B29562; margin-top: 22px; text-align: right; margin-bottom: 0; font-family: 'Georgia', serif;">
                     發布單位：居里研創股份有限公司 ｜ 日期：2026 年 07 月 30 日
                 </p>
             </div>
@@ -231,7 +232,7 @@ if hasattr(st, "dialog"):
 if not st.session_state["authenticated"]:
     st.markdown(
         """
-        <div class="gallery-login-card">
+        <div class="atelier-login-card">
             <div class="brand-caption">Cabinet of Curiosities</div>
             <div class="medical-title">交感身心診所 ‧ 門診安全驗證</div>
             <div class="gold-divider"></div>
@@ -290,7 +291,7 @@ if not st.session_state["authenticated"]:
 # --- 6. 側邊欄高奢 API & Webhook 模擬器 ---
 with st.sidebar:
     st.markdown(
-        "<h3 style='color:#141E28; font-family:serif;'>🔌 診間數據 API 拋接模擬器</h3>",
+        "<h3 style='color:#2C3E33; font-family:serif;'>🔌 診間數據 API 拋接模擬器</h3>",
         unsafe_allow_html=True,
     )
     st.caption("用於向郭醫師演示 LINE LIFF 與叫號系統無縫 Push")
@@ -366,7 +367,7 @@ top_col1, top_col2 = st.columns([3, 1])
 with top_col1:
     st.markdown(
         """
-        <div style="background:#FFFFFF; border:1px solid #E6DFD3; border-radius:30px; padding:10px 26px; font-size:0.86rem; color:#141E28;">
+        <div style="background:#FFFFFF; border:1px solid #E3DCD1; border-radius:30px; padding:10px 26px; font-size:0.86rem; color:#2C3E33;">
             🟢 <b>郭家穎 院長</b>（交感身心診所）已通過診間安全認證 ｜ 🏛️ 診間號：C701 ｜ 🛡️ <b>0 個資死鎖狀態</b>
         </div>
     """,
@@ -392,7 +393,7 @@ if user_key:
     if data:
         st.markdown(
             f"""
-            <div style="background-color: #F4F0E8; border-left: 4px solid #C1A268; padding: 14px 22px; border-radius: 14px; margin-bottom: 24px; font-size: 0.92rem; color: #141E28;">
+            <div style="background-color: #F3EFE8; border-left: 4px solid #C2A675; padding: 14px 22px; border-radius: 14px; margin-bottom: 24px; font-size: 0.92rem; color: #2C3E33;">
                 <b>💎 成功連線至去敏密鑰 <code>{user_key}</code></b> ｜ 狀態：{data['status']} ｜ 更新時間：{data['timestamp']}
             </div>
             """,
@@ -445,7 +446,7 @@ if user_key:
         )
         with tab1:
             st.markdown(
-                "<h4 style='color:#141E28; font-size:1.05rem; margin-top:12px;'>近 7 日心流一致性調息曲線 (Coherence Score)</h4>",
+                "<h4 style='color:#2C3E33; font-size:1.05rem; margin-top:12px;'>近 7 日心流一致性調息曲線 (Coherence Score)</h4>",
                 unsafe_allow_html=True,
             )
             chart_data = pd.DataFrame(
@@ -462,11 +463,11 @@ if user_key:
                     "心流分數": data["weekly_trend"],
                 }
             ).set_index("日期")
-            st.line_chart(chart_data, color="#283747")
+            st.line_chart(chart_data, color="#3D5245")
 
         with tab2:
             st.markdown(
-                "<h4 style='color:#141E28; font-size:1.05rem; margin-top:10px;'>邊緣端 15 秒去敏化身心軌跡</h4>",
+                "<h4 style='color:#2C3E33; font-size:1.05rem; margin-top:10px;'>邊緣端 15 秒去敏化身心軌跡</h4>",
                 unsafe_allow_html=True,
             )
             st.write(f"**【去敏軌跡摘要】**\n\n{data['summary']}")
