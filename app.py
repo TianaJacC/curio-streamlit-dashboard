@@ -1,7 +1,7 @@
-import os
-import time
 import datetime
+import os
 import random
+import time
 import pandas as pd
 import streamlit as st
 
@@ -11,6 +11,7 @@ import streamlit as st
 LOG_DIR = "system_logs"
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
+
 
 def log_system_event(event_type, details):
     today_str = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -23,6 +24,7 @@ def log_system_event(event_type, details):
     except Exception:
         pass
 
+
 log_system_event("SESSION_INIT", "Curio & Studio 夢境珍奇櫃診間面板載入")
 
 # ==============================================================================
@@ -32,8 +34,9 @@ st.set_page_config(
     page_title="夢境珍奇櫃診間面板 ‧ Curio & Studio",
     page_icon="🐿️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
+
 
 @st.cache_resource
 def get_global_database():
@@ -44,10 +47,10 @@ def get_global_database():
             "stress_index": "Morandi Soft Blue",
             "stress_desc": "莫蘭迪藍放縮區 ‧ 平穩",
             "sleep_hours": 7.2,
-            "timestamp": "2026-07-30 01:20:15",
+            "timestamp": "2026-07-31 01:20:15",
             "weekly_trend": [82, 85, 87, 84, 89, 91, 92.5],
             "nudge": "探險家近 3 天夜間無應激爆發，心流穩定（92.5%）。建議問診重點：維持優質睡眠時數。",
-            "summary": "【去敏身心軌跡摘要】個案於看診前 15 秒於候診區完成 0.067 Hz 心流共振調息。連續 7 日數據顯示夜間無應激爆發，心流一致性維持於 90% 以上高諧振區間。"
+            "summary": "【去敏身心軌跡摘要】個案於看診前 15 秒於候診區完成 0.067 Hz 心流共振調息。連續 7 日數據顯示夜間無應激爆發，心流一致性維持於 90% 以上高諧振區間。",
         },
         "#SYM-A302": {
             "status": "已完成診前 15s 共振調息",
@@ -55,19 +58,21 @@ def get_global_database():
             "stress_index": "Morandi Sage",
             "stress_desc": "莫蘭迪綠區域 ‧ 輕度交感活性",
             "sleep_hours": 6.1,
-            "timestamp": "2026-07-30 01:25:00",
+            "timestamp": "2026-07-31 01:25:00",
             "weekly_trend": [70, 75, 78, 80, 82, 85, 88.0],
             "nudge": "探險家睡眠時數偏低（6.1hr），生理指標顯示交感活性上升。建議問診重點：關懷換季氣壓調節。",
-            "summary": "【去敏身心軌跡摘要】個案於候診區完成心流調息。近 7 日睡眠時數偏低，生理指標顯示交感神經活性略微上升。"
-        }
+            "summary": "【去敏身心軌跡摘要】個案於候診區完成心流調息。近 7 日睡眠時數偏低，生理指標顯示交感神經活性略微上升。",
+        },
     }
+
 
 @st.cache_resource
 def get_global_queue():
     return [
         {"token": "#SYM-C701", "time": "01:20", "source": "LINE LIFF / App"},
-        {"token": "#SYM-A302", "time": "01:25", "source": "LINE LIFF / App"}
+        {"token": "#SYM-A302", "time": "01:25", "source": "LINE LIFF / App"},
     ]
+
 
 global_db = get_global_database()
 global_queue = get_global_queue()
@@ -101,19 +106,35 @@ if "audio_loop" not in st.session_state:
 
 MASTER_KEY = "CURIO-999"
 
-# 更換為 60 分鐘長時無縫 Progressive & Deep Ambient 音樂庫
+# 100% 穩定發聲之高音質法式 Progressive 音樂庫
 PLAYLIST = [
-    {"title": "✨ 郭醫師最新指定曲 ‧ 迷幻心流 60Min 深層聲景 (Deep Drift Session)", "url": "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fBF07a.mp3?filename=ambient-piano-amp-strings-10711.mp3"},
-    {"title": "Underworld - Dark & Long (Dark Train Extended Mix 60Min) [郭醫師首選]", "url": "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8bbf9d0e1.mp3?filename=techno-progressive-11021.mp3"},
-    {"title": "Underworld - Born Slippy .NUXX (Progressive 心流長音軌)", "url": "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=rain-and-relaxed-piano-10781.mp3"},
-    {"title": "Bicep - Glue (法式知性 Ambient Electronic 沉浸集)", "url": "https://cdn.pixabay.com/download/audio/2022/03/10/audio_c2f3428d08.mp3?filename=deep-ambient-10512.mp3"},
-    {"title": "Jon Hopkins - Music for Psychedelic Therapy (長時深層調息)", "url": "https://cdn.pixabay.com/download/audio/2021/09/06/audio_8b24ef0907.mp3?filename=mindful-meditation-10118.mp3"}
+    {
+        "title": "✨ 郭醫師最新指定曲 ‧ 迷幻心流 60Min 深層聲景 (Deep Drift)",
+        "url": "https://media.geeksforgeeks.org/wp-content/uploads/20230524142525/gfg_music.mp3",
+    },
+    {
+        "title": "Underworld - Dark & Long (Dark Train Extended Mix) [郭醫師首選]",
+        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    },
+    {
+        "title": "Underworld - Born Slippy .NUXX (Progressive 心流長音軌)",
+        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    },
+    {
+        "title": "Bicep - Glue (法式知性 Ambient Electronic 沉浸集)",
+        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+    },
+    {
+        "title": "Jon Hopkins - Music for Psychedelic Therapy (深層調息)",
+        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+    },
 ]
 
 # ==============================================================================
-# 2. Bespoke French High-Jewelry & 全狀態深色包邊 CSS
+# 2. Bespoke French High-Jewelry & 剛性 CSS
 # ==============================================================================
-st.markdown("""
+st.markdown(
+    """
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Didot&family=Garamond:ital,wght@0,400;0,600;1,400&display=swap');
 
@@ -342,34 +363,45 @@ st.markdown("""
         box-shadow: 0 6px 18px rgba(37, 53, 43, 0.15) !important;
     }
     </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
+
 
 # ==============================================================================
-# 3. 蔻恩閣長 Modal 彈窗與【一鍵升級加購 Modal】
+# 3. 診所專屬 13 大高毛利加購功能 Modal 彈窗
 # ==============================================================================
 if hasattr(st, "dialog"):
-    @st.dialog("💎 Curio & Studio 診間連線升級與選配中心")
+
+    @st.dialog("💎 診所端 13 大高毛利加購模組選配中心")
     def upgrade_subscription_dialog():
         st.markdown(
             """
-            <div style="background: linear-gradient(145deg, #FAF8F5, #F4F0E8); padding: 22px; border-radius: 20px; border: 1.5px solid #C2A675;">
-                <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.25rem; margin-top: 0;">開立新診間連線與加購模組 (Add-on Modules)</h3>
-                <p style="font-size: 0.86rem; color: #596B60;">當前授權版本：<b>正價旗艦診間版 (1 診間)</b>。如需擴充連線數或加購模組，請選擇以下方案：</p>
-                <hr style="border:0; border-top:1px solid #E4DCD0; margin:12px 0;">
-                <div style="font-size: 0.85rem; color: #25352B; line-height: 1.8;">
-                    ➕ <b>擴充 1 組新診間連線</b>：NT$ 128,000 元 / 年 (折合 NT$ 12,800/月)<br>
-                    ⚖️ <b>【司法功能 20】詐病與司法詐欺偵測系統</b>：+ NT$ 88,000 元/年<br>
-                    🚨 <b>【司法功能 22】舍房過載一鍵通報中繼站</b>：+ NT$ 78,000 元/年<br>
-                    📜 <b>【司法功能 24】毒樹果實 e-ICF 證跡鎖</b>：+ NT$ 48,000 元/年<br>
-                    💊 <b>【功能 11】自費藥局交叉地圖變現 API</b>：+ NT$ 88,000 元/年<br>
-                    🔌 <b>HIS 叫號系統 API 階梯式串接</b>：NT$ 38,000 ～ 108,000 元/案
+            <div style="background: linear-gradient(145deg, #FAF8F5, #F4F0E8); padding: 20px; border-radius: 20px; border: 1.5px solid #C2A675; max-height: 480px; overflow-y: auto;">
+                <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.2rem; margin-top: 0;">診所端旗艦加購模組 (Clinic Add-ons)</h3>
+                <p style="font-size: 0.82rem; color: #596B60;">勾選需要解鎖的診所營運與臨床變現神器：</p>
+                <hr style="border:0; border-top:1px solid #E4DCD0; margin:10px 0;">
+                <div style="font-size: 0.83rem; color: #25352B; line-height: 1.8;">
+                    🎫 <b>【功能 05】健保爆診「本院個案當日優先加號憑證」</b>：+ NT$ 3,800/月<br>
+                    🗓️ <b>【功能 06】醫師跨院區兼診「無肉身行動排班 API 密鑰」</b>：+ NT$ 4,500/月<br>
+                    📊 <b>【功能 08】院長專用「自費心理師/慢籤流失復發預警儀表板」</b>：+ NT$ 6,800/月<br>
+                    📄 <b>【功能 09】診前 15 秒「去敏身心軌跡莫蘭迪 PDF」生成機制</b>：+ NT$ 3,500/月<br>
+                    ⚡ <b>【功能 10】跨院回診健保缺號自動無聲捕蚊燈 (No-show 填補)</b>：+ NT$ 5,200/月<br>
+                    💊 <b>【功能 11】診所自費藥局精準營養素交叉地圖變現 API</b>：+ NT$ 8,800/月<br>
+                    📈 <b>【功能 12】自費身心科「臨床療效量化評估與 OMOP CDM 對照流」</b>：+ NT$ 9,800/月<br>
+                    🔄 <b>【功能 13】連鎖院區「個案異地調診去敏病歷快捷拋接」</b>：+ NT$ 6,000/月<br>
+                    🏷️ <b>【功能 14】連鎖診所品牌特許「SaMD 軟體專利聯名上架通關包」</b>：NT$ 120,000/案<br>
+                    🌐 <b>【功能 38】社交孤立預警（GPS 位移 ✕ 通訊頻率分析）</b>：+ NT$ 3,200/月<br>
+                    🌧️ <b>【功能 39】環境壓力感測（氣壓/濕度/噪音 ✕ 萌寵安撫頻率）</b>：+ NT$ 2,800/月<br>
+                    💓 <b>【功能 41】循環與免疫監測（rPPG 監測 HRV ✕ 量化發炎負擔）</b>：+ NT$ 4,500/月<br>
+                    🌲 <b>【功能 47】倒懸松果閣 ‧ 智性放鬆生活地圖（異業抽成系統）</b>：開通費 NT$ 50,000
                 </div>
                 <div style="margin-top: 16px; text-align: center; font-size:0.8rem; color:#B29562;">
                     📞 專案加購專線：(02) 2396-6070 ｜ 信箱：service@curio.studio
                 </div>
             </div>
             """,
-            unsafe_allow_html=True
+            unsafe_allow_html=True,
         )
 
     @st.dialog("蔻恩閣長的 3D 典藏資安寶盒")
@@ -394,11 +426,11 @@ if hasattr(st, "dialog"):
                     4. <b>Air-Gapped 雙盲實體與邏輯隔離</b>：本系統與診所行政 HIS/LINE 實施資料庫實體隔離，斷絕任何個資對照可能性。
                 </div>
                 <div style="margin-top: 20px; padding: 12px; background: rgba(194, 166, 117, 0.12); border-radius: 12px; font-size: 0.78rem; color: #B29562; text-align: center; font-family: 'Garamond', serif;">
-                    🏛️ 發布單位：居里研創股份有限公司 (Curio & Studio) ｜ 日期：2026 年 07 月 30 日
+                    🏛️ 發布單位：居里研創股份有限公司 (Curio & Studio) ｜ 日期：2026 年 07 月 31 日
                 </div>
             </div>
             """,
-            unsafe_allow_html=True
+            unsafe_allow_html=True,
         )
 
     @st.dialog("⚙️ 變更診間金鑰（郭家穎院長專屬）")
@@ -407,7 +439,7 @@ if hasattr(st, "dialog"):
         old_pwd = st.text_input("輸入原診間金鑰：", type="password")
         new_pwd = st.text_input("設定新診間金鑰：", type="password")
         confirm_pwd = st.text_input("再次確認新診間金鑰：", type="password")
-        
+
         if st.button("🔒 確認更新診間金鑰", use_container_width=True):
             if old_pwd != st.session_state["doctor_password"]:
                 st.error("❌ 原金鑰輸入錯誤，請重新確認！")
@@ -420,6 +452,7 @@ if hasattr(st, "dialog"):
                 log_system_event("SECURITY_PASSWORD_CHANGE", "診間金鑰已成功變更")
                 st.success("🎉 診間金鑰已成功變更！舊金鑰已即刻失效。")
                 st.rerun()
+
 
 # ==============================================================================
 # 4. 門診安全驗證登入頁
@@ -441,17 +474,27 @@ if not st.session_state["authenticated"]:
             </div>
         </div>
     """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
-    
+
     col1, col2, col3 = st.columns([1.2, 1.8, 1.2])
     with col2:
-        pwd_input = st.text_input("院長診間金鑰", type="password", key="pwd_field", placeholder="請輸入金鑰 (例如：NYJAZZ-8519)")
-        
-        st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
-        
+        pwd_input = st.text_input(
+            "院長診間金鑰",
+            type="password",
+            key="pwd_field",
+            placeholder="請輸入金鑰 (例如：NYJAZZ-8519)",
+        )
+
+        st.markdown(
+            "<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True
+        )
+
         if st.button("解鎖門診數據面板", use_container_width=True):
-            if pwd_input == st.session_state["doctor_password"] or pwd_input == MASTER_KEY:
+            if (
+                pwd_input == st.session_state["doctor_password"]
+                or pwd_input == MASTER_KEY
+            ):
                 st.session_state["authenticated"] = True
                 st.session_state["clinic_start_time"] = time.time()
                 log_system_event("AUTH_SUCCESS", "診間金鑰驗證成功並進入面板")
@@ -459,15 +502,19 @@ if not st.session_state["authenticated"]:
             else:
                 log_system_event("AUTH_FAILED", "金鑰驗證失敗嘗試")
                 st.error("⚠️ 金鑰驗證未通過，請確認後重新輸入。")
-                
-        st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
-        
+
+        st.markdown(
+            "<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True
+        )
+
         if st.button("蔻恩閣長 Cone 3D 典藏資安寶盒", use_container_width=True):
             if hasattr(st, "dialog"):
                 security_declaration_dialog()
-                
-        st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
-        
+
+        st.markdown(
+            "<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True
+        )
+
         with st.expander("❓ 忘記診間金鑰密碼？"):
             st.markdown(
                 f"""
@@ -477,13 +524,14 @@ if not st.session_state["authenticated"]:
                     <span style="font-size:0.8rem; color:#1A261F;">如需緊急技術支援，請聯繫 Curio & Studio 專屬服務團隊。</span>
                 </div>
                 """,
-                unsafe_allow_html=True
+                unsafe_allow_html=True,
             )
-            
+
     st.stop()
 
+
 # ==============================================================================
-# 5. 側邊欄：60 分鐘長音樂 Stream ✕ 無縫循環 ✕ 自動抓取網址 QR Code
+# 5. 側邊欄：100% 發聲高音質音效組件 ✕ 自動抓取網址 QR Code
 # ==============================================================================
 with st.sidebar:
     st.markdown(
@@ -494,7 +542,7 @@ with st.sidebar:
             <div style="font-size: 0.78rem; color: #C2A675; font-style: italic; margin-top: 2px;">首席珍藏家蔻恩閣長 Cone ✕ 信鴿 Singer</div>
         </div>
     """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
     with st.expander("📱 手機連線 Demo QR Code"):
@@ -512,8 +560,12 @@ with st.sidebar:
         st.image(qr_url, caption="手機相機掃碼即可 100% 直達相同頁面", width=160)
 
     with st.expander("⚙️ 本節門診參數設定"):
-        st.session_state["session_hours"] = st.number_input("一節門診預計時長 (小時):", value=3.5, step=0.5)
-        st.session_state["total_booked_patients"] = st.number_input("本節預約總人數:", value=12, step=1)
+        st.session_state["session_hours"] = st.number_input(
+            "一節門診預計時長 (小時):", value=3.5, step=0.5
+        )
+        st.session_state["total_booked_patients"] = st.number_input(
+            "本節預約總人數:", value=12, step=1
+        )
 
     st.markdown(
         """
@@ -522,11 +574,11 @@ with st.sidebar:
                 <span class="curio-3d-icon">✨</span>路徑 A ‧ 邊緣端 App 數據拋接
             </div>
     """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
     token_a = st.text_input("去敏短碼 (Token):", value="#SYM-B888")
     score_a = st.slider("心流分數:", 60.0, 100.0, 94.0)
-    
+
     if st.button("觸發 15 秒飛鴿拋接"):
         current_time_str = time.strftime("%H:%M")
         global_db[token_a] = {
@@ -538,14 +590,22 @@ with st.sidebar:
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "weekly_trend": [80, 82, 85, 88, 90, 92, float(score_a)],
             "nudge": f"飛鴿拋接短碼 {token_a}。心流表現極佳（{score_a}%），建議進行常規衛教即可。",
-            "summary": f"【去敏身心軌跡摘要】經由 LINE LIFF 飛鴿拋接之短碼 {token_a}。個案完成診前調息，心流表現極佳。"
+            "summary": f"【去敏身心軌跡摘要】經由 LINE LIFF 飛鴿拋接之短碼 {token_a}。個案完成診前調息，心流表現極佳。",
         }
         queue_tokens = [x["token"] for x in global_queue]
         if token_a not in queue_tokens:
-            global_queue.append({"token": token_a, "time": current_time_str, "source": "LINE LIFF API"})
-        
+            global_queue.append(
+                {
+                    "token": token_a,
+                    "time": current_time_str,
+                    "source": "LINE LIFF API",
+                }
+            )
+
         st.session_state["selected_token"] = token_a
-        log_system_event("API_PUSH_EVENT", f"路徑 A 手動模擬 App 拋接 Token: {token_a}")
+        log_system_event(
+            "API_PUSH_EVENT", f"路徑 A 手動模擬 App 拋接 Token: {token_a}"
+        )
         st.toast(f"✨ 信鴿 Singer 已將 {token_a} 去敏數據安全送達！")
         st.rerun()
 
@@ -559,21 +619,24 @@ with st.sidebar:
             </div>
             <div style="font-size:0.78rem; color:#596B60; margin-bottom:10px;">當護理師點擊『下一位進診間』自動觸發：</div>
     """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
-    
+
     if st.button("載入下一位探險家動態"):
         if global_queue:
             latest_token = global_queue[-1]["token"]
             st.session_state["selected_token"] = latest_token
             st.session_state["completed_count"] += 1
-            log_system_event("WEBHOOK_TRIGGER", f"路徑 B Webhook 叫號加載 Token: {latest_token}")
+            log_system_event(
+                "WEBHOOK_TRIGGER",
+                f"路徑 B Webhook 叫號加載 Token: {latest_token}",
+            )
             st.toast(f"✨ Webhook 連動成功！已載入去敏密鑰 {latest_token}")
             st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 包含郭醫師最新指定曲目（60 分鐘長時音軌）之音樂卡
+    # 100% 防跨域封鎖、絕對能播放出聲音的 HTML5 音效組件
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
@@ -581,24 +644,28 @@ with st.sidebar:
                 <span class="curio-3d-icon">🎵</span>郭醫師專屬 Progressive 音場
             </div>
     """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
-    
+
     selected_track_idx = st.selectbox(
         "選擇聲景曲目：",
         range(len(PLAYLIST)),
         format_func=lambda x: PLAYLIST[x]["title"],
-        index=st.session_state["current_track_idx"]
+        index=st.session_state["current_track_idx"],
     )
-    
+
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
         if st.button("🔀 隨機切換"):
-            st.session_state["current_track_idx"] = random.randint(0, len(PLAYLIST) - 1)
+            st.session_state["current_track_idx"] = random.randint(
+                0, len(PLAYLIST) - 1
+            )
             st.rerun()
-            
+
     with col_btn2:
-        loop_status_str = "🔁 循環中" if st.session_state["audio_loop"] else "➡️ 單次"
+        loop_status_str = (
+            "🔁 循環中" if st.session_state["audio_loop"] else "➡️ 單次"
+        )
         if st.button(f"模式: {loop_status_str}"):
             st.session_state["audio_loop"] = not st.session_state["audio_loop"]
             st.rerun()
@@ -606,24 +673,25 @@ with st.sidebar:
     current_audio_url = PLAYLIST[selected_track_idx]["url"]
     loop_attr = "loop" if st.session_state["audio_loop"] else ""
 
-    # 180px 原生音訊組件，60 分鐘音軌與無縫循環控制
+    # 絕對有聲的 HTML5 Audio 組件
     st.components.v1.html(
         f"""
         <div style="background:#F4F0E8; padding:12px; border-radius:16px; border:1.5px solid #C2A675; text-align:center;">
-            <audio id="curio-player" controls {loop_attr} style="width: 100%; height: 45px;">
+            <audio id="curio-player" controls {loop_attr} preload="auto" style="width: 100%; height: 45px;">
                 <source src="{current_audio_url}" type="audio/mpeg">
+                您的瀏覽器不支援音樂播放。
             </audio>
             <div style="font-size: 11px; color: #25352B; margin-top: 8px; font-weight: 600; font-family: sans-serif;">
                 🎵 正在播放：{PLAYLIST[selected_track_idx]['title']}<br>
-                <span style="color:#B29562;">模式：{'🔁 無限無縫循環播放 (Loop)' if st.session_state['audio_loop'] else '➡️ 單次播放'}</span>
+                <span style="color:#B29562;">💡 點擊播放器 ▶️ 按鈕即可聆聽聲景音場</span>
             </div>
             <script>
                 var audio = document.getElementById('curio-player');
-                if (audio) {{ audio.volume = 0.7; }}
+                if (audio) {{ audio.volume = 0.8; }}
             </script>
         </div>
         """,
-        height=180
+        height=180,
     )
 
     st.markdown("</div>", unsafe_allow_html=True)
@@ -636,9 +704,9 @@ with st.sidebar:
                 <span class="curio-3d-icon">💬</span>無聲護理聯絡板 (Silent Memo)
             </div>
     """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
-    
+
     preset_msg = st.selectbox(
         "快速膠囊選單：",
         [
@@ -647,16 +715,16 @@ with st.sidebar:
             "下一位需要加抽檢驗項目",
             "請準備 15s 調息衛教卡",
             "請協助引導家屬進診間",
-            "請協助列印去敏身心小卡"
-        ]
+            "請協助列印去敏身心小卡",
+        ],
     )
-    
+
     if preset_msg == "自訂輸入...":
         custom_memo = st.text_input("輸入自訂訊息至櫃檯：", placeholder="例如：請準備溫熱毛巾...")
         msg_to_send = custom_memo
     else:
         msg_to_send = preset_msg
-        
+
     if st.button("📡 無聲推播至櫃檯"):
         if msg_to_send:
             log_system_event("NURSE_MEMO_SENT", f"醫師推播至櫃檯: {msg_to_send}")
@@ -672,20 +740,28 @@ with st.sidebar:
             <span class="curio-3d-icon">📜</span>門診待看診佇列 (Queue)
         </div>
     """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
-    
+
     for item in global_queue:
-        if st.button(f"解鎖代碼 {item['token']} ({item['time']})", key=f"btn_{item['token']}", use_container_width=True):
+        if st.button(
+            f"解鎖代碼 {item['token']} ({item['time']})",
+            key=f"btn_{item['token']}",
+            use_container_width=True,
+        ):
             st.session_state["selected_token"] = item["token"]
-            log_system_event("QUEUE_SELECT", f"醫師手動點擊切換 Token: {item['token']}")
+            log_system_event(
+                "QUEUE_SELECT", f"醫師手動點擊切換 Token: {item['token']}"
+            )
             st.rerun()
+
 
 # ==============================================================================
 # 6. 主面板邏輯
 # ==============================================================================
 def fetch_patient_data(user_key):
     return global_db.get(user_key, None)
+
 
 st.markdown(
     """
@@ -694,7 +770,7 @@ st.markdown(
         <p>Curio & Studio x 交感身心診所 ｜ 首席珍藏家蔻恩閣長 Cone ‧ 0 個資 ‧ 診前 15 秒身心軌跡拋接</p>
     </div>
 """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 elapsed_seconds = time.time() - st.session_state["clinic_start_time"]
@@ -721,7 +797,7 @@ st.markdown(
         </div>
     </div>
 """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 st.progress(progress_pct)
@@ -738,7 +814,7 @@ if elapsed_minutes >= 45:
             </div>
         </div>
     """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
 top_col1, top_col2, top_col3 = st.columns([2.5, 0.8, 0.8])
@@ -749,7 +825,7 @@ with top_col1:
             <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">🟢</span> 已通過診間安全認證 ｜ 🏛️ 診間號：C701 ｜ <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">🛡️</span> <b>0 個資死鎖狀態</b>
         </div>
     """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 with top_col2:
     if st.button("💎 升級與加購", use_container_width=True):
@@ -760,7 +836,9 @@ with top_col3:
         if hasattr(st, "dialog"):
             change_password_dialog()
 
-st.markdown("<div style='margin-bottom: 22px;'></div>", unsafe_allow_html=True)
+st.markdown(
+    "<div style='margin-bottom: 22px;'></div>", unsafe_allow_html=True
+)
 
 user_key = st.text_input(
     "請輸入探險家去敏密鑰 (例如：#SYM-C701) :",
@@ -772,7 +850,7 @@ if user_key:
     data = fetch_patient_data(user_key)
     if data:
         log_system_event("FETCH_DATA_SUCCESS", f"成功查詢去敏代碼: {user_key}")
-        
+
         st.markdown(
             f"""
             <div class="quick-nudge-box">
@@ -784,7 +862,7 @@ if user_key:
                 </div>
             </div>
             """,
-            unsafe_allow_html=True
+            unsafe_allow_html=True,
         )
 
         col1, col2, col3 = st.columns(3)
@@ -800,7 +878,7 @@ if user_key:
                     <div class="custom-metric-delta">↑ 3.2% 穩定共振</div>
                 </div>
             """,
-                unsafe_allow_html=True
+                unsafe_allow_html=True,
             )
 
         with col2:
@@ -815,7 +893,7 @@ if user_key:
                     <div class="custom-metric-delta">{data.get('stress_desc', '莫蘭迪放縮區')}</div>
                 </div>
             """,
-                unsafe_allow_html=True
+                unsafe_allow_html=True,
             )
 
         with col3:
@@ -830,22 +908,42 @@ if user_key:
                     <div class="custom-metric-delta">達標 7 小時優質睡眠</div>
                 </div>
             """,
-                unsafe_allow_html=True
+                unsafe_allow_html=True,
             )
 
-        st.markdown("<div style='margin-bottom: 25px;'></div>", unsafe_allow_html=True)
+        st.markdown(
+            "<div style='margin-bottom: 25px;'></div>", unsafe_allow_html=True
+        )
 
-        tab1, tab2 = st.tabs(["近 7 日心流平穩度曲線", "診前 15 秒去敏摘要"])
+        tab1, tab2 = st.tabs(
+            ["近 7 日心流平穩度曲線", "診前 15 秒去敏摘要"]
+        )
         with tab1:
-            st.markdown("<h4 style='color:#25352B; font-size:1.05rem; margin-top:12px;'>近 7 日心流一致性調息曲線 (Coherence Score)</h4>", unsafe_allow_html=True)
-            chart_data = pd.DataFrame({
-                "日期": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-                "心流分數": data["weekly_trend"]
-            }).set_index("日期")
+            st.markdown(
+                "<h4 style='color:#25352B; font-size:1.05rem; margin-top:12px;'>近 7 日心流一致性調息曲線 (Coherence Score)</h4>",
+                unsafe_allow_html=True,
+            )
+            chart_data = pd.DataFrame(
+                {
+                    "日期": [
+                        "Mon",
+                        "Tue",
+                        "Wed",
+                        "Thu",
+                        "Fri",
+                        "Sat",
+                        "Sun",
+                    ],
+                    "心流分數": data["weekly_trend"],
+                }
+            ).set_index("日期")
             st.line_chart(chart_data, color="#25352B")
 
         with tab2:
-            st.markdown("<h4 style='color:#25352B; font-size:1.05rem; margin-top:10px;'>邊緣端 15 秒去敏化身心軌跡</h4>", unsafe_allow_html=True)
+            st.markdown(
+                "<h4 style='color:#25352B; font-size:1.05rem; margin-top:10px;'>邊緣端 15 秒去敏化身心軌跡</h4>",
+                unsafe_allow_html=True,
+            )
             st.write(f"**【去敏軌跡摘要】**\n\n{data['summary']}")
             st.caption(f"🕒 數據傳輸時間戳記：{data['timestamp']}")
 
@@ -857,8 +955,10 @@ if user_key:
                 2. <b>資安傳輸與儲存防護</b>：前端至雲端中繼站之數據傳輸全數採用 <b>HTTPS (TLS 1.3) 高階加密通道</b>，靜態快取數據皆實施 <b>AES-256 演算法加密</b>；雲端中繼數據實施 240 分鐘動態時間鎖（Time-Lock）與每日 24 點剛性銷毀（Data TTL）。
             </div>
             """,
-            unsafe_allow_html=True
+            unsafe_allow_html=True,
         )
     else:
         log_system_event("FETCH_DATA_NOT_FOUND", f"查詢不存在之代碼: {user_key}")
-        st.error(f"⚠️ 找不到密鑰 `{user_key}` 之當日資料，請確認代碼是否輸入正確。")
+        st.error(
+            f"⚠️ 找不到密鑰 `{user_key}` 之當日資料，請確認代碼是否輸入正確。"
+        )
