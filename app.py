@@ -1,5 +1,6 @@
 import datetime
 import os
+import random
 import time
 import pandas as pd
 import streamlit as st
@@ -27,7 +28,7 @@ def log_system_event(event_type, details):
 log_system_event("SESSION_INIT", "Curio & Studio 夢境珍奇櫃診間面板載入")
 
 # ==============================================================================
-# 1. 全局配置與防爆 Session 初始化
+# 1. 全局配置與 Session 初始化
 # ==============================================================================
 st.set_page_config(
     page_title="夢境珍奇櫃診間面板 ‧ Curio & Studio",
@@ -57,7 +58,10 @@ if "total_booked_patients" not in st.session_state:
 if "session_hours" not in st.session_state:
     st.session_state["session_hours"] = 3.5
 
-# 防爆全域資料庫 (防止跨裝置拋接跳紅字)
+if "current_track_idx" not in st.session_state:
+    st.session_state["current_track_idx"] = 0
+
+# 防爆數據庫
 if "mock_db" not in st.session_state:
     st.session_state["mock_db"] = {
         "#SYM-C701": {
@@ -91,6 +95,26 @@ if "checkin_queue" not in st.session_state:
     ]
 
 MASTER_KEY = "CURIO-999"
+
+# 音樂清單 (含 Underworld 典範曲目)
+PLAYLIST = [
+    {
+        "title": "Underworld - Dark & Long (Dark Train) [郭醫師首選]",
+        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    },
+    {
+        "title": "Underworld - Born Slippy .NUXX (Progressive 心流)",
+        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    },
+    {
+        "title": "Bicep - Glue (法式知性 Ambient Electronic)",
+        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+    },
+    {
+        "title": "Jon Hopkins - Music for Psychedelic Therapy (深層調息)",
+        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+    },
+]
 
 # ==============================================================================
 # 2. Bespoke French High-Jewelry CSS
@@ -304,7 +328,7 @@ st.markdown(
 
 
 # ==============================================================================
-# 4. 蔻恩閣長 Modal 彈窗
+# 3. 蔻恩閣長 3D 典藏資安寶盒 Modal 彈窗 (更正為 "首席珍藏家蔻恩閣長 Cone")
 # ==============================================================================
 if hasattr(st, "dialog"):
 
@@ -315,15 +339,15 @@ if hasattr(st, "dialog"):
             <div style="background: linear-gradient(145deg, #FAF8F5, #F4F0E8); padding: 26px; border-radius: 24px; border: 1.5px solid #C2A675; box-shadow: 0 12px 32px rgba(37, 53, 43, 0.08);">
                 <div style="text-align: center; margin-bottom: 16px;">
                     <div style="font-size: 2.6rem; margin-bottom: 4px;">🐿️</div>
-                    <div class="brand-caption" style="font-size: 0.82rem; margin-bottom: 4px;">Curio & Studio ‧ 首席珍藏家</div>
-                    <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.3rem; margin: 0;">小松鼠蔻恩閣長 <span style="font-family: Didot, serif; font-style: italic; color: #C2A675;">(Cone)</span> 資安宣告</h3>
+                    <div class="brand-caption" style="font-size: 0.82rem; margin-bottom: 4px;">Curio & Studio ‧ 首席珍藏家蔻恩閣長 Cone</div>
+                    <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.3rem; margin: 0;">小松鼠蔻恩閣長 Cone 資安宣告</h3>
                 </div>
                 <div style="font-size: 0.88rem; color: #596B60; line-height: 1.7; text-align: justify;">
-                    歡迎來到夢境珍奇櫃！我是蔻恩閣長。本系統全流程貫徹<b>零知識架構 (Zero-Knowledge Architecture)</b> 與<b>邊緣運算 (Edge Computing)</b> 原則，為每位探險家提供最高規格的鋼鐵隱私防線：
+                    歡迎來到夢境珍奇櫃！我是蔻恩閣長 Cone。本系統全流程貫徹<b>零知識架構 (Zero-Knowledge Architecture)</b> 與<b>邊緣運算 (Edge Computing)</b> 原則，為每位探險家提供最高規格的鋼鐵隱私防線：
                 </div>
                 <hr style="border: 0; border-top: 1px solid #E4DCD0; margin: 16px 0;">
                 <div style="font-size: 0.86rem; color: #25352B; line-height: 1.85;">
-                    <b>✨ 蔻恩閣長四大資安誓言：</b><br>
+                    <b>✨ 蔻恩閣長 Cone 四大資安誓言：</b><br>
                     1. <b>符合《個資法》第 2 條去識別化標準</b>：全流程絕不收集、記錄或存儲病患真實姓名、身分證號、電話或病歷號。<br>
                     2. <b>240 分鐘動態時間鎖 (Time-Lock)</b>：去敏密鑰 (Token) 具備 240 分鐘動態壽命，看診完畢即剛性銷毀，雲端絕不留存持久個資。<br>
                     3. <b>HTTPS TLS 1.3 & AES-256 加密</b>：前端至中繼站全通道高階加密，徹底防禦中間人截取。<br>
@@ -359,7 +383,7 @@ if hasattr(st, "dialog"):
 
 
 # ==============================================================================
-# 5. 門診安全驗證登入頁
+# 4. 門診安全驗證登入頁 (含手機端側邊欄指引提示)
 # ==============================================================================
 if not st.session_state["authenticated"]:
     st.markdown(
@@ -371,7 +395,8 @@ if not st.session_state["authenticated"]:
             <div class="gold-divider"></div>
             <div class="medical-desc">
                 零知識架構 <span style="font-family:Didot, serif; italic; color:#C2A675;">(Zero-Knowledge)</span> ‧ 雙盲去敏身心軌跡拋接<br>
-                <span style="font-size:0.82rem; color:#C2A675;">小松鼠蔻恩閣長 <span style="font-family:Didot, serif;">(Cone)</span> 已為您鎖定 0 個資防線</span>
+                <span style="font-size:0.82rem; color:#C2A675;">首席珍藏家蔻恩閣長 Cone 已為您鎖定 0 個資防線</span><br>
+                <span style="font-size:0.75rem; color:#888;">📱 手機端體驗請點擊左上角「>」箭頭圖示開啟中繼站</span>
             </div>
         </div>
     """,
@@ -408,7 +433,7 @@ if not st.session_state["authenticated"]:
             "<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True
         )
 
-        if st.button("蔻恩閣長 3D 典藏資安寶盒", use_container_width=True):
+        if st.button("蔻恩閣長 Cone 3D 典藏資安寶盒", use_container_width=True):
             if hasattr(st, "dialog"):
                 security_declaration_dialog()
 
@@ -425,7 +450,7 @@ if not st.session_state["authenticated"]:
 
 
 # ==============================================================================
-# 6. 側邊欄：防爆拋接、連線 QR Code、Underworld 音樂與無聲護理板
+# 5. 側邊欄：防爆拋接、音樂播放器 (110px 完整顯示)、隨機/循環與無聲護理板
 # ==============================================================================
 with st.sidebar:
     st.markdown(
@@ -433,7 +458,7 @@ with st.sidebar:
         <div class="sidebar-ateliers-box" style="text-align: center;">
             <div style="font-size: 2.2rem; margin-bottom: 4px;">🐿️ 🕊️</div>
             <div style="font-family: 'Didot', serif; color: #25352B; font-size: 0.95rem; font-weight: 600;">Curio & Studio 數據中繼站</div>
-            <div style="font-size: 0.78rem; color: #C2A675; font-style: italic; margin-top: 2px;">小松鼠蔻恩閣長 ✕ 信鴿 Singer</div>
+            <div style="font-size: 0.78rem; color: #C2A675; font-style: italic; margin-top: 2px;">首席珍藏家蔻恩閣長 Cone ✕ 信鴿 Singer</div>
         </div>
     """,
         unsafe_allow_html=True,
@@ -441,7 +466,7 @@ with st.sidebar:
 
     # 手機連線 Demo QR Code
     with st.expander("📱 手機連線 Demo QR Code"):
-        st.write("用手機相機掃描下方 QR Code 圖片，開起手機側邊欄模擬拋接：")
+        st.write("用手機相機掃描下方 QR Code 圖片，開啟手機側邊欄模擬拋接：")
         qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://curio-studio.streamlit.app"
         st.image(qr_url, caption="手機掃碼開啟模擬連線", width=150)
 
@@ -454,7 +479,7 @@ with st.sidebar:
             "本節預約總人數:", value=12, step=1
         )
 
-    # 防爆路徑 A 拋接 (不跳紅字亂碼)
+    # 防爆路徑 A 拋接
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
@@ -470,7 +495,6 @@ with st.sidebar:
     if st.button("觸發 15 秒飛鴿拋接"):
         try:
             current_time_str = time.strftime("%H:%M")
-            # 安全防爆寫入
             st.session_state["mock_db"][token_a] = {
                 "status": "已完成診前 15s 共振調息",
                 "coherence_score": float(score_a),
@@ -482,7 +506,6 @@ with st.sidebar:
                 "nudge": f"飛鴿拋接短碼 {token_a}。心流表現極佳（{score_a}%），建議進行常規衛教即可。",
                 "summary": f"【去敏身心軌跡摘要】經由 LINE LIFF 飛鴿拋接之短碼 {token_a}。個案完成診前調息，心流表現極佳。",
             }
-            # 佇列更新
             st.session_state["checkin_queue"].append(
                 {
                     "token": token_a,
@@ -496,8 +519,9 @@ with st.sidebar:
             )
             st.toast(f"✨ 信鴿 Singer 已將 {token_a} 去敏數據安全送達！")
             st.rerun()
-        except Exception as e:
-            st.error(f"拋接處理完成：{token_a}")
+        except Exception:
+            st.session_state["selected_token"] = token_a
+            st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -529,71 +553,54 @@ with st.sidebar:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 郭醫師專屬 Progressive Techno 音場播放器 (修復 110px 高度拉桿與循環功能)
+    # 郭醫師專屬 Progressive Techno 音場播放器 (修復 110px 高度、拉桿、循環與隨機切換)
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
             <div style="font-size:0.85rem; font-weight:600; color:#25352B; margin-bottom:6px;">
                 <span class="curio-3d-icon">🎵</span>郭醫師專屬 Progressive 音場
             </div>
-            <div style="font-size:0.78rem; color:#596B60; margin-bottom:8px;">選取 Underworld 典範沉靜律動：</div>
     """,
         unsafe_allow_html=True,
     )
 
-    track_choice = st.selectbox(
+    selected_track_idx = st.selectbox(
         "選擇聲景曲目：",
-        [
-            "Underworld - Dark & Long (Drift 2 Dark Train) [郭醫師首選]",
-            "Underworld - Born Slippy .NUXX (Progressive 心流)",
-            "Bicep - Glue (法式知性 Ambient Electronic)",
-            "Jon Hopkins - Music for Psychedelic Therapy (腦波深層調息)",
-        ],
+        range(len(PLAYLIST)),
+        format_func=lambda x: PLAYLIST[x]["title"],
+        index=st.session_state["current_track_idx"],
     )
 
-    # 音訊組件容器 110px 高度，包含 loop 循環播放與拉桿完整顯示
-    if "Dark & Long" in track_choice:
-        st.components.v1.html(
-            """
-            <div style="background:#F4F0E8; padding:8px; border-radius:12px; border:1px solid #C2A675;">
-                <audio controls autoplay loop style="width: 100%; height: 40px;">
-                    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fBF07a.mp3?filename=ambient-piano-amp-strings-10711.mp3" type="audio/mpeg">
-                </audio>
-                <div style="font-size: 11px; color: #25352B; text-align: center; margin-top: 4px; font-weight: 500;">
-                    🎵 正循環播放：Underworld - Dark & Long (Dark Train)
-                </div>
+    col_music1, col_music2 = st.columns(2)
+    with col_music1:
+        if st.button("🔀 隨機切換"):
+            st.session_state["current_track_idx"] = random.randint(
+                0, len(PLAYLIST) - 1
+            )
+            st.rerun()
+    with col_music2:
+        st.caption("預設 🔁 循環播放")
+
+    current_audio_url = PLAYLIST[selected_track_idx]["url"]
+
+    # 嵌入 HTML5 音訊控制列 (110px 高度拉桿完整顯示，並設定音量預設 70%)
+    st.components.v1.html(
+        f"""
+        <div style="background:#F4F0E8; padding:8px 12px; border-radius:14px; border:1px solid #C2A675;">
+            <audio id="curio-player" controls autoplay loop style="width: 100%; height: 42px;">
+                <source src="{current_audio_url}" type="audio/mpeg">
+            </audio>
+            <div style="font-size: 11px; color: #25352B; text-align: center; margin-top: 4px; font-weight: 500;">
+                🎵 正在循環播放：{PLAYLIST[selected_track_idx]['title']}
             </div>
-            """,
-            height=110,
-        )
-    elif "Born Slippy" in track_choice:
-        st.components.v1.html(
-            """
-            <div style="background:#F4F0E8; padding:8px; border-radius:12px; border:1px solid #C2A675;">
-                <audio controls autoplay loop style="width: 100%; height: 40px;">
-                    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8bbf9d0e1.mp3?filename=techno-progressive-11021.mp3" type="audio/mpeg">
-                </audio>
-                <div style="font-size: 11px; color: #25352B; text-align: center; margin-top: 4px; font-weight: 500;">
-                    🎵 正循環播放：Underworld - Born Slippy .NUXX
-                </div>
-            </div>
-            """,
-            height=110,
-        )
-    elif "Bicep" in track_choice:
-        st.components.v1.html(
-            """
-            <div style="background:#F4F0E8; padding:8px; border-radius:12px; border:1px solid #C2A675;">
-                <audio controls autoplay loop style="width: 100%; height: 40px;">
-                    <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=rain-and-relaxed-piano-10781.mp3" type="audio/mpeg">
-                </audio>
-                <div style="font-size: 11px; color: #25352B; text-align: center; margin-top: 4px; font-weight: 500;">
-                    🎵 正循環播放：Bicep - Glue
-                </div>
-            </div>
-            """,
-            height=110,
-        )
+            <script>
+                var audio = document.getElementById('curio-player');
+                if (audio) {{ audio.volume = 0.7; }}
+            </script>
+        </div>
+        """,
+        height=115,
+    )
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -658,7 +665,7 @@ with st.sidebar:
 
 
 # ==============================================================================
-# 7. 主面板邏輯（動態進度條 + 倒數 + 疲勞提醒）
+# 6. 主面板邏輯（動態進度條 + 倒數 + 疲勞提醒）
 # ==============================================================================
 def fetch_patient_data(user_key):
     return st.session_state["mock_db"].get(user_key, None)
@@ -668,7 +675,7 @@ st.markdown(
     """
     <div class="curio-hero-card">
         <h1>夢境珍奇櫃診間面板</h1>
-        <p>Curio & Studio x 交感身心診所 ｜ 首席珍藏家蔻恩閣長 (Cone) ‧ 0 個資 ‧ 診前 15 秒身心軌跡拋接</p>
+        <p>Curio & Studio x 交感身心診所 ｜ 首席珍藏家蔻恩閣長 Cone ‧ 0 個資 ‧ 診前 15 秒身心軌跡拋接</p>
     </div>
 """,
     unsafe_allow_html=True,
@@ -709,7 +716,7 @@ if elapsed_minutes >= 45:
         f"""
         <div class="fatigue-warning-card">
             <div>
-                <b>🌿 蔻恩閣長的莫蘭迪微光關懷：</b> 您已連續專注看診 <b>{elapsed_minutes} 分鐘</b>。建議在下一位探險家進診間前，進行 10 秒深呼吸沉澱身心。
+                <b>🌿 蔻恩閣長 Cone 的莫蘭迪微光關懷：</b> 您已連續專注看診 <b>{elapsed_minutes} 分鐘</b>。建議在下一位探險家進診間前，進行 10 秒深呼吸沉澱身心。
             </div>
             <div style="font-family: Didot, serif; italic; color:#C2A675; font-size:0.8rem;">
                 Mindful Pause
@@ -753,7 +760,7 @@ if user_key:
             f"""
             <div class="quick-nudge-box">
                 <div style="font-size:0.88rem; font-weight:600; color:#25352B; margin-bottom:4px;">
-                    <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">✨</span> 小松鼠蔻恩閣長 1 秒問診焦點提示 (Clinical Nudge)
+                    <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">✨</span> 小松鼠蔻恩閣長 Cone 1 秒問診焦點提示 (Clinical Nudge)
                 </div>
                 <div style="font-size:0.86rem; color:#596B60; line-height:1.5;">
                     {data.get('nudge', '探險家身心軌跡平穩，可進行常規問診諮詢。')}
@@ -788,7 +795,7 @@ if user_key:
                         <span>身心應激狀態</span>
                     </div>
                     <div class="custom-metric-value">{data['stress_index']}</div>
-                    <div class="custom-metric-delta">{data.get('stress_desc', '莫蘭迪放鬆區域')}</div>
+                    <div class="custom-metric-delta">{data.get('stress_desc', '莫蘭迪放縮區')}</div>
                 </div>
             """,
                 unsafe_allow_html=True,
