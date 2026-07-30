@@ -104,9 +104,6 @@ if "current_track_idx" not in st.session_state:
 if "audio_loop" not in st.session_state:
     st.session_state["audio_loop"] = True
 
-if "audio_speed" not in st.session_state:
-    st.session_state["audio_speed"] = 1.0
-
 MASTER_KEY = "CURIO-999"
 
 PLAYLIST = [
@@ -129,7 +126,7 @@ PLAYLIST = [
 ]
 
 # ==============================================================================
-# 2. Bespoke French High-Jewelry & 剛性 CSS 覆蓋
+# 2. Bespoke French High-Jewelry & 強效顯眼側邊欄按鈕 CSS
 # ==============================================================================
 st.markdown(
     """
@@ -143,22 +140,26 @@ st.markdown(
     header[data-testid="stHeader"] { background-color: rgba(0,0,0,0); }
     footer { visibility: hidden; }
 
-    /* 剛性強制覆蓋：手機端側邊欄展開/收合按鈕 (>) 改為香檳金背景 (#C2A675) ✕ 深墨綠符號 (#1A261F) */
-    [data-testid="stSidebarCollapseButton"], 
-    [data-testid="collapsedControl"],
+    /* 【強效加深修復】手機版與電腦版側邊欄展開箭頭 (>) 改為亮香檳金 (#D4AF37) 實心卡片 ✕ 深墨黑邊框 (#0D1610) */
+    button[data-testid="aria-label-SidebarToggle"], 
+    button[aria-label="Close sidebar"], 
     button[aria-label="Open sidebar"],
-    button[aria-label="Close sidebar"] {
-        background-color: #C2A675 !important;
-        color: #1A261F !important;
+    [data-testid="collapsedControl"],
+    [data-testid="stSidebarCollapseButton"] button {
+        background-color: #D4AF37 !important;
+        color: #0D1610 !important;
         border-radius: 12px !important;
-        border: 2px solid #1A261F !important;
-        box-shadow: 0 4px 16px rgba(26, 38, 31, 0.4) !important;
-        z-index: 99999 !important;
+        border: 2.5px solid #0D1610 !important;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4) !important;
+        z-index: 999999 !important;
+        width: 42px !important;
+        height: 42px !important;
     }
-    [data-testid="stSidebarCollapseButton"] svg, 
-    [data-testid="collapsedControl"] svg {
-        fill: #1A261F !important;
-        stroke: #1A261F !important;
+    [data-testid="collapsedControl"] svg,
+    [data-testid="stSidebarCollapseButton"] svg {
+        fill: #0D1610 !important;
+        stroke: #0D1610 !important;
+        stroke-width: 2px !important;
         width: 26px !important;
         height: 26px !important;
     }
@@ -240,7 +241,7 @@ st.markdown(
     .atelier-login-card {
         background: rgba(255, 255, 255, 0.96);
         backdrop-filter: blur(20px);
-        border: 1px solid #C2A675;
+        border: 1.5px solid #C2A675;
         padding: 50px 48px 34px 48px;
         border-radius: 32px;
         box-shadow: 0 24px 60px rgba(37, 53, 43, 0.08);
@@ -273,7 +274,6 @@ st.markdown(
         border-radius: 2px;
     }
 
-    /* 忘記密碼 Expand 高對比深色微調 */
     .stExpander {
         background: #F4F0E8 !important;
         border: 1px solid #C2A675 !important;
@@ -417,7 +417,7 @@ if hasattr(st, "dialog"):
 
 
 # ==============================================================================
-# 4. 門診安全驗證登入頁 (已修復提示與高對比忘記密碼)
+# 4. 門診安全驗證登入頁
 # ==============================================================================
 if not st.session_state["authenticated"]:
     st.markdown(
@@ -477,14 +477,13 @@ if not st.session_state["authenticated"]:
             "<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True
         )
 
-        # 高對比高清晰度「忘記密碼」區
         with st.expander("❓ 忘記診間金鑰密碼？"):
             st.markdown(
                 f"""
-                <div style="color:#1A261F; font-size:0.88rem; line-height:1.6; font-weight:500;">
+                <div style="color:#1A261F; font-size:0.88rem; line-height:1.6; font-weight:600;">
                     💡 <b>診間密碼提示</b>：GOOGLE帳號 + 西元出生年份<br>
-                    🔑 <b>當前預設金鑰</b>：<code style="background:#FAF8F5; color:#25352B; font-weight:bold; padding:2px 6px; border-radius:4px;">{st.session_state['doctor_password']}</code><br><br>
-                    <span style="font-size:0.8rem; color:#596B60;">如需緊急技術支援，請聯繫 Curio & Studio 專屬服務團隊。</span>
+                    🔑 <b>當前預設金鑰</b>：<code style="background:#FAF8F5; color:#25352B; font-weight:bold; padding:2px 8px; border-radius:6px; border:1px solid #C2A675;">{st.session_state['doctor_password']}</code><br><br>
+                    <span style="font-size:0.8rem; color:#1A261F;">如需緊急技術支援，請聯繫 Curio & Studio 專屬服務團隊。</span>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -494,7 +493,7 @@ if not st.session_state["authenticated"]:
 
 
 # ==============================================================================
-# 5. 側邊欄：動態 QR Code、獨立 🔁 循環按鈕音樂面板、完全顯現拉桿
+# 5. 側邊欄：實時 QR Code 生成、獨立 🔁 循環按鈕音效卡、完全顯現拉桿
 # ==============================================================================
 with st.sidebar:
     st.markdown(
@@ -508,13 +507,14 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-    # 動態自訂網址連線 QR Code (可自行填入當前網址)
+    # 實時動態網址連線 QR Code 產出引擎
     with st.expander("📱 手機連線 Demo QR Code"):
+        default_demo_url = "http://localhost:8501"
         demo_url = st.text_input(
-            "當前連線網址:", value="https://curio-studio.streamlit.app"
+            "請輸入當前電腦網址列的連線網址:", value=default_demo_url
         )
-        qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={demo_url}"
-        st.image(qr_url, caption="手機相機掃碼開啟模擬連線", width=150)
+        qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=160x150&data={demo_url}"
+        st.image(qr_url, caption="用手機相機掃碼即可 100% 登入連線", width=160)
 
     with st.expander("⚙️ 本節門診參數設定"):
         st.session_state["session_hours"] = st.number_input(
@@ -524,7 +524,7 @@ with st.sidebar:
             "本節預約總人數:", value=12, step=1
         )
 
-    # 跨裝置全域拋接路徑 A
+    # 跨裝置全域共享拋接
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
@@ -594,7 +594,7 @@ with st.sidebar:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 獨立「🔁 循環播放切換按鈕」與 180px 全顯音樂控制卡
+    # 獨立「🔁 循環播放」開關按鈕與 180px 全顯控制列
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
@@ -631,18 +631,19 @@ with st.sidebar:
     current_audio_url = PLAYLIST[selected_track_idx]["url"]
     loop_attr = "loop" if st.session_state["audio_loop"] else ""
 
-    # 容器高拉至 180px，拉桿 100% 完整顯示
+    # 180px 高度 HTML5 原生控制元件 (完全呈現暫停、時間拉桿與音量控制)
     st.components.v1.html(
         f"""
-        <div style="background:#F4F0E8; padding:12px; border-radius:16px; border:1px solid #C2A675; text-align:center;">
-            <audio id="curio-audio-player" controls {loop_attr} style="width: 100%; height: 45px;">
+        <div style="background:#F4F0E8; padding:12px; border-radius:16px; border:1.5px solid #C2A675; text-align:center;">
+            <audio id="curio-player" controls {loop_attr} style="width: 100%; height: 45px;">
                 <source src="{current_audio_url}" type="audio/mpeg">
             </audio>
             <div style="font-size: 11px; color: #25352B; margin-top: 8px; font-weight: 600; font-family: sans-serif;">
-                🎵 正在播放：{PLAYLIST[selected_track_idx]['title']} ({'🔁 循環模式' if st.session_state['audio_loop'] else '➡️ 單次播放'})
+                🎵 正在播放：{PLAYLIST[selected_track_idx]['title']}<br>
+                <span style="color:#B29562;">模式：{'🔁 無限循環播放' if st.session_state['audio_loop'] else '➡️ 單次播放'}</span>
             </div>
             <script>
-                var audio = document.getElementById('curio-audio-player');
+                var audio = document.getElementById('curio-player');
                 if (audio) {{ audio.volume = 0.7; }}
             </script>
         </div>
@@ -652,7 +653,7 @@ with st.sidebar:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 自由打字 + 快速選單之無聲護理板
+    # 自由打字 + 快速膠囊選單之無聲護理聯絡板
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
