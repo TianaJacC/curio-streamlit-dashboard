@@ -28,7 +28,7 @@ def log_system_event(event_type, details):
 log_system_event("SESSION_INIT", "Curio & Studio 夢境珍奇櫃診間面板載入")
 
 # ==============================================================================
-# 1. 全局配置與 Session 防爆初始化
+# 1. 全局配置與跨裝置共享資料庫 (解決手機新增電腦沒變問題)
 # ==============================================================================
 st.set_page_config(
     page_title="夢境珍奇櫃診間面板 ‧ Curio & Studio",
@@ -37,10 +37,46 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# 檢查 URL 網址參數是否有人從手機拋接短碼
-query_params = st.query_params
-if "token" in query_params:
-    st.session_state["selected_token"] = query_params["token"]
+
+# 使用 @st.cache_resource 打造手機與電腦 100% 共享的全域資料庫
+@st.cache_resource
+def get_global_database():
+    return {
+        "#SYM-C701": {
+            "status": "已完成診前 15s 共振調息",
+            "coherence_score": 92.5,
+            "stress_index": "Morandi Soft Blue",
+            "stress_desc": "莫蘭迪藍放縮區 ‧ 平穩",
+            "sleep_hours": 7.2,
+            "timestamp": "2026-07-30 01:20:15",
+            "weekly_trend": [82, 85, 87, 84, 89, 91, 92.5],
+            "nudge": "探險家近 3 天夜間無應激爆發，心流穩定（92.5%）。建議問診重點：維持優質睡眠時數。",
+            "summary": "【去敏身心軌跡摘要】個案於看診前 15 秒於候診區完成 0.067 Hz 心流共振調息。連續 7 日數據顯示夜間無應激爆發，心流一致性維持於 90% 以上高諧振區間。",
+        },
+        "#SYM-A302": {
+            "status": "已完成診前 15s 共振調息",
+            "coherence_score": 88.0,
+            "stress_index": "Morandi Sage",
+            "stress_desc": "莫蘭迪綠區域 ‧ 輕度交感活性",
+            "sleep_hours": 6.1,
+            "timestamp": "2026-07-30 01:25:00",
+            "weekly_trend": [70, 75, 78, 80, 82, 85, 88.0],
+            "nudge": "探險家睡眠時數偏低（6.1hr），生理指標顯示交感活性上升。建議問診重點：關懷換季氣壓調節。",
+            "summary": "【去敏身心軌跡摘要】個案於候診區完成心流調息。近 7 日睡眠時數偏低，生理指標顯示交感神經活性略微上升。",
+        },
+    }
+
+
+@st.cache_resource
+def get_global_queue():
+    return [
+        {"token": "#SYM-C701", "time": "01:20", "source": "LINE LIFF / App"},
+        {"token": "#SYM-A302", "time": "01:25", "source": "LINE LIFF / App"},
+    ]
+
+
+global_db = get_global_database()
+global_queue = get_global_queue()
 
 if "doctor_password" not in st.session_state:
     st.session_state["doctor_password"] = "NYJAZZ-8519"
@@ -66,42 +102,6 @@ if "session_hours" not in st.session_state:
 if "current_track_idx" not in st.session_state:
     st.session_state["current_track_idx"] = 0
 
-if "playback_speed" not in st.session_state:
-    st.session_state["playback_speed"] = 1.0
-
-# 跨裝置全域防爆資料庫
-if "mock_db" not in st.session_state:
-    st.session_state["mock_db"] = {
-        "#SYM-C701": {
-            "status": "已完成診前 15s 共振調息",
-            "coherence_score": 92.5,
-            "stress_index": "Morandi Soft Blue",
-            "stress_desc": "莫蘭迪藍放縮區 ‧ 平穩",
-            "sleep_hours": 7.2,
-            "timestamp": "2026-07-30 01:20:15",
-            "weekly_trend": [82, 85, 87, 84, 89, 91, 92.5],
-            "nudge": "探險家近 3 天夜間無應激爆發，心流穩定（92.5%）。建議問診重點：維持優質睡眠時數。",
-            "summary": "【去敏身心軌跡摘要】個案於看診前 15 秒於候診區完成 0.067 Hz 心流共振調息。連續 7 日數據顯示夜間無應激爆發，心流一致性維持於 90% 以上高諧振區間。",
-        },
-        "#SYM-A302": {
-            "status": "已完成診前 15s 共振調息",
-            "coherence_score": 88.0,
-            "stress_index": "Morandi Sage",
-            "stress_desc": "莫蘭迪綠區域 ‧ 輕度交感活性",
-            "sleep_hours": 6.1,
-            "timestamp": "2026-07-30 01:25:00",
-            "weekly_trend": [70, 75, 78, 80, 82, 85, 88.0],
-            "nudge": "探險家睡眠時數偏低（6.1hr），生理指標顯示交感活性上升。建議問診重點：關懷換季氣壓調節。",
-            "summary": "【去敏身心軌跡摘要】個案於候診區完成心流調息。近 7 日睡眠時數偏低，生理指標顯示交感神經活性略微上升。",
-        },
-    }
-
-if "checkin_queue" not in st.session_state:
-    st.session_state["checkin_queue"] = [
-        {"token": "#SYM-C701", "time": "01:20", "source": "LINE LIFF / App"},
-        {"token": "#SYM-A302", "time": "01:25", "source": "LINE LIFF / App"},
-    ]
-
 MASTER_KEY = "CURIO-999"
 
 PLAYLIST = [
@@ -124,7 +124,7 @@ PLAYLIST = [
 ]
 
 # ==============================================================================
-# 2. Bespoke French High-Jewelry & High-Contrast CSS
+# 2. Bespoke French High-Jewelry & 側邊欄高對比按鈕 CSS
 # ==============================================================================
 st.markdown(
     """
@@ -138,23 +138,21 @@ st.markdown(
     header[data-testid="stHeader"] { background-color: rgba(0,0,0,0); }
     footer { visibility: hidden; }
 
-    /* 強效高對比修復：讓手機端側邊欄展開/收合箭頭 (>) 極度顯眼 */
-    button[data-testid="aria-label-SidebarToggle"], 
-    button[aria-label="Close sidebar"], 
+    /* 強效高對比：左上角側邊欄箭頭按鈕改為深墨綠背景 (#25352B) ✕ 金色箭頭 (#C2A675) */
+    [data-testid="stSidebarCollapseButton"] button,
+    [data-testid="collapsedControl"] button,
     button[aria-label="Open sidebar"],
-    [data-testid="collapsedControl"] {
-        background-color: #C2A675 !important;
-        color: #25352B !important;
+    button[aria-label="Close sidebar"] {
+        background-color: #25352B !important;
+        color: #C2A675 !important;
         border-radius: 12px !important;
-        border: 2px solid #25352B !important;
-        box-shadow: 0 4px 12px rgba(37, 53, 43, 0.25) !important;
-        padding: 6px 12px !important;
+        border: 2px solid #C2A675 !important;
+        box-shadow: 0 4px 14px rgba(37, 53, 43, 0.3) !important;
     }
+    [data-testid="stSidebarCollapseButton"] svg,
     [data-testid="collapsedControl"] svg {
-        fill: #25352B !important;
-        stroke: #25352B !important;
-        width: 24px !important;
-        height: 24px !important;
+        fill: #C2A675 !important;
+        stroke: #C2A675 !important;
     }
 
     .curio-hero-card {
@@ -409,7 +407,7 @@ if hasattr(st, "dialog"):
 
 
 # ==============================================================================
-# 4. 門診安全驗證登入頁
+# 4. 門診安全驗證登入頁 (已修正提示文字)
 # ==============================================================================
 if not st.session_state["authenticated"]:
     st.markdown(
@@ -422,7 +420,9 @@ if not st.session_state["authenticated"]:
             <div class="medical-desc">
                 零知識架構 <span style="font-family:Didot, serif; italic; color:#C2A675;">(Zero-Knowledge)</span> ‧ 雙盲去敏身心軌跡拋接<br>
                 <span style="font-size:0.82rem; color:#C2A675;">首席珍藏家蔻恩閣長 Cone 已為您鎖定 0 個資防線</span><br>
-                <span style="font-size:0.8rem; font-weight:600; color:#25352B; background:#EAE4D8; padding:4px 10px; border-radius:8px; display:inline-block; margin-top:8px;">📱 手機點擊左上角「金色 > 按鈕」可直接開啟數據中繼站</span>
+                <span style="font-size:0.8rem; font-weight:600; color:#25352B; background:#EAE4D8; padding:6px 12px; border-radius:10px; display:inline-block; margin-top:10px; border:1px solid #C2A675;">
+                    📱 手機體驗登入後請點擊左上角「>」圖示開啟中繼站
+                </span>
             </div>
         </div>
     """,
@@ -476,7 +476,7 @@ if not st.session_state["authenticated"]:
 
 
 # ==============================================================================
-# 5. 側邊欄：手機拋接 (不跳紅字)、高對比按鈕、完整播放器與 150px 組件
+# 5. 側邊欄：跨裝置同步拋接、動態連線 QR Code、原音樂播放列 (含 🔁 循環)
 # ==============================================================================
 with st.sidebar:
     st.markdown(
@@ -490,8 +490,10 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
+    # 手機連線 Demo QR Code
     with st.expander("📱 手機連線 Demo QR Code"):
         st.write("手機掃描下方 QR Code 圖片，開啟手機側邊欄模擬拋接：")
+        # 產出專屬網址 QR Code
         qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://curio-studio.streamlit.app"
         st.image(qr_url, caption="手機掃碼開啟模擬連線", width=150)
 
@@ -503,7 +505,7 @@ with st.sidebar:
             "本節預約總人數:", value=12, step=1
         )
 
-    # 100% 不跳紅字之手機拋接引擎
+    # 跨裝置全域防爆拋接 (手機按 ➔ 全域 DB 同步 ➔ 電腦端亮起)
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
@@ -518,11 +520,9 @@ with st.sidebar:
 
     if st.button("觸發 15 秒飛鴿拋接"):
         current_time_str = time.strftime("%H:%M")
-        # 防爆存取
-        if "mock_db" not in st.session_state:
-            st.session_state["mock_db"] = {}
 
-        st.session_state["mock_db"][token_a] = {
+        # 寫入全域共享 DB (電腦與手機 100% 同步)
+        global_db[token_a] = {
             "status": "已完成診前 15s 共振調息",
             "coherence_score": float(score_a),
             "stress_index": "Morandi Soft Blue",
@@ -534,12 +534,10 @@ with st.sidebar:
             "summary": f"【去敏身心軌跡摘要】經由 LINE LIFF 飛鴿拋接之短碼 {token_a}。個案完成診前調息，心流表現極佳。",
         }
 
-        # 佇列安全 Append
-        queue_tokens = [
-            x["token"] for x in st.session_state.get("checkin_queue", [])
-        ]
+        # 更新全域佇列
+        queue_tokens = [x["token"] for x in global_queue]
         if token_a not in queue_tokens:
-            st.session_state["checkin_queue"].append(
+            global_queue.append(
                 {
                     "token": token_a,
                     "time": current_time_str,
@@ -568,8 +566,8 @@ with st.sidebar:
     )
 
     if st.button("載入下一位探險家動態"):
-        if st.session_state.get("checkin_queue"):
-            latest_token = st.session_state["checkin_queue"][-1]["token"]
+        if global_queue:
+            latest_token = global_queue[-1]["token"]
             st.session_state["selected_token"] = latest_token
             st.session_state["completed_count"] += 1
             log_system_event(
@@ -581,7 +579,7 @@ with st.sidebar:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 重構音樂播放器組件 (150px 高度，包含 1.0x/1.25x/1.5x 倍速與循環切換)
+    # 取消倍速！容器拉高至 150px！原生帶有 🔁 循環播放、暫停與時間拉桿
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
@@ -599,45 +597,36 @@ with st.sidebar:
         index=st.session_state["current_track_idx"],
     )
 
-    col_m1, col_m2 = st.columns(2)
-    with col_m1:
-        if st.button("🔀 隨機切換"):
-            st.session_state["current_track_idx"] = random.randint(
-                0, len(PLAYLIST) - 1
-            )
-            st.rerun()
-    with col_m2:
-        speed_choice = st.radio(
-            "倍速選擇:", [1.0, 1.25, 1.5], horizontal=True
+    if st.button("🔀 隨機切換曲目"):
+        st.session_state["current_track_idx"] = random.randint(
+            0, len(PLAYLIST) - 1
         )
+        st.rerun()
 
     current_audio_url = PLAYLIST[selected_track_idx]["url"]
 
-    # 150px HTML5 音樂組件，完全呈現控制列、拉桿、循環與倍速
+    # 150px 高度 HTML5 音訊元件：控制列、時間拉桿、音量與原生 loop 100% 完整呈現
     st.components.v1.html(
         f"""
-        <div style="background:#F4F0E8; padding:10px; border-radius:14px; border:1px solid #C2A675; text-align:center;">
-            <audio id="curio-audio-player" controls loop style="width: 100%; height: 45px;">
+        <div style="background:#F4F0E8; padding:12px; border-radius:16px; border:1px solid #C2A675; text-align:center;">
+            <audio id="curio-player" controls loop style="width: 100%; height: 45px;">
                 <source src="{current_audio_url}" type="audio/mpeg">
             </audio>
-            <div style="font-size: 11px; color: #25352B; margin-top: 6px; font-weight: 600;">
-                🎵 正在循環播放：{PLAYLIST[selected_track_idx]['title']}
+            <div style="font-size: 11px; color: #25352B; margin-top: 8px; font-weight: 600;">
+                🎵 正在 🔁 無限循環播放：<br>{PLAYLIST[selected_track_idx]['title']}
             </div>
             <script>
-                var audio = document.getElementById('curio-audio-player');
-                if (audio) {{
-                    audio.volume = 0.7;
-                    audio.playbackRate = {speed_choice};
-                }}
+                var audio = document.getElementById('curio-player');
+                if (audio) {{ audio.volume = 0.7; }}
             </script>
         </div>
         """,
-        height=140,
+        height=150,
     )
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 自由打字 + 快速膠囊選單之無聲護理板
+    # 自由打字 + 快速選單之護理板
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
@@ -684,7 +673,7 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-    for item in st.session_state.get("checkin_queue", []):
+    for item in global_queue:
         if st.button(
             f"解鎖代碼 {item['token']} ({item['time']})",
             key=f"btn_{item['token']}",
@@ -698,10 +687,10 @@ with st.sidebar:
 
 
 # ==============================================================================
-# 6. 主面板邏輯（動態進度條 + 倒數 + 疲勞提醒）
+# 6. 主面板邏輯 (直接對接全域 DB)
 # ==============================================================================
 def fetch_patient_data(user_key):
-    return st.session_state["mock_db"].get(user_key, None)
+    return global_db.get(user_key, None)
 
 
 st.markdown(
