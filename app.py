@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 
 # ==============================================================================
-# 0. 雲端系統 Log 軌跡自動備份機制 (符合安維辦法：無個資連線 Log 備份保存 5 年)
+# 0. 雲端系統 Log 軌跡自動備份機制 (無個資連線 Log 備份保存 5 年)
 # ==============================================================================
 LOG_DIR = "system_logs"
 if not os.path.exists(LOG_DIR):
@@ -77,7 +77,6 @@ st.markdown(
         letter-spacing: 0.5px;
     }
 
-    /* 3D 浮雕徽章 */
     .curio-3d-icon {
         width: 28px;
         height: 28px;
@@ -93,13 +92,13 @@ st.markdown(
         vertical-align: middle;
     }
 
-    /* 溫暖與時間管理警示盒 */
+    /* 溫暖與動態時間管理卡 */
     .doctor-care-card {
         background: linear-gradient(135deg, #F4F0E8 0%, #EAE4D8 100%);
         border: 1px solid #C2A675;
-        border-radius: 20px;
-        padding: 18px 24px;
-        margin-bottom: 22px;
+        border-radius: 22px;
+        padding: 20px 26px;
+        margin-bottom: 16px;
         box-shadow: 0 8px 24px rgba(37, 53, 43, 0.04);
         display: flex;
         align-items: center;
@@ -130,9 +129,6 @@ st.markdown(
         padding: 14px 20px;
         margin-bottom: 20px;
         font-size: 0.86rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
     }
 
     /* 1 秒問診亮點提示卡 */
@@ -143,9 +139,8 @@ st.markdown(
         padding: 16px 20px;
         margin-bottom: 20px;
         box-shadow: 4px 4px 14px rgba(37, 53, 43, 0.03);
-        border-top: 1px solid #E4DCD0;
-        border-right: 1px solid #E4DCD0;
-        border-bottom: 1px solid #E4DCD0;
+        border: 1px solid #E4DCD0;
+        border-left-width: 4px;
     }
 
     /* 知性登入卡片 */
@@ -185,7 +180,6 @@ st.markdown(
         border-radius: 2px;
     }
 
-    /* 3D 知性 Metric 數據卡片 */
     .custom-metric-card {
         background: #FFFFFF;
         border: 1px solid #E4DCD0;
@@ -221,7 +215,6 @@ st.markdown(
         border: 1px solid #E4DCD0; 
     }
 
-    /* 法式資安宣告盒 */
     .security-notice-box {
         background-color: #F4F0E8;
         border-left: 4px solid #C2A675;
@@ -233,7 +226,6 @@ st.markdown(
         line-height: 1.75;
     }
 
-    /* 側邊欄重構 */
     .sidebar-ateliers-box {
         background: #FFFFFF;
         border: 1px solid #E4DCD0;
@@ -243,7 +235,6 @@ st.markdown(
         box-shadow: 4px 4px 14px rgba(37, 53, 43, 0.03);
     }
 
-    /* 按鈕高奢美化 */
     .stButton>button {
         border-radius: 14px !important;
         border: 1px solid #C2A675 !important;
@@ -284,6 +275,9 @@ if "completed_count" not in st.session_state:
 
 if "total_booked_patients" not in st.session_state:
     st.session_state["total_booked_patients"] = 12
+
+if "session_hours" not in st.session_state:
+    st.session_state["session_hours"] = 3.5
 
 if "mock_db" not in st.session_state:
     st.session_state["mock_db"] = {
@@ -456,6 +450,15 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
+    # 門診參數動態設定 (每家診所自由調整時長)
+    with st.expander("⚙️ 本節門診參數設定"):
+        st.session_state["session_hours"] = st.number_input(
+            "一節門診預計時長 (小時):", value=3.5, step=0.5
+        )
+        st.session_state["total_booked_patients"] = st.number_input(
+            "本節預約總人數:", value=12, step=1
+        )
+
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
@@ -488,8 +491,9 @@ with st.sidebar:
                 "source": "LINE LIFF API",
             }
         )
-        st.session_state["total_booked_patients"] = len(
-            st.session_state["checkin_queue"]
+        st.session_state["total_booked_patients"] = max(
+            st.session_state["total_booked_patients"],
+            len(st.session_state["checkin_queue"]),
         )
         log_system_event(
             "API_PUSH_EVENT", f"路徑 A 手動模擬 App 拋接 Token: {token_a}"
@@ -524,50 +528,83 @@ with st.sidebar:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 全新功能一：法式診間安神音場設定
+    # 包含郭醫師喜愛之微量輕電子聲景之 HTML5 音樂播放器
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
             <div style="font-size:0.85rem; font-weight:600; color:#25352B; margin-bottom:6px;">
-                <span class="curio-3d-icon">🎵</span>法式診間安神音場 (Atmosphere)
+                <span class="curio-3d-icon">🎵</span>法式診間安神音場 (Atelier Ambient)
             </div>
-            <div style="font-size:0.78rem; color:#596B60; margin-bottom:8px;">選擇診間背景靜心音樂：</div>
+            <div style="font-size:0.78rem; color:#596B60; margin-bottom:8px;">包含郭醫師喜愛之微量輕電子聲景：</div>
     """,
         unsafe_allow_html=True,
     )
-    bg_sound = st.selectbox(
-        "切換背景聲景：",
+
+    sound_mode = st.selectbox(
+        "切換莫蘭迪音場：",
         [
-            "0.067Hz 莫蘭迪共振調息音",
-            "法式雨沈香木沉澱聲景",
+            "0.067Hz 莫蘭迪微電子沉澱音場 (郭醫師專屬)",
+            "法式雨夜松木與心流共振",
             "靜音靜心模式",
         ],
     )
-    st.caption(f"🎧 當前音場：{bg_sound}")
+
+    if "微電子" in sound_mode:
+        st.components.v1.html(
+            """
+            <audio controls autoplay loop style="width: 100%; height: 35px;">
+                <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fBF07a.mp3?filename=ambient-piano-amp-strings-10711.mp3" type="audio/mpeg">
+            </audio>
+            """,
+            height=45,
+        )
+    elif "雨夜" in sound_mode:
+        st.components.v1.html(
+            """
+            <audio controls autoplay loop style="width: 100%; height: 35px;">
+                <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=rain-and-relaxed-piano-10781.mp3" type="audio/mpeg">
+            </audio>
+            """,
+            height=45,
+        )
+
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 全新功能二：無聲護理聯絡板
+    # 自由打字 + 膠囊選單之無聲護理聯絡板
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
             <div style="font-size:0.85rem; font-weight:600; color:#25352B; margin-bottom:6px;">
-                <span class="curio-3d-icon">💬</span>無聲護理聯絡板 (Clinic Memo)
+                <span class="curio-3d-icon">💬</span>無聲護理聯絡板 (Silent Memo)
             </div>
     """,
         unsafe_allow_html=True,
     )
-    nurse_msg = st.selectbox(
-        "快捷發送至櫃檯：",
+
+    preset_msg = st.selectbox(
+        "快速膠囊選單：",
         [
+            "自訂輸入...",
             "請協助準備 rTMS 說明單",
             "下一位需要加抽檢驗項目",
             "請準備 15s 調息衛教卡",
             "請協助引導家屬進診間",
+            "請協助列印去敏身心小卡",
         ],
     )
+
+    if preset_msg == "自訂輸入...":
+        custom_memo = st.text_input("輸入自訂訊息至櫃檯：", placeholder="例如：請準備溫熱毛巾...")
+        msg_to_send = custom_memo
+    else:
+        msg_to_send = preset_msg
+
     if st.button("📡 無聲推播至櫃檯"):
-        log_system_event("NURSE_MEMO_SENT", f"醫師推播至櫃檯: {nurse_msg}")
-        st.toast(f"✅ 已無聲發送至櫃檯：{nurse_msg}")
+        if msg_to_send:
+            log_system_event("NURSE_MEMO_SENT", f"醫師推播至櫃檯: {msg_to_send}")
+            st.toast(f"✅ 已無聲發送至櫃檯：{msg_to_send}")
+        else:
+            st.warning("⚠️ 請輸入或選擇發送訊息！")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -594,7 +631,7 @@ with st.sidebar:
 
 
 # ==============================================================================
-# 7. 主面板邏輯（含動態進度、疲勞提醒、時間管理與問候）
+# 7. 主面板邏輯（動態進度條 + 倒數 + 疲勞提醒）
 # ==============================================================================
 def fetch_patient_data(user_key):
     return st.session_state["mock_db"].get(user_key, None)
@@ -610,34 +647,42 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 計算動態時間管理與門診進度 (8/12 形式)
+# 動態時間計算器
 elapsed_seconds = time.time() - st.session_state["clinic_start_time"]
 elapsed_minutes = int(elapsed_seconds // 60)
 completed = st.session_state["completed_count"]
-total_patients = max(
-    st.session_state["total_booked_patients"], len(st.session_state["checkin_queue"])
-)
-remaining_patients = max(0, total_patients - completed)
-estimated_remaining_mins = remaining_patients * 15  # 假設每位預留 15 分鐘
+total_patients = st.session_state["total_booked_patients"]
 
-# 溫暖問候與進度（去除 "郭院長" 稱呼，直接從 "午安" 開始，加入 8/12 進度）
+# 依據一節門診時長算剩餘時間
+total_session_mins = int(st.session_state["session_hours"] * 60)
+remaining_session_mins = max(0, total_session_mins - elapsed_minutes)
+
+# 進度比例 (如 1/12 = 8%)
+progress_pct = min(1.0, completed / total_patients) if total_patients > 0 else 0.0
+
+# 溫暖問候卡與動態進度 (無 "郭院長" 稱呼)
 st.markdown(
     f"""
     <div class="doctor-care-card">
-        <div class="doctor-care-text">
-            午安。今日預約看診 <b>{total_patients}</b> 位探險家，目前進度：<b>{completed}/{total_patients}</b> ｜ 心流諧振指數 <b>94%</b>。<br>
-            <span style="font-size:0.82rem; color:#596B60;">🍵 喝口溫水，系統已為您準備好去敏身心軌跡，開啟優雅高效的一診吧。</span>
+        <div style="flex-grow: 1; margin-right: 20px;">
+            <div class="doctor-care-text">
+                午安。今日預約看診 <b>{total_patients}</b> 位探險家 ｜ 目前進度：<b>{completed}/{total_patients}</b> ({int(progress_pct*100)}%) ｜ 心流諧振指數 <b>94%</b><br>
+                <span style="font-size:0.82rem; color:#596B60;">🍵 喝口溫水，系統已為您準備好去敏身心軌跡，開啟優雅高效的一診吧。</span>
+            </div>
         </div>
         <div class="doctor-timer-badge">
             <div style="font-size:0.75rem; color:#C2A675;">門診時間管理</div>
-            <div style="font-size:1.05rem; font-weight:600;">預估剩餘時間: {estimated_remaining_mins} m</div>
+            <div style="font-size:1.05rem; font-weight:600;">預估剩餘時間: {remaining_session_mins} m</div>
         </div>
     </div>
 """,
     unsafe_allow_html=True,
 )
 
-# 長時間看診疲勞提醒 (當看診時間累積超過 45 分鐘時自動跳出)
+# 門診進度條
+st.progress(progress_pct)
+
+# 長時間看診疲勞提醒 (看診滿 45 分鐘觸發，亦可手動開啟觀察效果)
 if elapsed_minutes >= 45:
     st.markdown(
         f"""
@@ -683,7 +728,6 @@ if user_key:
     if data:
         log_system_event("FETCH_DATA_SUCCESS", f"成功查詢去敏代碼: {user_key}")
 
-        # 修正後的「小松鼠蔻恩閣長 1 秒問診焦點提示」
         st.markdown(
             f"""
             <div class="quick-nudge-box">
