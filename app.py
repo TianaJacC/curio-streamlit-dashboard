@@ -13,30 +13,24 @@ if not os.path.exists(LOG_DIR):
 
 
 def log_system_event(event_type, details):
-    """記錄無個資之系統 API / 連線 Log，滿足數發部與個資安維軌跡保存要求"""
     today_str = datetime.datetime.now().strftime("%Y-%m-%d")
     timestamp_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     log_file_path = os.path.join(LOG_DIR, f"curio_system_log_{today_str}.txt")
-
-    # Log 內嚴禁含有任何個人具名個資 (PII)，僅記錄系統事件、去敏代碼與時間戳記
     log_entry = f"[{timestamp_str}] [EVENT: {event_type}] - {details}\n"
-
     try:
         with open(log_file_path, "a", encoding="utf-8") as f:
             f.write(log_entry)
-    except Exception as e:
+    except Exception:
         pass
 
 
-# 記錄開啟面板連線事件
-log_system_event("SESSION_INIT", "Curio & Studio 診間面板安全連線載入")
-
+log_system_event("SESSION_INIT", "Curio & Studio 夢境珍奇櫃診間面板載入")
 
 # ==============================================================================
 # 1. 全局配置
 # ==============================================================================
 st.set_page_config(
-    page_title="Cabinet of Curiosities ‧ Curio & Studio 診間面板",
+    page_title="夢境珍奇櫃診間面板 ‧ Curio & Studio",
     page_icon="🐿️",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -57,7 +51,7 @@ st.markdown(
     header[data-testid="stHeader"] { background-color: rgba(0,0,0,0); }
     footer { visibility: hidden; }
 
-    /* 主頂樓卡片：極緻煙燻森林深綠 */
+    /* 主頂樓卡片 */
     .curio-hero-card {
         background: linear-gradient(135deg, #25352B 0%, #1A261F 100%);
         color: #FAF8F5;
@@ -65,12 +59,12 @@ st.markdown(
         border-radius: 28px;
         box-shadow: 0 20px 48px rgba(37, 53, 43, 0.12);
         border: 1px solid #C2A675;
-        margin-bottom: 24px;
+        margin-bottom: 22px;
     }
     .curio-hero-card h1 { 
         font-family: "Didot", "Georgia", "PingFang TC", serif !important;
         color: #FAF8F5 !important; 
-        font-size: 1.8rem !important; 
+        font-size: 1.85rem !important; 
         font-weight: 500 !important; 
         letter-spacing: 1px !important;
         margin: 0 0 8px 0 !important; 
@@ -85,17 +79,17 @@ st.markdown(
 
     /* 3D 浮雕徽章 */
     .curio-3d-icon {
-        width: 30px;
-        height: 30px;
+        width: 28px;
+        height: 28px;
         background: linear-gradient(145deg, #FAF8F5, #EBE4D8);
-        border-radius: 10px;
+        border-radius: 9px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         box-shadow: 3px 3px 8px rgba(37, 53, 43, 0.08), -2px -2px 6px rgba(255, 255, 255, 0.9);
         border: 1px solid #C2A675;
-        font-size: 0.95rem;
-        margin-right: 8px;
+        font-size: 0.9rem;
+        margin-right: 6px;
         vertical-align: middle;
     }
 
@@ -114,17 +108,31 @@ st.markdown(
     .doctor-care-text {
         font-size: 0.9rem;
         color: #25352B;
-        line-height: 1.6;
+        line-height: 1.65;
     }
     .doctor-timer-badge {
         background: #25352B;
         color: #FAF8F5;
-        padding: 8px 16px;
-        border-radius: 14px;
+        padding: 10px 18px;
+        border-radius: 16px;
         font-family: "Didot", serif;
         font-size: 0.88rem;
         border: 1px solid #C2A675;
         text-align: right;
+    }
+
+    /* 疲勞提醒微光卡 */
+    .fatigue-warning-card {
+        background: #25352B;
+        color: #FAF8F5;
+        border: 1px solid #C2A675;
+        border-radius: 16px;
+        padding: 14px 20px;
+        margin-bottom: 20px;
+        font-size: 0.86rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 
     /* 1 秒問診亮點提示卡 */
@@ -177,7 +185,7 @@ st.markdown(
         border-radius: 2px;
     }
 
-    /* 3D 俏皮知性 Metric 數據卡片 */
+    /* 3D 知性 Metric 數據卡片 */
     .custom-metric-card {
         background: #FFFFFF;
         border: 1px solid #E4DCD0;
@@ -213,7 +221,7 @@ st.markdown(
         border: 1px solid #E4DCD0; 
     }
 
-    /* 法式資安防爆公告盒 */
+    /* 法式資安宣告盒 */
     .security-notice-box {
         background-color: #F4F0E8;
         border-left: 4px solid #C2A675;
@@ -229,9 +237,9 @@ st.markdown(
     .sidebar-ateliers-box {
         background: #FFFFFF;
         border: 1px solid #E4DCD0;
-        padding: 20px 18px;
+        padding: 18px 16px;
         border-radius: 22px;
-        margin-bottom: 18px;
+        margin-bottom: 16px;
         box-shadow: 4px 4px 14px rgba(37, 53, 43, 0.03);
     }
 
@@ -268,6 +276,15 @@ if "authenticated" not in st.session_state:
 if "selected_token" not in st.session_state:
     st.session_state["selected_token"] = "#SYM-C701"
 
+if "clinic_start_time" not in st.session_state:
+    st.session_state["clinic_start_time"] = time.time()
+
+if "completed_count" not in st.session_state:
+    st.session_state["completed_count"] = 1
+
+if "total_booked_patients" not in st.session_state:
+    st.session_state["total_booked_patients"] = 12
+
 if "mock_db" not in st.session_state:
     st.session_state["mock_db"] = {
         "#SYM-C701": {
@@ -278,7 +295,7 @@ if "mock_db" not in st.session_state:
             "sleep_hours": 7.2,
             "timestamp": "2026-07-30 01:20:15",
             "weekly_trend": [82, 85, 87, 84, 89, 91, 92.5],
-            "nudge": "✨ 探險家近 3 天夜間無應激爆發，心流穩定（92.5%）。建議問診重點：維持優質睡眠時數。",
+            "nudge": "探險家近 3 天夜間無應激爆發，心流穩定（92.5%）。建議問診重點：維持優質睡眠時數。",
             "summary": "【去敏身心軌跡摘要】個案於看診前 15 秒於候診區完成 0.067 Hz 心流共振調息。連續 7 日數據顯示夜間無應激爆發，心流一致性維持於 90% 以上高諧振區間。",
         },
         "#SYM-A302": {
@@ -289,7 +306,7 @@ if "mock_db" not in st.session_state:
             "sleep_hours": 6.1,
             "timestamp": "2026-07-30 01:25:00",
             "weekly_trend": [70, 75, 78, 80, 82, 85, 88.0],
-            "nudge": "🌿 探險家睡眠時數偏低（6.1hr），生理指標顯示交感活性上升。建議問診重點：關懷換季氣壓調節。",
+            "nudge": "探險家睡眠時數偏低（6.1hr），生理指標顯示交感活性上升。建議問診重點：關懷換季氣壓調節。",
             "summary": "【去敏身心軌跡摘要】個案於候診區完成心流調息。近 7 日睡眠時數偏低，生理指標顯示交感神經活性略微上升。",
         },
     }
@@ -323,7 +340,7 @@ if hasattr(st, "dialog"):
                 </div>
                 <hr style="border: 0; border-top: 1px solid #E4DCD0; margin: 16px 0;">
                 <div style="font-size: 0.86rem; color: #25352B; line-height: 1.85;">
-                    <b>✨ 蔻恩閣長的四大資安誓言：</b><br>
+                    <b>✨ 蔻恩閣長四大資安誓言：</b><br>
                     1. <b>符合《個資法》第 2 條去識別化標準</b>：全流程絕不收集、記錄或存儲病患真實姓名、身分證號、電話或病歷號。<br>
                     2. <b>240 分鐘動態時間鎖 <span style="font-family: Didot, serif; color: #C2A675;">(Time-Lock)</span></b>：去敏密鑰 <span style="font-family: Didot, serif; color: #C2A675;">(Token)</span> 具備 240 分鐘動態壽命，看診完畢即剛性銷毀，雲端絕不留存持久個資。<br>
                     3. <b>HTTPS TLS 1.3 & AES-256 加密</b>：前端至中繼站全通道高階加密，徹底防禦中間人截取。<br>
@@ -397,6 +414,7 @@ if not st.session_state["authenticated"]:
                 or pwd_input == MASTER_KEY
             ):
                 st.session_state["authenticated"] = True
+                st.session_state["clinic_start_time"] = time.time()
                 log_system_event("AUTH_SUCCESS", "診間金鑰驗證成功並進入面板")
                 st.rerun()
             else:
@@ -424,7 +442,7 @@ if not st.session_state["authenticated"]:
 
 
 # ==============================================================================
-# 6. 側邊欄：雙向數據拋接中繼站
+# 6. 側邊欄：雙向數據拋接中繼站與新功能
 # ==============================================================================
 with st.sidebar:
     st.markdown(
@@ -460,7 +478,7 @@ with st.sidebar:
             "sleep_hours": 7.5,
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "weekly_trend": [80, 82, 85, 88, 90, 92, score_a],
-            "nudge": f"✨ 飛鴿拋接短碼 {token_a}。心流表現極佳（{score_a}%），建議進行常規衛教即可。",
+            "nudge": f"飛鴿拋接短碼 {token_a}。心流表現極佳（{score_a}%），建議進行常規衛教即可。",
             "summary": f"【去敏身心軌跡摘要】經由 LINE LIFF 飛鴿拋接之短碼 {token_a}。個案完成診前調息，心流表現極佳。",
         }
         st.session_state["checkin_queue"].append(
@@ -469,6 +487,9 @@ with st.sidebar:
                 "time": current_time_str,
                 "source": "LINE LIFF API",
             }
+        )
+        st.session_state["total_booked_patients"] = len(
+            st.session_state["checkin_queue"]
         )
         log_system_event(
             "API_PUSH_EVENT", f"路徑 A 手動模擬 App 拋接 Token: {token_a}"
@@ -493,12 +514,60 @@ with st.sidebar:
         if st.session_state["checkin_queue"]:
             latest_token = st.session_state["checkin_queue"][-1]["token"]
             st.session_state["selected_token"] = latest_token
+            st.session_state["completed_count"] += 1
             log_system_event(
                 "WEBHOOK_TRIGGER",
                 f"路徑 B Webhook 叫號加載 Token: {latest_token}",
             )
             st.toast(f"✨ Webhook 連動成功！已載入去敏密鑰 {latest_token}")
             st.rerun()
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # 全新功能一：法式診間安神音場設定
+    st.markdown(
+        """
+        <div class="sidebar-ateliers-box">
+            <div style="font-size:0.85rem; font-weight:600; color:#25352B; margin-bottom:6px;">
+                <span class="curio-3d-icon">🎵</span>法式診間安神音場 (Atmosphere)
+            </div>
+            <div style="font-size:0.78rem; color:#596B60; margin-bottom:8px;">選擇診間背景靜心音樂：</div>
+    """,
+        unsafe_allow_html=True,
+    )
+    bg_sound = st.selectbox(
+        "切換背景聲景：",
+        [
+            "0.067Hz 莫蘭迪共振調息音",
+            "法式雨沈香木沉澱聲景",
+            "靜音靜心模式",
+        ],
+    )
+    st.caption(f"🎧 當前音場：{bg_sound}")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # 全新功能二：無聲護理聯絡板
+    st.markdown(
+        """
+        <div class="sidebar-ateliers-box">
+            <div style="font-size:0.85rem; font-weight:600; color:#25352B; margin-bottom:6px;">
+                <span class="curio-3d-icon">💬</span>無聲護理聯絡板 (Clinic Memo)
+            </div>
+    """,
+        unsafe_allow_html=True,
+    )
+    nurse_msg = st.selectbox(
+        "快捷發送至櫃檯：",
+        [
+            "請協助準備 rTMS 說明單",
+            "下一位需要加抽檢驗項目",
+            "請準備 15s 調息衛教卡",
+            "請協助引導家屬進診間",
+        ],
+    )
+    if st.button("📡 無聲推播至櫃檯"):
+        log_system_event("NURSE_MEMO_SENT", f"醫師推播至櫃檯: {nurse_msg}")
+        st.toast(f"✅ 已無聲發送至櫃檯：{nurse_msg}")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -525,7 +594,7 @@ with st.sidebar:
 
 
 # ==============================================================================
-# 7. 主面板邏輯（含溫暖關懷與時間管理）
+# 7. 主面板邏輯（含動態進度、疲勞提醒、時間管理與問候）
 # ==============================================================================
 def fetch_patient_data(user_key):
     return st.session_state["mock_db"].get(user_key, None)
@@ -534,37 +603,62 @@ def fetch_patient_data(user_key):
 st.markdown(
     """
     <div class="curio-hero-card">
-        <h1>Cabinet of Curiosities ‧ Curio & Studio 診間面板</h1>
+        <h1>夢境珍奇櫃診間面板</h1>
         <p>Curio & Studio x 交感身心診所 ｜ 首席珍藏家蔻恩閣長 (Cone) ‧ 0 個資 ‧ 診前 15 秒身心軌跡拋接</p>
     </div>
 """,
     unsafe_allow_html=True,
 )
 
-# 頂樓醫師狀態與尊榮溫暖關懷卡 (Warm Care & Time Management)
-total_patients = len(st.session_state["checkin_queue"])
+# 計算動態時間管理與門診進度 (8/12 形式)
+elapsed_seconds = time.time() - st.session_state["clinic_start_time"]
+elapsed_minutes = int(elapsed_seconds // 60)
+completed = st.session_state["completed_count"]
+total_patients = max(
+    st.session_state["total_booked_patients"], len(st.session_state["checkin_queue"])
+)
+remaining_patients = max(0, total_patients - completed)
+estimated_remaining_mins = remaining_patients * 15  # 假設每位預留 15 分鐘
+
+# 溫暖問候與進度（去除 "郭院長" 稱呼，直接從 "午安" 開始，加入 8/12 進度）
 st.markdown(
     f"""
     <div class="doctor-care-card">
         <div class="doctor-care-text">
-            🟢 <b>郭家穎 院長</b>，午安。今日預約看診 <b>{total_patients}</b> 位探險家，當前診間心流諧振指數 <b>94%</b>。<br>
+            午安。今日預約看診 <b>{total_patients}</b> 位探險家，目前進度：<b>{completed}/{total_patients}</b> ｜ 心流諧振指數 <b>94%</b>。<br>
             <span style="font-size:0.82rem; color:#596B60;">🍵 喝口溫水，系統已為您準備好去敏身心軌跡，開啟優雅高效的一診吧。</span>
         </div>
         <div class="doctor-timer-badge">
             <div style="font-size:0.75rem; color:#C2A675;">門診時間管理</div>
-            <div style="font-size:1.1rem; font-weight:600;">剩餘看診預估: 45 m</div>
+            <div style="font-size:1.05rem; font-weight:600;">預估剩餘時間: {estimated_remaining_mins} m</div>
         </div>
     </div>
 """,
     unsafe_allow_html=True,
 )
 
+# 長時間看診疲勞提醒 (當看診時間累積超過 45 分鐘時自動跳出)
+if elapsed_minutes >= 45:
+    st.markdown(
+        f"""
+        <div class="fatigue-warning-card">
+            <div>
+                <b>🌿 蔻恩閣長的莫蘭迪微光關懷：</b> 您已連續專注看診 <b>{elapsed_minutes} 分鐘</b>。建議在下一位探險家進診間前，進行 10 秒深呼吸沉澱身心。
+            </div>
+            <div style="font-family: Didot, serif; italic; color:#C2A675; font-size:0.8rem;">
+                Mindful Pause
+            </div>
+        </div>
+    """,
+        unsafe_allow_html=True,
+    )
+
 top_col1, top_col2 = st.columns([3, 1])
 with top_col1:
     st.markdown(
         """
         <div style="background:#FFFFFF; border:1px solid #E4DCD0; border-radius:30px; padding:10px 26px; font-size:0.86rem; color:#25352B;">
-            <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">🟢</span> <b>郭家穎 院長</b>（交感身心診所）已通過診間安全認證 ｜ 🏛️ 診間號：C701 ｜ <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">🛡️</span> <b>0 個資死鎖狀態</b>
+            <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">🟢</span> 已通過診間安全認證 ｜ 🏛️ 診間號：C701 ｜ <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">🛡️</span> <b>0 個資死鎖狀態</b>
         </div>
     """,
         unsafe_allow_html=True,
@@ -589,12 +683,12 @@ if user_key:
     if data:
         log_system_event("FETCH_DATA_SUCCESS", f"成功查詢去敏代碼: {user_key}")
 
-        # 1 秒問診重點提示卡 (Quick Nudge Card - 提效重點)
+        # 修正後的「小松鼠蔻恩閣長 1 秒問診焦點提示」
         st.markdown(
             f"""
             <div class="quick-nudge-box">
                 <div style="font-size:0.88rem; font-weight:600; color:#25352B; margin-bottom:4px;">
-                    <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">💡</span> Curio 1 秒問診焦點提示 (Clinical Nudge)
+                    <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">✨</span> 小松鼠蔻恩閣長 1 秒問診焦點提示 (Clinical Nudge)
                 </div>
                 <div style="font-size:0.86rem; color:#596B60; line-height:1.5;">
                     {data.get('nudge', '探險家身心軌跡平穩，可進行常規問診諮詢。')}
