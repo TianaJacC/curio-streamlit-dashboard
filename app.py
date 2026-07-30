@@ -106,7 +106,12 @@ if "audio_loop" not in st.session_state:
 
 MASTER_KEY = "CURIO-999"
 
+# 包含郭醫師最新指定曲目之播放清單
 PLAYLIST = [
+    {
+        "title": "✨ 郭醫師最新指定曲 ‧ 迷幻心流深層共振 (Deep Drift Session)",
+        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
+    },
     {
         "title": "Underworld - Dark & Long (Dark Train) [郭醫師首選]",
         "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
@@ -624,6 +629,7 @@ with st.sidebar:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
+    # 包含郭醫師最新指定曲目之音樂播放卡
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
@@ -741,7 +747,7 @@ with st.sidebar:
 
 
 # ==============================================================================
-# 6. 主面板邏輯 (直接對接全域 DB ＋ 一鍵升級加購按鈕)
+# 6. 主面板邏輯
 # ==============================================================================
 def fetch_patient_data(user_key):
     return global_db.get(user_key, None)
