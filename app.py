@@ -10,11 +10,10 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# 2. Bespoke French Typography & 3D/4D Claymorphism CSS
+# 2. Bespoke French High-Jewelry & 3D/4D Atelier CSS
 st.markdown(
     """
     <style>
-    /* 導入高級法式襯線字體與微排版 */
     @import url('https://fonts.googleapis.com/css2?family=Didot&family=Garamond:ital,wght@0,400;0,600;1,400&display=swap');
 
     .stApp {
@@ -24,16 +23,11 @@ st.markdown(
     header[data-testid="stHeader"] { background-color: rgba(0,0,0,0); }
     footer { visibility: hidden; }
 
-    /* 全局排版微調：修正中英文與括弧排版大空格問題 */
+    /* 全局排版微調 */
     .fix-spacing {
         letter-spacing: 0px !important;
         word-spacing: 0px !important;
         display: inline-block;
-    }
-    .en-subtext {
-        font-family: "Didot", "Garamond", serif;
-        font-style: italic;
-        color: #C2A675;
     }
 
     /* 主頂樓卡片：極緻煙燻森林深綠 (Deep Atelier Sage) */
@@ -62,19 +56,20 @@ st.markdown(
         letter-spacing: 0.5px;
     }
 
-    /* 3D/4D 精品微浮雕徽章 (Curio 3D Badge) */
-    .badge-3d-box {
-        width: 68px;
-        height: 68px;
-        background: linear-gradient(145deg, #FFFFFF, #F0EAE1);
-        border-radius: 22px;
-        display: flex;
+    /* 3D/4D 浮雕徽章 (Curio 3D Badge Icon) */
+    .curio-3d-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(145deg, #FAF8F5, #EBE4D8);
+        border-radius: 10px;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 2.2rem;
-        box-shadow: 6px 6px 18px rgba(37, 53, 43, 0.06), -5px -5px 14px rgba(255, 255, 255, 0.9);
+        box-shadow: 3px 3px 8px rgba(37, 53, 43, 0.08), -2px -2px 6px rgba(255, 255, 255, 0.9);
         border: 1px solid #C2A675;
-        margin: 0 auto 16px auto;
+        font-size: 1rem;
+        margin-right: 8px;
+        vertical-align: middle;
     }
 
     /* 知性登入卡片 (Atelier Glass Panel) */
@@ -133,10 +128,10 @@ st.markdown(
     .custom-metric-header {
         display: flex;
         align-items: center;
-        gap: 8px;
         font-size: 0.88rem;
         color: #596B60;
         margin-bottom: 10px;
+        font-weight: 500;
     }
     .custom-metric-value { 
         font-size: 1.55rem; 
@@ -169,19 +164,28 @@ st.markdown(
         line-height: 1.75;
     }
 
-    /* 側邊欄重構：蔻恩閣長 3D 主角卡片 */
-    .sidebar-cone-card {
-        background: linear-gradient(145deg, #FFFFFF, #F8F4ED);
+    /* 側邊欄重構：高奢黑卡藝廊區塊 */
+    .sidebar-ateliers-box {
+        background: #FFFFFF;
         border: 1px solid #E4DCD0;
-        padding: 20px 16px;
+        padding: 20px 18px;
         border-radius: 22px;
-        text-align: center;
-        margin-bottom: 20px;
-        box-shadow: 4px 4px 14px rgba(37, 53, 43, 0.04);
+        margin-bottom: 18px;
+        box-shadow: 4px 4px 14px rgba(37, 53, 43, 0.03);
     }
-    .sidebar-cone-avatar {
-        font-size: 2.2rem;
+    .sidebar-ateliers-title {
+        font-family: "Didot", serif;
+        color: #25352B;
+        font-size: 0.95rem;
+        font-weight: 600;
+        letter-spacing: 1px;
         margin-bottom: 4px;
+    }
+    .sidebar-ateliers-sub {
+        font-size: 0.78rem;
+        color: #C2A675;
+        font-style: italic;
+        margin-bottom: 14px;
     }
 
     /* 按鈕高奢美化 */
@@ -248,16 +252,16 @@ if "checkin_queue" not in st.session_state:
 MASTER_KEY = "CURIO-999"
 
 
-# --- 4. 蔻恩閣長 3D 典藏資安寶盒 (排版大空格已徹底完美修正) ---
+# --- 4. 蔻恩閣長 3D 典藏資安寶盒 ---
 if hasattr(st, "dialog"):
 
-    @st.dialog("🐿️ 蔻恩閣長的 3D 典藏資安寶盒")
+    @st.dialog("蔻恩閣長的 3D 典藏資安寶盒")
     def security_declaration_dialog():
         st.markdown(
             """
             <div style="background: linear-gradient(145deg, #FAF8F5, #F4F0E8); padding: 26px; border-radius: 24px; border: 1.5px solid #C2A675; box-shadow: 0 12px 32px rgba(37, 53, 43, 0.08);">
                 <div style="text-align: center; margin-bottom: 16px;">
-                    <div style="font-size: 2.8rem; margin-bottom: 4px;">🐿️</div>
+                    <div style="font-size: 2.6rem; margin-bottom: 4px;">🐿️</div>
                     <div class="brand-caption" style="font-size: 0.82rem; margin-bottom: 4px;">Curio & Studio ‧ 首席珍藏家</div>
                     <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.3rem; margin: 0;">小松鼠蔻恩閣長 <span style="font-family: Didot, serif; font-style: italic; color: #C2A675;">(Cone)</span> 資安宣告</h3>
                 </div>
@@ -300,12 +304,12 @@ if hasattr(st, "dialog"):
                 st.rerun()
 
 
-# --- 5. 門診安全驗證登入頁 (小松鼠蔻恩閣長 3D 浮雕亮相) ---
+# --- 5. 門診安全驗證登入頁 (去個資法式奢華感) ---
 if not st.session_state["authenticated"]:
     st.markdown(
         """
         <div class="atelier-login-card">
-            <div class="badge-3d-box">🐿️</div>
+            <div style="font-size: 2.8rem; margin-bottom: 8px;">🐿️</div>
             <div class="brand-caption">Curio & Studio</div>
             <div class="medical-title">交感身心診所 ‧ 門診安全驗證</div>
             <div class="gold-divider"></div>
@@ -331,7 +335,7 @@ if not st.session_state["authenticated"]:
             "<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True
         )
 
-        if st.button("✨ 解鎖門診數據面板", use_container_width=True):
+        if st.button("解鎖門診數據面板", use_container_width=True):
             if (
                 pwd_input == st.session_state["doctor_password"]
                 or pwd_input == MASTER_KEY
@@ -346,7 +350,7 @@ if not st.session_state["authenticated"]:
         )
 
         if st.button(
-            "🐿️ 蔻恩閣長的 3D 資安宣告寶盒",
+            "蔻恩閣長 3D 典藏資安寶盒",
             use_container_width=True,
         ):
             if hasattr(st, "dialog"):
@@ -364,24 +368,32 @@ if not st.session_state["authenticated"]:
     st.stop()
 
 
-# --- 6. 側邊欄：蔻恩閣長 🐿️ 在前、信鴿 Singer 🕊️ 在後的 3D 模擬器 ---
+# --- 6. 側邊欄：徹底高奢化的雙向數據拋接中繼站 (告別生硬模擬器) ---
 with st.sidebar:
     st.markdown(
         """
-        <div class="sidebar-cone-card">
-            <div class="sidebar-cone-avatar">🐿️ 🕊️</div>
-            <div style="color: #25352B; font-weight: 600; font-size: 0.98rem; font-family: 'Garamond', serif;">Curio & Studio 雙向中繼站</div>
-            <div style="color: #C2A675; font-size: 0.78rem; font-family: 'Didot', serif; italic; margin-top: 2px;">小松鼠蔻恩閣長 ✕ 信鴿 Singer</div>
+        <div class="sidebar-ateliers-box" style="text-align: center;">
+            <div style="font-size: 2.2rem; margin-bottom: 4px;">🐿️ 🕊️</div>
+            <div class="sidebar-ateliers-title">Curio & Studio 數據中繼站</div>
+            <div class="sidebar-ateliers-sub">小松鼠蔻恩閣長 ✕ 信鴿 Singer</div>
         </div>
     """,
         unsafe_allow_html=True,
     )
 
-    st.markdown("#### 📱 路徑 A：LINE LIFF / App 資料拋接")
+    st.markdown(
+        """
+        <div class="sidebar-ateliers-box">
+            <div style="font-size:0.85rem; font-weight:600; color:#25352B; margin-bottom:8px;">
+                <span class="curio-3d-icon">✨</span>路徑 A ‧ 邊緣端 App 數據拋接
+            </div>
+    """,
+        unsafe_allow_html=True,
+    )
     token_a = st.text_input("去敏短碼 (Token):", value="#SYM-B888")
     score_a = st.slider("心流分數:", 60.0, 100.0, 94.0)
 
-    if st.button("📡 [路徑 A] 模擬 App 飛鴿拋接"):
+    if st.button("觸發 15 秒飛鴿拋接"):
         current_time_str = time.strftime("%H:%M")
         st.session_state["mock_db"][token_a] = {
             "status": "已完成診前 15s 共振調息",
@@ -400,27 +412,43 @@ with st.sidebar:
                 "source": "LINE LIFF API",
             }
         )
-        st.toast(f"🕊️ 信鴿 Singer 已將 {token_a} 數據安全送達！")
+        st.toast(f"✨ 信鴿 Singer 已將 {token_a} 去敏數據安全送達！")
         st.rerun()
 
-    st.markdown("---")
-    st.markdown("#### 🔔 路徑 B：叫號系統 Webhook 觸發")
-    st.caption("當護理師在 HIS/LINE 點擊『下一位進診間』：")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    if st.button("🚀 [路徑 B] 模擬 HIS 叫號 Webhook"):
+    st.markdown(
+        """
+        <div class="sidebar-ateliers-box">
+            <div style="font-size:0.85rem; font-weight:600; color:#25352B; margin-bottom:8px;">
+                <span class="curio-3d-icon">🌿</span>路徑 B ‧ 叫號系統 Webhook 連動
+            </div>
+            <div style="font-size:0.78rem; color:#596B60; margin-bottom:10px;">當護理師點擊『下一位進診間』自動觸發：</div>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    if st.button("載入下一位探險家動態"):
         if st.session_state["checkin_queue"]:
             latest_token = st.session_state["checkin_queue"][-1]["token"]
             st.session_state["selected_token"] = latest_token
-            st.toast(
-                f"🔔 [路徑 B Webhook] 收到叫號事件！已自動載入 {latest_token}"
-            )
+            st.toast(f"✨ Webhook 連動成功！已載入去敏密鑰 {latest_token}")
             st.rerun()
 
-    st.markdown("---")
-    st.markdown("### 📋 診間待看診佇列 (Queue)")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown(
+        """
+        <div style="font-size:0.88rem; font-weight:600; color:#25352B; margin-top:14px; margin-bottom:10px; padding-left:4px;">
+            <span class="curio-3d-icon">📜</span>門診待看診佇列 (Queue)
+        </div>
+    """,
+        unsafe_allow_html=True,
+    )
+
     for item in st.session_state["checkin_queue"]:
         if st.button(
-            f"🔓 {item['token']} ({item['time']})",
+            f"解鎖代碼 {item['token']} ({item['time']})",
             key=f"btn_{item['token']}",
             use_container_width=True,
         ):
@@ -436,7 +464,7 @@ def fetch_patient_data(user_key):
 st.markdown(
     """
     <div class="curio-hero-card">
-        <h1>✨ Cabinet of Curiosities ‧ Curio & Studio 診間面板</h1>
+        <h1>Cabinet of Curiosities ‧ Curio & Studio 診間面板</h1>
         <p>Curio & Studio x 交感身心診所 ｜ 首席珍藏家蔻恩閣長 (Cone) ‧ 0 個資 ‧ 診前 15 秒身心軌跡拋接</p>
     </div>
 """,
@@ -448,7 +476,7 @@ with top_col1:
     st.markdown(
         """
         <div style="background:#FFFFFF; border:1px solid #E4DCD0; border-radius:30px; padding:10px 26px; font-size:0.86rem; color:#25352B;">
-            🟢 <b>郭家穎 院長</b>（交感身心診所）已通過診間安全認證 ｜ 🏛️ 診間號：C701 ｜ 🛡️ <b>0 個資死鎖狀態</b>
+            <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">🟢</span> <b>郭家穎 院長</b>（交感身心診所）已通過診間安全認證 ｜ 🏛️ 診間號：C701 ｜ <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">🛡️</span> <b>0 個資死鎖狀態</b>
         </div>
     """,
         unsafe_allow_html=True,
@@ -486,7 +514,7 @@ if user_key:
                 f"""
                 <div class="custom-metric-card">
                     <div class="custom-metric-header">
-                        <span>✨</span>
+                        <span class="curio-3d-icon">✨</span>
                         <span>心流一致性 (0.067Hz)</span>
                     </div>
                     <div class="custom-metric-value">{data['coherence_score']} %</div>
@@ -501,7 +529,7 @@ if user_key:
                 f"""
                 <div class="custom-metric-card">
                     <div class="custom-metric-header">
-                        <span>🌿</span>
+                        <span class="curio-3d-icon">🌿</span>
                         <span>身心應激狀態</span>
                     </div>
                     <div class="custom-metric-value">{data['stress_index']}</div>
@@ -516,7 +544,7 @@ if user_key:
                 f"""
                 <div class="custom-metric-card">
                     <div class="custom-metric-header">
-                        <span>🌙</span>
+                        <span class="curio-3d-icon">🌙</span>
                         <span>本機睡眠時數</span>
                     </div>
                     <div class="custom-metric-value">{data['sleep_hours']} hr</div>
@@ -531,7 +559,7 @@ if user_key:
         )
 
         tab1, tab2 = st.tabs(
-            ["📈 近 7 日心流平穩度曲線", "📄 診前 15 秒去敏摘要"]
+            ["近 7 日心流平穩度曲線", "診前 15 秒去敏摘要"]
         )
         with tab1:
             st.markdown(
@@ -565,7 +593,7 @@ if user_key:
         st.markdown(
             """
             <div class="security-notice-box">
-                <b>🛡️ 零知識架構與個資法規合規宣告 (Zero-Knowledge & Privacy Compliance)</b><br>
+                <b>零知識架構與個資法規合規宣告 (Zero-Knowledge & Privacy Compliance)</b><br>
                 1. <b>符合個資法規</b>：本系統嚴格遵循中華民國《個人資料保護法》第 2 條之去識別化標準。<b>系統全流程絕不收集、記錄或存儲病患之真實姓名、身分證字號、出生年月日、聯絡電話、醫療病歷號碼或 IP 位址</b>。<br>
                 2. <b>資安傳輸與儲存防護</b>：前端至雲端中繼站之數據傳輸全數採用 <b>HTTPS (TLS 1.3) 高階加密通道</b>，靜態快取數據皆實施 <b>AES-256 演算法加密</b>；雲端中繼數據實施 240 分鐘動態時間鎖（Time-Lock）與每日 24 點剛性銷毀（Data TTL）。
             </div>
