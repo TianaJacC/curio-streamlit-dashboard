@@ -126,7 +126,7 @@ PLAYLIST = [
 ]
 
 # ==============================================================================
-# 2. Bespoke French High-Jewelry & 側邊欄箭頭全狀態深色包邊 CSS
+# 2. Bespoke French High-Jewelry & 全狀態深色包邊 CSS
 # ==============================================================================
 st.markdown(
     """
@@ -373,14 +373,16 @@ if hasattr(st, "dialog"):
         st.markdown(
             """
             <div style="background: linear-gradient(145deg, #FAF8F5, #F4F0E8); padding: 22px; border-radius: 20px; border: 1.5px solid #C2A675;">
-                <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.25rem; margin-top: 0;">開立新診間連線與加購模組</h3>
-                <p style="font-size: 0.86rem; color: #596B60;">當前授權版本：<b>骨折體驗旗艦版 (1 診間)</b>。如需擴充連線數或加購模組，請選擇以下方案：</p>
+                <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.25rem; margin-top: 0;">開立新診間連線與加購模組 (Add-on Modules)</h3>
+                <p style="font-size: 0.86rem; color: #596B60;">當前授權版本：<b>正價旗艦診間版 (1 診間)</b>。如需擴充連線數或加購模組，請選擇以下方案：</p>
                 <hr style="border:0; border-top:1px solid #E4DCD0; margin:12px 0;">
                 <div style="font-size: 0.85rem; color: #25352B; line-height: 1.8;">
-                    ➕ <b>擴充 1 組新診間連線</b>：NT$ 48,000 / 年（折合 NT$ 4,000/月）<br>
-                    🔌 <b>HIS 叫號系統 API 自動化串接</b>：NT$ 38,000 ～ 108,000 元/案<br>
-                    🎵 <b>診所專屬 Ambient 音場匯入</b>：NT$ 12,000 元/案<br>
-                    📄 <b>專屬衛教小卡與排版客製</b>：NT$ 15,000 元/案
+                    ➕ <b>擴充 1 組新診間連線</b>：NT$ 128,000 元 / 年 (折合 NT$ 12,800/月)<br>
+                    🎫 <b>【功能 05】當前加號優先憑證模組</b>：+ NT$ 3,800 元/月<br>
+                    ⚡ <b>【功能 10】無聲捕蚊燈 (No-show 插隊)</b>：+ NT$ 5,200 元/月<br>
+                    💊 <b>【功能 11】自費藥局交叉地圖變現 API</b>：+ NT$ 8,800 元/月<br>
+                    📊 <b>【功能 12】OMOP CDM 續單神器 (臨床對照流)</b>：+ NT$ 9,800 元/月<br>
+                    🔌 <b>HIS 叫號系統 API 階梯式串接</b>：NT$ 38,000 ～ 108,000 元/案
                 </div>
                 <div style="margin-top: 16px; text-align: center; font-size:0.8rem; color:#B29562;">
                     📞 專案加購專線：(02) 2396-6070 ｜ 信箱：service@curio.studio
@@ -622,7 +624,6 @@ with st.sidebar:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 獨立「🔁 循環播放」按鈕與 180px 控制列
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
@@ -680,7 +681,6 @@ with st.sidebar:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 自由打字 + 快速選單之無聲護理板
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
@@ -757,7 +757,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 動態時間計算器
 elapsed_seconds = time.time() - st.session_state["clinic_start_time"]
 elapsed_minutes = int(elapsed_seconds // 60)
 completed = st.session_state["completed_count"]
@@ -802,12 +801,11 @@ if elapsed_minutes >= 45:
         unsafe_allow_html=True,
     )
 
-# 頂樓狀態欄 ＋ 「一鍵升級加購」按鈕
 top_col1, top_col2, top_col3 = st.columns([2.5, 0.8, 0.8])
 with top_col1:
     st.markdown(
         """
-        <div style="background:#FFFFFF; border:1px solid #E4DCD0; border-radius:30px; padding:10px 22px; font-size:0.86rem; color:#25352B;">
+        <div style="background:#FFFFFF; border:1px solid #E4DCD0; border-radius:30px; padding:10px 26px; font-size:0.86rem; color:#25352B;">
             <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">🟢</span> 已通過診間安全認證 ｜ 🏛️ 診間號：C701 ｜ <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">🛡️</span> <b>0 個資死鎖狀態</b>
         </div>
     """,
