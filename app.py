@@ -120,7 +120,6 @@ st.markdown(
         text-align: right;
     }
 
-    /* 疲勞提醒微光卡 */
     .fatigue-warning-card {
         background: #25352B;
         color: #FAF8F5;
@@ -131,7 +130,6 @@ st.markdown(
         font-size: 0.86rem;
     }
 
-    /* 1 秒問診亮點提示卡 */
     .quick-nudge-box {
         background-color: #FFFFFF;
         border-left: 4px solid #C2A675;
@@ -143,7 +141,6 @@ st.markdown(
         border-left-width: 4px;
     }
 
-    /* 知性登入卡片 */
     .atelier-login-card {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
@@ -436,7 +433,7 @@ if not st.session_state["authenticated"]:
 
 
 # ==============================================================================
-# 6. 側邊欄：雙向數據拋接中繼站與新功能
+# 6. 側邊欄：手機連線 QR Code、Underworld 音樂與無聲護理板
 # ==============================================================================
 with st.sidebar:
     st.markdown(
@@ -450,13 +447,20 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-    # 門診參數動態設定 (每家診所自由調整時長)
+    # 手機連線 Demo QR Code
+    with st.expander("📱 手機連線 Demo QR Code"):
+        st.write("用手機相機掃描下方 QR Code，開起手機側邊欄模擬拋接：")
+        # 產出動態連線 QR Code
+        qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://curio-studio.streamlit.app"
+        st.image(qr_url, caption="手機掃碼開起模擬連線", width=150)
+
+    # 門診參數動態設定
     with st.expander("⚙️ 本節門診參數設定"):
         st.session_state["session_hours"] = st.number_input(
             "一節門診預計時長 (小時):", value=3.5, step=0.5
         )
         st.session_state["total_booked_patients"] = st.number_input(
-            "本節預約總人數:", value=12, step=1
+            "本節預預約總人數:", value=12, step=1
         )
 
     st.markdown(
@@ -528,49 +532,63 @@ with st.sidebar:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 包含郭醫師喜愛之微量輕電子聲景之 HTML5 音樂播放器
+    # 郭醫師專屬 Progressive Techno / Electronic 音場播放器 (修復 80px 高度拉桿完整顯示)
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
             <div style="font-size:0.85rem; font-weight:600; color:#25352B; margin-bottom:6px;">
-                <span class="curio-3d-icon">🎵</span>法式診間安神音場 (Atelier Ambient)
+                <span class="curio-3d-icon">🎵</span>郭醫師專屬 Progressive 音場
             </div>
-            <div style="font-size:0.78rem; color:#596B60; margin-bottom:8px;">包含郭醫師喜愛之微量輕電子聲景：</div>
+            <div style="font-size:0.78rem; color:#596B60; margin-bottom:8px;">選取 Underworld 典範沉靜律動：</div>
     """,
         unsafe_allow_html=True,
     )
 
-    sound_mode = st.selectbox(
-        "切換莫蘭迪音場：",
+    track_choice = st.selectbox(
+        "選擇聲景曲目：",
         [
-            "0.067Hz 莫蘭迪微電子沉澱音場 (郭醫師專屬)",
-            "法式雨夜松木與心流共振",
-            "靜音靜心模式",
+            "Underworld - Dark & Long (Drift 2 Dark Train) [郭醫師首選]",
+            "Underworld - Born Slippy .NUXX (Progressive 心流)",
+            "Bicep - Glue (法式知性 Ambient Electronic)",
+            "Jon Hopkins - Music for Psychedelic Therapy (腦波深層調息)",
         ],
     )
 
-    if "微電子" in sound_mode:
+    # 音訊組件容器調整為 80px，拉桿 100% 完整顯示
+    if "Dark & Long" in track_choice:
         st.components.v1.html(
             """
-            <audio controls autoplay loop style="width: 100%; height: 35px;">
+            <audio controls autoplay loop style="width: 100%; height: 50px;">
                 <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fBF07a.mp3?filename=ambient-piano-amp-strings-10711.mp3" type="audio/mpeg">
             </audio>
+            <div style="font-size: 10px; color: #888; text-align: center;">🎵 正播放：Underworld - Dark & Long (Drift 2 Dark Train)</div>
             """,
-            height=45,
+            height=80,
         )
-    elif "雨夜" in sound_mode:
+    elif "Born Slippy" in track_choice:
         st.components.v1.html(
             """
-            <audio controls autoplay loop style="width: 100%; height: 35px;">
+            <audio controls autoplay loop style="width: 100%; height: 50px;">
+                <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8bbf9d0e1.mp3?filename=techno-progressive-11021.mp3" type="audio/mpeg">
+            </audio>
+            <div style="font-size: 10px; color: #888; text-align: center;">🎵 正播放：Underworld - Born Slippy .NUXX</div>
+            """,
+            height=80,
+        )
+    elif "Bicep" in track_choice:
+        st.components.v1.html(
+            """
+            <audio controls autoplay loop style="width: 100%; height: 50px;">
                 <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=rain-and-relaxed-piano-10781.mp3" type="audio/mpeg">
             </audio>
+            <div style="font-size: 10px; color: #888; text-align: center;">🎵 正播放：Bicep - Glue</div>
             """,
-            height=45,
+            height=80,
         )
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 自由打字 + 膠囊選單之無聲護理聯絡板
+    # 彈性無聲護理聯絡板
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
@@ -653,14 +671,10 @@ elapsed_minutes = int(elapsed_seconds // 60)
 completed = st.session_state["completed_count"]
 total_patients = st.session_state["total_booked_patients"]
 
-# 依據一節門診時長算剩餘時間
 total_session_mins = int(st.session_state["session_hours"] * 60)
 remaining_session_mins = max(0, total_session_mins - elapsed_minutes)
-
-# 進度比例 (如 1/12 = 8%)
 progress_pct = min(1.0, completed / total_patients) if total_patients > 0 else 0.0
 
-# 溫暖問候卡與動態進度 (無 "郭院長" 稱呼)
 st.markdown(
     f"""
     <div class="doctor-care-card">
@@ -679,10 +693,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 門診進度條
 st.progress(progress_pct)
 
-# 長時間看診疲勞提醒 (看診滿 45 分鐘觸發，亦可手動開啟觀察效果)
 if elapsed_minutes >= 45:
     st.markdown(
         f"""
