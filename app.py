@@ -106,11 +106,11 @@ if "audio_loop" not in st.session_state:
 
 MASTER_KEY = "CURIO-999"
 
-# 100% 穩定發聲之高音質法式 Progressive 音樂庫
+# 100% 穩定發聲之高音質法式 Progressive 音樂庫 (已修復郭醫師指定曲)
 PLAYLIST = [
     {
         "title": "✨ 郭醫師最新指定曲 ‧ 迷幻心流 60Min 深層聲景 (Deep Drift)",
-        "url": "https://media.geeksforgeeks.org/wp-content/uploads/20230524142525/gfg_music.mp3",
+        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
     },
     {
         "title": "Underworld - Dark & Long (Dark Train Extended Mix) [郭醫師首選]",
@@ -369,17 +369,17 @@ st.markdown(
 
 
 # ==============================================================================
-# 3. 診所專屬 13 大高毛利加購功能 Modal 彈窗
+# 3. 診所專屬 13 大高階選購模組 Modal 彈窗 (商業用語優化版)
 # ==============================================================================
 if hasattr(st, "dialog"):
 
-    @st.dialog("💎 診所端 13 大高毛利加購模組選配中心")
+    @st.dialog("💎 Curio & Studio 診間高階臨床與營運效能選配中心")
     def upgrade_subscription_dialog():
         st.markdown(
             """
             <div style="background: linear-gradient(145deg, #FAF8F5, #F4F0E8); padding: 20px; border-radius: 20px; border: 1.5px solid #C2A675; max-height: 480px; overflow-y: auto;">
-                <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.2rem; margin-top: 0;">診所端旗艦加購模組 (Clinic Add-ons)</h3>
-                <p style="font-size: 0.82rem; color: #596B60;">勾選需要解鎖的診所營運與臨床變現神器：</p>
+                <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.2rem; margin-top: 0;">診所端高階效能選配模組 (Clinic Atelier Add-ons)</h3>
+                <p style="font-size: 0.82rem; color: #596B60;">勾選需要解鎖的診所營運與看診提效神器：</p>
                 <hr style="border:0; border-top:1px solid #E4DCD0; margin:10px 0;">
                 <div style="font-size: 0.83rem; color: #25352B; line-height: 1.8;">
                     🎫 <b>【功能 05】健保爆診「本院個案當日優先加號憑證」</b>：+ NT$ 3,800/月<br>
@@ -387,14 +387,14 @@ if hasattr(st, "dialog"):
                     📊 <b>【功能 08】院長專用「自費心理師/慢籤流失復發預警儀表板」</b>：+ NT$ 6,800/月<br>
                     📄 <b>【功能 09】診前 15 秒「去敏身心軌跡莫蘭迪 PDF」生成機制</b>：+ NT$ 3,500/月<br>
                     ⚡ <b>【功能 10】跨院回診健保缺號自動無聲捕蚊燈 (No-show 填補)</b>：+ NT$ 5,200/月<br>
-                    💊 <b>【功能 11】診所自費藥局精準營養素交叉地圖變現 API</b>：+ NT$ 8,800/月<br>
+                    💊 <b>【功能 11】診所自費藥局精準營養素交叉地圖維護 API</b>：+ NT$ 8,800/月<br>
                     📈 <b>【功能 12】自費身心科「臨床療效量化評估與 OMOP CDM 對照流」</b>：+ NT$ 9,800/月<br>
                     🔄 <b>【功能 13】連鎖院區「個案異地調診去敏病歷快捷拋接」</b>：+ NT$ 6,000/月<br>
                     🏷️ <b>【功能 14】連鎖診所品牌特許「SaMD 軟體專利聯名上架通關包」</b>：NT$ 120,000/案<br>
                     🌐 <b>【功能 38】社交孤立預警（GPS 位移 ✕ 通訊頻率分析）</b>：+ NT$ 3,200/月<br>
                     🌧️ <b>【功能 39】環境壓力感測（氣壓/濕度/噪音 ✕ 萌寵安撫頻率）</b>：+ NT$ 2,800/月<br>
                     💓 <b>【功能 41】循環與免疫監測（rPPG 監測 HRV ✕ 量化發炎負擔）</b>：+ NT$ 4,500/月<br>
-                    🌲 <b>【功能 47】倒懸松果閣 ‧ 智性放鬆生活地圖（異業抽成系統）</b>：開通費 NT$ 50,000
+                    🌲 <b>【功能 47】倒懸松果閣 ‧ 智性放鬆生活地圖（異業合作系統）</b>：開通費 NT$ 50,000
                 </div>
                 <div style="margin-top: 16px; text-align: center; font-size:0.8rem; color:#B29562;">
                     📞 專案加購專線：(02) 2396-6070 ｜ 信箱：service@curio.studio
@@ -531,7 +531,7 @@ if not st.session_state["authenticated"]:
 
 
 # ==============================================================================
-# 5. 側邊欄：100% 發聲高音質音效組件 ✕ 自動抓取網址 QR Code
+# 5. 側邊欄：100% 穩定發聲之音樂卡 ✕ 自動抓取網址 QR Code
 # ==============================================================================
 with st.sidebar:
     st.markdown(
@@ -636,7 +636,7 @@ with st.sidebar:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 100% 防跨域封鎖、絕對能播放出聲音的 HTML5 音效組件
+    # 包含郭醫師最新指定曲（修復有聲版）之音樂卡
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
@@ -673,7 +673,6 @@ with st.sidebar:
     current_audio_url = PLAYLIST[selected_track_idx]["url"]
     loop_attr = "loop" if st.session_state["audio_loop"] else ""
 
-    # 絕對有聲的 HTML5 Audio 組件
     st.components.v1.html(
         f"""
         <div style="background:#F4F0E8; padding:12px; border-radius:16px; border:1.5px solid #C2A675; text-align:center;">
