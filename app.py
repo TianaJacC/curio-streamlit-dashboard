@@ -10,153 +10,195 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# 2. Curio & Studio 3D/4D 俏皮優雅法式美學 CSS (Chic Claymorphism)
+# 2. Bespoke French Typography & 3D/4D Claymorphism CSS
 st.markdown(
     """
     <style>
-    /* 全域背景：香草奶油白 */
+    /* 導入高級法式襯線字體與微排版 */
+    @import url('https://fonts.googleapis.com/css2?family=Didot&family=Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+
     .stApp {
         background-color: #FAF8F5;
-        font-family: -apple-system, BlinkMacSystemFont, "Garamond", "Georgia", "PingFang TC", "Helvetica Neue", sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Garamond", "Didot", "Georgia", "PingFang TC", sans-serif;
     }
     header[data-testid="stHeader"] { background-color: rgba(0,0,0,0); }
     footer { visibility: hidden; }
 
-    /* 主頂樓卡片：3D 蔻恩閣長森林綠 */
+    /* 全局排版微調：修正中英文與括弧排版大空格問題 */
+    .fix-spacing {
+        letter-spacing: 0px !important;
+        word-spacing: 0px !important;
+        display: inline-block;
+    }
+    .en-subtext {
+        font-family: "Didot", "Garamond", serif;
+        font-style: italic;
+        color: #C2A675;
+    }
+
+    /* 主頂樓卡片：極緻煙燻森林深綠 (Deep Atelier Sage) */
     .curio-hero-card {
-        background: linear-gradient(135deg, #3D5245 0%, #2A3B31 100%);
+        background: linear-gradient(135deg, #25352B 0%, #1A261F 100%);
         color: #FAF8F5;
-        padding: 32px 42px;
+        padding: 36px 46px;
         border-radius: 28px;
-        box-shadow: 0 20px 45px rgba(61, 82, 69, 0.12);
+        box-shadow: 0 20px 48px rgba(37, 53, 43, 0.12);
         border: 1px solid #C2A675;
         margin-bottom: 28px;
-        position: relative;
     }
     .curio-hero-card h1 { 
-        font-family: "Georgia", "PingFang TC", serif !important;
+        font-family: "Didot", "Georgia", "PingFang TC", serif !important;
         color: #FAF8F5 !important; 
-        font-size: 1.75rem !important; 
+        font-size: 1.85rem !important; 
         font-weight: 500 !important; 
-        letter-spacing: 1.2px !important;
+        letter-spacing: 1px !important;
         margin: 0 0 8px 0 !important; 
     }
     .curio-hero-card p { 
-        color: #E2EADF !important; 
+        color: #D3E0D7 !important; 
         font-size: 0.9rem !important; 
         margin: 0 !important; 
         font-weight: 300; 
-        letter-spacing: 0.6px;
+        letter-spacing: 0.5px;
     }
 
-    /* 3D 俏皮小松鼠徽章 (Cone Badge) */
-    .cone-3d-badge {
-        width: 72px;
-        height: 72px;
-        background: linear-gradient(145deg, #FAF8F5, #EAE4D8);
-        border-radius: 24px;
+    /* 3D/4D 精品微浮雕徽章 (Curio 3D Badge) */
+    .badge-3d-box {
+        width: 68px;
+        height: 68px;
+        background: linear-gradient(145deg, #FFFFFF, #F0EAE1);
+        border-radius: 22px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2.3rem;
-        box-shadow: 6px 6px 16px rgba(0, 0, 0, 0.08), -4px -4px 12px rgba(255, 255, 255, 0.9);
-        border: 2px solid #C2A675;
+        font-size: 2.2rem;
+        box-shadow: 6px 6px 18px rgba(37, 53, 43, 0.06), -5px -5px 14px rgba(255, 255, 255, 0.9);
+        border: 1px solid #C2A675;
         margin: 0 auto 16px auto;
     }
 
-    /* 登入卡片 (3D Clay & Pearl Glass) */
+    /* 知性登入卡片 (Atelier Glass Panel) */
     .atelier-login-card {
-        background: rgba(255, 255, 255, 0.94);
+        background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
-        border: 1px solid #E3DCD1;
-        padding: 48px 46px 32px 46px;
+        border: 1px solid #E4DCD0;
+        padding: 50px 48px 34px 48px;
         border-radius: 32px;
-        box-shadow: 0 24px 60px rgba(61, 82, 69, 0.06);
-        max-width: 500px;
-        margin: 25px auto 12px auto;
+        box-shadow: 0 24px 60px rgba(37, 53, 43, 0.05);
+        max-width: 510px;
+        margin: 20px auto 12px auto;
         text-align: center;
     }
     .brand-caption {
-        font-family: "Georgia", serif;
+        font-family: "Didot", serif;
         font-style: italic;
-        color: #B29562;
-        font-size: 0.92rem;
-        letter-spacing: 2.5px;
-        margin-bottom: 8px;
+        color: #C2A675;
+        font-size: 0.95rem;
+        letter-spacing: 3px;
+        margin-bottom: 6px;
         text-transform: uppercase;
     }
     .medical-title {
-        color: #2A3B31;
-        font-family: "Georgia", "PingFang TC", serif;
-        font-size: 1.55rem;
+        color: #25352B;
+        font-family: "Garamond", "PingFang TC", serif;
+        font-size: 1.6rem;
         font-weight: 600;
-        letter-spacing: 0.8px;
-        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
     }
     .gold-divider {
-        width: 44px;
+        width: 42px;
         height: 2px;
-        background: linear-gradient(90deg, #C2A675 0%, #E8D8B8 100%);
+        background: linear-gradient(90deg, #C2A675 0%, #E6D7BD 100%);
         margin: 16px auto 22px auto;
         border-radius: 2px;
     }
     .medical-desc {
-        color: #5C6E63;
+        color: #596B60;
         font-size: 0.88rem;
         line-height: 1.65;
-        margin-bottom: 24px;
+        margin-bottom: 26px;
         font-weight: 300;
     }
 
-    /* 3D 俏皮 Metric 數據卡片 */
+    /* 3D 俏皮知性 Metric 數據卡片 */
     .custom-metric-card {
         background: #FFFFFF;
-        border: 1px solid #E3DCD1;
+        border: 1px solid #E4DCD0;
         padding: 24px 26px;
         border-radius: 24px;
-        box-shadow: 6px 6px 20px rgba(61, 82, 69, 0.04), -4px -4px 14px rgba(255, 255, 255, 0.8);
+        box-shadow: 6px 6px 20px rgba(37, 53, 43, 0.03), -4px -4px 14px rgba(255, 255, 255, 0.8);
         height: 100%;
     }
-    .custom-metric-label { font-size: 0.88rem; color: #697C70; font-weight: 400; margin-bottom: 8px; }
-    .custom-metric-value { font-size: 1.52rem; color: #2A3B31; font-weight: 600; font-family: "Georgia", "PingFang TC", serif; margin-bottom: 8px; line-height: 1.2; }
-    .custom-metric-delta { font-size: 0.82rem; color: #4E6054; background-color: #F3EFE8; padding: 4px 12px; border-radius: 10px; display: inline-block; line-height: 1.4; border: 1px solid #E3DCD1; }
+    .custom-metric-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.88rem;
+        color: #596B60;
+        margin-bottom: 10px;
+    }
+    .custom-metric-value { 
+        font-size: 1.55rem; 
+        color: #25352B; 
+        font-weight: 600; 
+        font-family: "Didot", "Garamond", serif; 
+        margin-bottom: 8px; 
+        line-height: 1.2; 
+    }
+    .custom-metric-delta { 
+        font-size: 0.82rem; 
+        color: #435449; 
+        background-color: #F4F0E8; 
+        padding: 4px 12px; 
+        border-radius: 10px; 
+        display: inline-block; 
+        line-height: 1.4; 
+        border: 1px solid #E4DCD0; 
+    }
 
-    /* 知性資安公告盒 */
+    /* 法式資安防爆公告盒 */
     .security-notice-box {
-        background-color: #F3EFE8;
+        background-color: #F4F0E8;
         border-left: 4px solid #C2A675;
         border-radius: 18px;
-        padding: 22px 26px;
+        padding: 24px 28px;
         margin-top: 28px;
         font-size: 0.86rem;
-        color: #2A3B31;
-        line-height: 1.7;
+        color: #25352B;
+        line-height: 1.75;
     }
 
-    /* 3D 俏皮側邊欄模組卡片 */
-    .sidebar-3d-box {
-        background: #FFFFFF;
-        border: 1px solid #E3DCD1;
-        border-radius: 20px;
-        padding: 18px;
-        margin-bottom: 18px;
-        box-shadow: 4px 4px 12px rgba(61, 82, 69, 0.04);
+    /* 側邊欄重構：蔻恩閣長 3D 主角卡片 */
+    .sidebar-cone-card {
+        background: linear-gradient(145deg, #FFFFFF, #F8F4ED);
+        border: 1px solid #E4DCD0;
+        padding: 20px 16px;
+        border-radius: 22px;
+        text-align: center;
+        margin-bottom: 20px;
+        box-shadow: 4px 4px 14px rgba(37, 53, 43, 0.04);
+    }
+    .sidebar-cone-avatar {
+        font-size: 2.2rem;
+        margin-bottom: 4px;
     }
 
-    /* 優雅按鈕 */
+    /* 按鈕高奢美化 */
     .stButton>button {
         border-radius: 14px !important;
         border: 1px solid #C2A675 !important;
-        background: linear-gradient(135deg, #FAF8F5 0%, #F3EFE8 100%) !important;
-        color: #2A3B31 !important;
+        background: linear-gradient(135deg, #FAF8F5 0%, #F4F0E8 100%) !important;
+        color: #25352B !important;
         font-weight: 500 !important;
+        font-family: "Garamond", "PingFang TC", serif !important;
         transition: all 0.3s ease !important;
     }
     .stButton>button:hover {
-        background: linear-gradient(135deg, #3D5245 0%, #2A3B31 100%) !important;
+        background: linear-gradient(135deg, #25352B 0%, #1A261F 100%) !important;
         color: #FAF8F5 !important;
-        border: 1px solid #3D5245 !important;
-        box-shadow: 0 6px 18px rgba(61, 82, 69, 0.15) !important;
+        border: 1px solid #25352B !important;
+        box-shadow: 0 6px 18px rgba(37, 53, 43, 0.15) !important;
     }
     </style>
 """,
@@ -206,32 +248,32 @@ if "checkin_queue" not in st.session_state:
 MASTER_KEY = "CURIO-999"
 
 
-# --- 4. 蔻恩閣長 3D/4D 寶盒 Modal 彈窗集 ---
+# --- 4. 蔻恩閣長 3D 典藏資安寶盒 (排版大空格已徹底完美修正) ---
 if hasattr(st, "dialog"):
 
     @st.dialog("🐿️ 蔻恩閣長的 3D 典藏資安寶盒")
     def security_declaration_dialog():
         st.markdown(
             """
-            <div style="background: linear-gradient(145deg, #FAF8F5, #F3EFE8); padding: 26px; border-radius: 24px; border: 1.5px solid #C2A675; box-shadow: 0 12px 32px rgba(61, 82, 69, 0.1);">
+            <div style="background: linear-gradient(145deg, #FAF8F5, #F4F0E8); padding: 26px; border-radius: 24px; border: 1.5px solid #C2A675; box-shadow: 0 12px 32px rgba(37, 53, 43, 0.08);">
                 <div style="text-align: center; margin-bottom: 16px;">
-                    <div style="font-size: 2.8rem; margin-bottom: 6px;">🐿️</div>
-                    <div style="font-family: 'Georgia', serif; font-style: italic; color: #B29562; font-size: 0.85rem; letter-spacing: 2px;">Curio & Studio ‧ 首席珍藏家</div>
-                    <h3 style="color: #2A3B31; font-family: 'Georgia', serif; font-size: 1.25rem; margin: 4px 0 0 0;">小松鼠蔻恩閣長 (Cone) 資安合規宣告</h3>
+                    <div style="font-size: 2.8rem; margin-bottom: 4px;">🐿️</div>
+                    <div class="brand-caption" style="font-size: 0.82rem; margin-bottom: 4px;">Curio & Studio ‧ 首席珍藏家</div>
+                    <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.3rem; margin: 0;">小松鼠蔻恩閣長 <span style="font-family: Didot, serif; font-style: italic; color: #C2A675;">(Cone)</span> 資安宣告</h3>
                 </div>
-                <p style="font-size: 0.88rem; color: #5C6E63; line-height: 1.75; text-align: justify;">
-                    歡迎來到珍奇櫃！我是蔻恩閣長。本系統全流程貫徹<b>零知識架構（Zero-Knowledge Architecture）</b>與<b>邊緣運算（Edge Computing）</b>原則，為每位探險家提供最高規格的鋼鐵隱私防線：
-                </p>
-                <hr style="border: 0; border-top: 1px solid #E3DCD1; margin: 16px 0;">
-                <div style="font-size: 0.86rem; color: #2A3B31; line-height: 1.8;">
-                    <b>🛡️ 四大鋼鐵資安誓言：</b><br>
-                    1. <b>符合《個資法》第 2 條去識別化標準</b>：全流程絕不收集或存儲病患真實姓名、身分證號、電話或病歷號。<br>
-                    2. <b>240 分鐘動態時間鎖 (Time-Lock)</b>：去敏密鑰 (Token) 具備 240 分鐘動態壽命，看診完畢即剛性銷毀，雲端絕不留存持久個資。<br>
+                <div style="font-size: 0.88rem; color: #596B60; line-height: 1.7; text-align: justify;">
+                    歡迎來到夢境珍奇櫃！我是蔻恩閣長。本系統全流程貫徹<span style="font-weight: 600; color: #25352B;">零知識架構</span> <span style="font-family: Didot, serif; color: #C2A675;">(Zero-Knowledge Architecture)</span> 與<span style="font-weight: 600; color: #25352B;">邊緣運算</span> <span style="font-family: Didot, serif; color: #C2A675;">(Edge Computing)</span> 原則，為每位探險家提供最高規格的鋼鐵隱私防線：
+                </div>
+                <hr style="border: 0; border-top: 1px solid #E4DCD0; margin: 16px 0;">
+                <div style="font-size: 0.86rem; color: #25352B; line-height: 1.85;">
+                    <b>✨ 蔻恩閣長的四大資安誓言：</b><br>
+                    1. <b>符合《個資法》第 2 條去識別化標準</b>：全流程絕不收集、記錄或存儲病患真實姓名、身分證號、電話或病歷號。<br>
+                    2. <b>240 分鐘動態時間鎖 <span style="font-family: Didot, serif; color: #C2A675;">(Time-Lock)</span></b>：去敏密鑰 <span style="font-family: Didot, serif; color: #C2A675;">(Token)</span> 具備 240 分鐘動態壽命，看診完畢即剛性銷毀，雲端絕不留存持久個資。<br>
                     3. <b>HTTPS TLS 1.3 & AES-256 加密</b>：前端至中繼站全通道高階加密，徹底防禦中間人截取。<br>
                     4. <b>Air-Gapped 雙盲實體與邏輯隔離</b>：本系統與診所行政 HIS/LINE 實施資料庫實體隔離，斷絕任何個資對照可能性。
                 </div>
-                <div style="margin-top: 20px; padding: 12px; background: rgba(194, 166, 117, 0.12); border-radius: 12px; font-size: 0.78rem; color: #B29562; text-align: center;">
-                    🏛️ 發布單位：居里研創股份有限公司 (Curio & Studio) ｜ 日期：2026 年 07 月 30 日
+                <div style="margin-top: 20px; padding: 12px; background: rgba(194, 166, 117, 0.12); border-radius: 12px; font-size: 0.78rem; color: #B29562; text-align: center; font-family: 'Garamond', serif;">
+                    🏛️ 發布單位：居里研創股份有限公司 <span style="font-family: Didot, serif; italic">(Curio & Studio)</span> ｜ 日期：2026 年 07 月 30 日
                 </div>
             </div>
             """,
@@ -258,16 +300,19 @@ if hasattr(st, "dialog"):
                 st.rerun()
 
 
-# --- 5. 門診安全驗證登入頁 (小松鼠蔻恩閣長 3D 亮相) ---
+# --- 5. 門診安全驗證登入頁 (小松鼠蔻恩閣長 3D 浮雕亮相) ---
 if not st.session_state["authenticated"]:
     st.markdown(
         """
         <div class="atelier-login-card">
-            <div class="cone-3d-badge">🐿️</div>
+            <div class="badge-3d-box">🐿️</div>
             <div class="brand-caption">Curio & Studio</div>
             <div class="medical-title">交感身心診所 ‧ 門診安全驗證</div>
             <div class="gold-divider"></div>
-            <div class="medical-desc">零知識架構 (Zero-Knowledge) ‧ 雙盲去敏身心軌跡拋接<br><span style="font-size:0.82rem; color:#B29562;">小松鼠蔻恩閣長 (Cone) 已為您鎖定 0 個資防線</span></div>
+            <div class="medical-desc">
+                零知識架構 <span style="font-family:Didot, serif; italic; color:#C2A675;">(Zero-Knowledge)</span> ‧ 雙盲去敏身心軌跡拋接<br>
+                <span style="font-size:0.82rem; color:#C2A675;">小松鼠蔻恩閣長 <span style="font-family:Didot, serif;">(Cone)</span> 已為您鎖定 0 個資防線</span>
+            </div>
         </div>
     """,
         unsafe_allow_html=True,
@@ -286,7 +331,7 @@ if not st.session_state["authenticated"]:
             "<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True
         )
 
-        if st.button("🔓 解鎖門診數據面板", use_container_width=True):
+        if st.button("✨ 解鎖門診數據面板", use_container_width=True):
             if (
                 pwd_input == st.session_state["doctor_password"]
                 or pwd_input == MASTER_KEY
@@ -319,14 +364,14 @@ if not st.session_state["authenticated"]:
     st.stop()
 
 
-# --- 6. 側邊欄：蔻恩閣長與信鴿 Singer 的 3D API 模擬器 ---
+# --- 6. 側邊欄：蔻恩閣長 🐿️ 在前、信鴿 Singer 🕊️ 在後的 3D 模擬器 ---
 with st.sidebar:
     st.markdown(
         """
-        <div style="background: #FFFFFF; border: 1px solid #E3DCD1; padding: 16px; border-radius: 20px; text-align: center; margin-bottom: 18px; box-shadow: 4px 4px 12px rgba(61, 82, 69, 0.04);">
-            <div style="font-size: 1.8rem; margin-bottom: 4px;">🕊️ 🐿️</div>
-            <div style="color: #2A3B31; font-weight: 600; font-size: 0.95rem; font-family: serif;">Curio & Studio 雙向中繼站</div>
-            <div style="color: #B29562; font-size: 0.75rem; letter-spacing: 1px;">信鴿 Singer ✕ 蔻恩閣長</div>
+        <div class="sidebar-cone-card">
+            <div class="sidebar-cone-avatar">🐿️ 🕊️</div>
+            <div style="color: #25352B; font-weight: 600; font-size: 0.98rem; font-family: 'Garamond', serif;">Curio & Studio 雙向中繼站</div>
+            <div style="color: #C2A675; font-size: 0.78rem; font-family: 'Didot', serif; italic; margin-top: 2px;">小松鼠蔻恩閣長 ✕ 信鴿 Singer</div>
         </div>
     """,
         unsafe_allow_html=True,
@@ -391,8 +436,8 @@ def fetch_patient_data(user_key):
 st.markdown(
     """
     <div class="curio-hero-card">
-        <h1>💎 Cabinet of Curiosities ‧ Curio & Studio 診間面板</h1>
-        <p>Curio & Studio x 交感身心診所 ｜ 首席珍藏家蔻恩閣長 ‧ 0 個資 ‧ 診前 15 秒身心軌跡拋接</p>
+        <h1>✨ Cabinet of Curiosities ‧ Curio & Studio 診間面板</h1>
+        <p>Curio & Studio x 交感身心診所 ｜ 首席珍藏家蔻恩閣長 (Cone) ‧ 0 個資 ‧ 診前 15 秒身心軌跡拋接</p>
     </div>
 """,
     unsafe_allow_html=True,
@@ -402,7 +447,7 @@ top_col1, top_col2 = st.columns([3, 1])
 with top_col1:
     st.markdown(
         """
-        <div style="background:#FFFFFF; border:1px solid #E3DCD1; border-radius:30px; padding:10px 26px; font-size:0.86rem; color:#2A3B31;">
+        <div style="background:#FFFFFF; border:1px solid #E4DCD0; border-radius:30px; padding:10px 26px; font-size:0.86rem; color:#25352B;">
             🟢 <b>郭家穎 院長</b>（交感身心診所）已通過診間安全認證 ｜ 🏛️ 診間號：C701 ｜ 🛡️ <b>0 個資死鎖狀態</b>
         </div>
     """,
@@ -428,8 +473,8 @@ if user_key:
     if data:
         st.markdown(
             f"""
-            <div style="background-color: #F3EFE8; border-left: 4px solid #C2A675; padding: 14px 22px; border-radius: 14px; margin-bottom: 24px; font-size: 0.92rem; color: #2A3B31;">
-                <b>💎 成功連線至去敏密鑰 <code>{user_key}</code></b> ｜ 狀態：{data['status']} ｜ 更新時間：{data['timestamp']}
+            <div style="background-color: #F4F0E8; border-left: 4px solid #C2A675; padding: 14px 22px; border-radius: 14px; margin-bottom: 24px; font-size: 0.92rem; color: #25352B;">
+                <b>✨ 成功連線至去敏密鑰 <code>{user_key}</code></b> ｜ 狀態：{data['status']} ｜ 更新時間：{data['timestamp']}
             </div>
             """,
             unsafe_allow_html=True,
@@ -440,7 +485,10 @@ if user_key:
             st.markdown(
                 f"""
                 <div class="custom-metric-card">
-                    <div class="custom-metric-label">🌌 心流一致性 (0.067Hz)</div>
+                    <div class="custom-metric-header">
+                        <span>✨</span>
+                        <span>心流一致性 (0.067Hz)</span>
+                    </div>
                     <div class="custom-metric-value">{data['coherence_score']} %</div>
                     <div class="custom-metric-delta">↑ 3.2% 穩定共振</div>
                 </div>
@@ -452,7 +500,10 @@ if user_key:
             st.markdown(
                 f"""
                 <div class="custom-metric-card">
-                    <div class="custom-metric-label">🌿 身心應激狀態</div>
+                    <div class="custom-metric-header">
+                        <span>🌿</span>
+                        <span>身心應激狀態</span>
+                    </div>
                     <div class="custom-metric-value">{data['stress_index']}</div>
                     <div class="custom-metric-delta">{data.get('stress_desc', '莫蘭迪放鬆區域')}</div>
                 </div>
@@ -464,7 +515,10 @@ if user_key:
             st.markdown(
                 f"""
                 <div class="custom-metric-card">
-                    <div class="custom-metric-label">🌙 本機睡眠時數</div>
+                    <div class="custom-metric-header">
+                        <span>🌙</span>
+                        <span>本機睡眠時數</span>
+                    </div>
                     <div class="custom-metric-value">{data['sleep_hours']} hr</div>
                     <div class="custom-metric-delta">達標 7 小時優質睡眠</div>
                 </div>
@@ -481,7 +535,7 @@ if user_key:
         )
         with tab1:
             st.markdown(
-                "<h4 style='color:#2A3B31; font-size:1.05rem; margin-top:12px;'>近 7 日心流一致性調息曲線 (Coherence Score)</h4>",
+                "<h4 style='color:#25352B; font-size:1.05rem; margin-top:12px;'>近 7 日心流一致性調息曲線 (Coherence Score)</h4>",
                 unsafe_allow_html=True,
             )
             chart_data = pd.DataFrame(
@@ -498,11 +552,11 @@ if user_key:
                     "心流分數": data["weekly_trend"],
                 }
             ).set_index("日期")
-            st.line_chart(chart_data, color="#3D5245")
+            st.line_chart(chart_data, color="#25352B")
 
         with tab2:
             st.markdown(
-                "<h4 style='color:#2A3B31; font-size:1.05rem; margin-top:10px;'>邊緣端 15 秒去敏化身心軌跡</h4>",
+                "<h4 style='color:#25352B; font-size:1.05rem; margin-top:10px;'>邊緣端 15 秒去敏化身心軌跡</h4>",
                 unsafe_allow_html=True,
             )
             st.write(f"**【去敏軌跡摘要】**\n\n{data['summary']}")
