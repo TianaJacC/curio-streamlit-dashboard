@@ -14,7 +14,6 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* 全域背景：極致珍珠暖白 */
     .stApp {
         background-color: #FAF9F6;
         font-family: -apple-system, BlinkMacSystemFont, "Garamond", "Georgia", "PingFang TC", "Helvetica Neue", sans-serif;
@@ -22,7 +21,6 @@ st.markdown(
     header[data-testid="stHeader"] { background-color: rgba(0,0,0,0); }
     footer { visibility: hidden; }
 
-    /* 主頂樓高奢面板卡片 (Midnight Slate & Fine Champagne Gold) */
     .curio-hero-card {
         background: linear-gradient(135deg, #1A2634 0%, #2D3E50 100%);
         color: #FAF9F6;
@@ -48,15 +46,14 @@ st.markdown(
         letter-spacing: 0.6px;
     }
 
-    /* 登入卡片 */
     .gallery-login-card {
         background: #FFFFFF;
         border: 1px solid #E8E2D5;
-        padding: 52px 48px 40px 48px;
+        padding: 52px 48px 30px 48px;
         border-radius: 30px;
         box-shadow: 0 24px 60px rgba(26, 38, 52, 0.05);
         max-width: 500px;
-        margin: 40px auto 20px auto;
+        margin: 40px auto 10px auto;
         text-align: center;
     }
     .brand-caption {
@@ -87,11 +84,10 @@ st.markdown(
         color: #5C6B73;
         font-size: 0.88rem;
         line-height: 1.65;
-        margin-bottom: 32px;
+        margin-bottom: 24px;
         font-weight: 300;
     }
 
-    /* 客製化高奢 Metric 數據卡片 (解決 st.metric 文字被截斷的問題) */
     .custom-metric-card {
         background: #FFFFFF;
         border: 1px solid #E8E2D5;
@@ -100,31 +96,10 @@ st.markdown(
         box-shadow: 0 10px 28px rgba(26, 38, 52, 0.03);
         height: 100%;
     }
-    .custom-metric-label {
-        font-size: 0.86rem;
-        color: #6C7A89;
-        font-weight: 400;
-        margin-bottom: 8px;
-    }
-    .custom-metric-value {
-        font-size: 1.45rem;
-        color: #1A2634;
-        font-weight: 600;
-        font-family: "Georgia", "PingFang TC", serif;
-        margin-bottom: 8px;
-        line-height: 1.2;
-    }
-    .custom-metric-delta {
-        font-size: 0.82rem;
-        color: #5C6B73;
-        background-color: #F4F1EA;
-        padding: 4px 10px;
-        border-radius: 8px;
-        display: inline-block;
-        line-height: 1.4;
-    }
+    .custom-metric-label { font-size: 0.86rem; color: #6C7A89; font-weight: 400; margin-bottom: 8px; }
+    .custom-metric-value { font-size: 1.45rem; color: #1A2634; font-weight: 600; font-family: "Georgia", "PingFang TC", serif; margin-bottom: 8px; line-height: 1.2; }
+    .custom-metric-delta { font-size: 0.82rem; color: #5C6B73; background-color: #F4F1EA; padding: 4px 10px; border-radius: 8px; display: inline-block; line-height: 1.4; }
 
-    /* 資安公告盒 */
     .security-notice-box {
         background-color: #F4F1EA;
         border-left: 3px solid #C8B282;
@@ -140,7 +115,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 3. 初始化 Session State 狀態與醫生金鑰
+# 3. Session State 初始化
 if "doctor_password" not in st.session_state:
     st.session_state["doctor_password"] = "NYJAZZ-8519"
 
@@ -150,7 +125,6 @@ if "authenticated" not in st.session_state:
 if "selected_token" not in st.session_state:
     st.session_state["selected_token"] = "#SYM-C701"
 
-# 雲端雙盲中繼站模擬資料庫
 if "mock_db" not in st.session_state:
     st.session_state["mock_db"] = {
         "#SYM-C701": {
@@ -177,22 +151,35 @@ if "mock_db" not in st.session_state:
 
 if "checkin_queue" not in st.session_state:
     st.session_state["checkin_queue"] = [
-        {
-            "token": "#SYM-C701",
-            "time": "01:20",
-            "source": "LINE LIFF / App",
-        },
-        {
-            "token": "#SYM-A302",
-            "time": "01:25",
-            "source": "LINE LIFF / App",
-        },
+        {"token": "#SYM-C701", "time": "01:20", "source": "LINE LIFF / App"},
+        {"token": "#SYM-A302", "time": "01:25", "source": "LINE LIFF / App"},
     ]
 
 MASTER_KEY = "CURIO-999"
 
-# --- 4. 變更密碼 Modal 彈窗 ---
+
+# --- 4. Dialog 彈窗集 ---
 if hasattr(st, "dialog"):
+
+    @st.dialog("🛡️ 居里研創 Zero-Knowledge 資安與合規宣告")
+    def security_declaration_dialog():
+        st.markdown(
+            """
+            ### 居里研創 (Curio) Zero-Knowledge 零知識資安與合規宣告書
+            
+            **【合規聲明宗旨】**  
+            本公司研發之「Cabinet of Curiosities 身心軌跡拋接面板與軟體系統」，全流程貫徹零知識架構（Zero-Knowledge Architecture）與邊緣運算（Edge Computing）原則，確保醫療資訊傳輸與數據處理達到最高規格之資安標準。
+            
+            **【四大資安與法律合規承諾】**：
+            1. **嚴格符合《個人資料保護法》第 2 條去識別化標準**：系統全流程絕不收集、傳輸、記錄或存儲病患之真實姓名、身分證字號、出生年月日、聯絡電話、醫療病歷號碼或 IP 位址。
+            2. **雲端雙盲中繼站與 240 分鐘動態時間鎖（Time-Lock）**：雲端中繼站僅作為臨時數據拋接通道。所有去敏密鑰（Token）具備 240 分鐘壽命，看診完畢即剛性銷毀，伺服器不留存任何持久化個資。
+            3. **通訊通道與資料庫高階加密**：前端至雲端傳輸全數採用 **HTTPS (TLS 1.3)** 加密通道；靜態快取數據皆實施 **AES-256** 加密，防禦中間人攻擊。
+            4. **實體與邏輯雙重隔離（Air-Gapped Architecture）**：本系統與診所行政掛號系統（HIS/LINE）實施實體與邏輯隔離。即便外部系統發生資安事故，本系統內之去敏身心軌跡亦絕對無法與個人具名個資進行對照。
+            
+            ---
+            *發布單位：居里研創股份有限公司 ｜ 發布日期：2026 年 07 月 30 日*
+            """
+        )
 
     @st.dialog("⚙️ 變更診間金鑰（郭家穎院長專屬）")
     def change_password_dialog():
@@ -214,7 +201,7 @@ if hasattr(st, "dialog"):
                 st.rerun()
 
 
-# --- 5. 門診驗證畫面 ---
+# --- 5. 登入頁面（包含資安宣告連結彈窗） ---
 if not st.session_state["authenticated"]:
     st.markdown(
         """
@@ -252,7 +239,19 @@ if not st.session_state["authenticated"]:
                 st.error("⚠️ 金鑰驗證未通過，請確認後重新輸入。")
 
         st.markdown(
-            "<div style='margin-bottom: 16px;'></div>", unsafe_allow_html=True
+            "<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True
+        )
+
+        # 點擊彈出【資安宣告】Modal 彈窗
+        if st.button(
+            "🛡️ 點擊查看《居里研創 Zero-Knowledge 資安與合規宣告》",
+            use_container_width=True,
+        ):
+            if hasattr(st, "dialog"):
+                security_declaration_dialog()
+
+        st.markdown(
+            "<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True
         )
 
         with st.expander("❓ 忘記診間金鑰密碼？"):
@@ -263,7 +262,7 @@ if not st.session_state["authenticated"]:
     st.stop()
 
 
-# --- 6. 側邊欄：API & Webhook 模擬器 ---
+# --- 6. 側邊欄 API 模擬器 ---
 with st.sidebar:
     st.markdown("### 🔌 背景 API 與 Webhook 模擬器")
     st.caption("用於向郭醫師演示 LINE LIFF 與叫號系統無縫 Push")
@@ -325,7 +324,6 @@ def fetch_patient_data(user_key):
     return st.session_state["mock_db"].get(user_key, None)
 
 
-# Header
 st.markdown(
     """
     <div class="curio-hero-card">
@@ -336,7 +334,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 頂部狀態列
 top_col1, top_col2 = st.columns([3, 1])
 with top_col1:
     st.markdown(
@@ -356,7 +353,6 @@ st.markdown(
     "<div style='margin-bottom: 22px;'></div>", unsafe_allow_html=True
 )
 
-# 搜尋輸入框
 user_key = st.text_input(
     "請輸入探險家去敏密鑰 (例如：#SYM-C701) :",
     value=st.session_state["selected_token"],
@@ -375,7 +371,6 @@ if user_key:
             unsafe_allow_html=True,
         )
 
-        # 改用完全控制排版之 HTML 客製化卡片 (解決原生 metric 截斷問題)
         col1, col2, col3 = st.columns(3)
         with col1:
             st.markdown(
