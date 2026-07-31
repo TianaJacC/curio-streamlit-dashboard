@@ -104,6 +104,9 @@ if "current_track_idx" not in st.session_state:
 if "audio_loop" not in st.session_state:
     st.session_state["audio_loop"] = True
 
+if "patient_view_mode" not in st.session_state:
+    st.session_state["patient_view_mode"] = False
+
 MASTER_KEY = "CURIO-999"
 
 PLAYLIST = [
@@ -664,7 +667,7 @@ with st.sidebar:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 備用古典與 Ambient 音色選播列 (完整補齊隨機切換 ✕ 循環開關)
+    # 備用古典與 Ambient 音色選播列
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
@@ -788,12 +791,45 @@ with st.sidebar:
 
 
 # ==============================================================================
-# 6. 主面板邏輯 (含莫蘭迪茶飲/沉香建議 ✕ 銷毀倒數 ✕ 療程評估卡)
+# 6. 主面板邏輯 (含雙螢幕病患視角切換 ✕ 莫蘭迪茶飲建議 ✕ 剛性銷毀倒數)
 # ==============================================================================
 def fetch_patient_data(user_key):
     return global_db.get(user_key, None)
 
 
+# 頂樓雙螢幕病患視角切換開關 (Presentation Flip)
+pv_col1, pv_col2 = st.columns([3.2, 0.8])
+with pv_col2:
+    patient_mode = st.toggle(
+        "🔄 翻轉/病患視角", value=st.session_state["patient_view_mode"]
+    )
+    st.session_state["patient_view_mode"] = patient_mode
+
+# 🎭 狀況 A：切換為病患展示視角 ( Presentation Mode )
+if st.session_state["patient_view_mode"]:
+    st.markdown(
+        """
+        <div style="background: linear-gradient(135deg, #FAF8F5 0%, #F4F0E8 100%); padding: 40px; border-radius: 32px; border: 2px solid #C2A675; text-align: center; box-shadow: 0 20px 50px rgba(37, 53, 43, 0.08); margin-top: 10px;">
+            <div style="font-size: 3rem; margin-bottom: 8px;">🐿️</div>
+            <div class="brand-caption" style="font-size: 1.1rem; letter-spacing: 4px;">Curio & Studio ‧ 夢境珍奇櫃</div>
+            <h2 style="color: #25352B; font-family: 'Garamond', serif; font-size: 2.2rem; margin: 12px 0 16px 0;">自費醫療高階療程對照建議卡</h2>
+            <div class="gold-divider" style="width: 80px; height: 3px;"></div>
+            <div style="font-size: 1.15rem; color: #25352B; line-height: 2.2; max-width: 680px; margin: 0 auto; text-align: left;">
+                ✨ <b>專屬身心共振調節建議：</b><br>
+                1. <b>rTMS 重複經顱磁刺激療程</b>：深層活化前額葉皮質，快速調節交感神經高活性。<br>
+                2. <b>0.067Hz 莫蘭迪聲學調息</b>：搭配專屬音場，進行 15 分鐘診前大腦迷走神經錨定。<br>
+                3. <b>精準抗發炎點滴</b>：降低 Cortisol 生理應激負擔，恢復優質睡眠品質。
+            </div>
+            <div style="margin-top: 30px; font-size: 0.95rem; color: #B29562; font-family: 'Didot', serif; italic;">
+                🌿 交感身心診所 ‧ 關懷您的每一刻心流諧振
+            </div>
+        </div>
+    """,
+        unsafe_allow_html=True,
+    )
+    st.stop()
+
+# 🎭 狀況 B：常規醫師看診視角 ( Doctor Dashboard )
 st.markdown(
     """
     <div class="curio-hero-card">
@@ -848,7 +884,6 @@ if elapsed_minutes >= 45:
         unsafe_allow_html=True,
     )
 
-# 頂樓認證欄 + 240 分鐘剛性銷毀倒數 + 療程評估卡按鈕
 top_col1, top_col2, top_col3, top_col4 = st.columns([2.2, 0.9, 0.8, 0.8])
 with top_col1:
     st.markdown(
