@@ -106,7 +106,6 @@ if "audio_loop" not in st.session_state:
 
 MASTER_KEY = "CURIO-999"
 
-# 包含 SoundHelix 的高品質長時音軌
 PLAYLIST = [
     {
         "title": "Underworld - Dark & Long (Dark Train Extended Mix) [郭醫師首選]",
@@ -365,7 +364,7 @@ st.markdown(
 
 
 # ==============================================================================
-# 3. 診所專屬 13 大高階選購模組 Modal 彈窗 (商業用語優化版)
+# 3. 診所專屬 13 大高階選購模組 Modal 彈窗 (精簡高奢版)
 # ==============================================================================
 if hasattr(st, "dialog"):
 
@@ -377,23 +376,45 @@ if hasattr(st, "dialog"):
                 <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.2rem; margin-top: 0;">診所端高階效能選配模組 (Clinic Atelier Add-ons)</h3>
                 <p style="font-size: 0.82rem; color: #596B60;">勾選需要解鎖的診所營運與看診提效神器：</p>
                 <hr style="border:0; border-top:1px solid #E4DCD0; margin:10px 0;">
-                <div style="font-size: 0.83rem; color: #25352B; line-height: 1.8;">
-                    🎫 <b>【功能 05】健保爆診「本院個案當日優先加號憑證」</b>：+ NT$ 3,800/月<br>
-                    🗓️ <b>【功能 06】醫師跨院區兼診「無肉身行動排班 API 密鑰」</b>：+ NT$ 4,500/月<br>
-                    📊 <b>【功能 08】院長專用「自費心理師/慢籤流失復發預警儀表板」</b>：+ NT$ 6,800/月<br>
-                    📄 <b>【功能 09】診前 15 秒「去敏身心軌跡莫蘭迪 PDF」生成機制</b>：+ NT$ 3,500/月<br>
-                    ⚡ <b>【功能 10】跨院回診健保缺號自動無聲捕蚊燈 (No-show 填補)</b>：+ NT$ 5,200/月<br>
-                    💊 <b>【功能 11】診所自費藥局精準營養素交叉地圖維護 API</b>：+ NT$ 8,800/月<br>
-                    📈 <b>【功能 12】自費身心科「臨床療效量化評估與 OMOP CDM 對照流」</b>：+ NT$ 9,800/月<br>
-                    🔄 <b>【功能 13】連鎖院區「個案異地調診去敏病歷快捷拋接」</b>：+ NT$ 6,000/月<br>
-                    🏷️ <b>【功能 14】連鎖診所品牌特許「SaMD 軟體專利聯名上架通關包」</b>：NT$ 120,000/案<br>
-                    🌐 <b>【功能 38】社交孤立預警（GPS 位移 ✕ 通訊頻率分析）</b>：+ NT$ 3,200/月<br>
-                    🌧️ <b>【功能 39】環境壓力感測（氣壓/濕度/噪音 ✕ 萌寵安撫頻率）</b>：+ NT$ 2,800/月<br>
-                    💓 <b>【功能 41】循環與免疫監測（rPPG 監測 HRV ✕ 量化發炎負擔）</b>：+ NT$ 4,500/月<br>
-                    🌲 <b>【功能 47】倒懸松果閣 ‧ 智性放鬆生活地圖（異業合作系統）</b>：開通費 NT$ 50,000
+                <div style="font-size: 0.83rem; color: #25352B; line-height: 1.85;">
+                    🎫 <b>健保爆診「本院個案當日優先加號憑證」</b>：+ NT$ 3,800/月<br>
+                    🗓️ <b>醫師跨院區兼診「無肉身行動排班 API 密鑰」</b>：+ NT$ 4,500/月<br>
+                    📊 <b>院長專用「自費心理師/慢籤流失復發預警儀表板」</b>：+ NT$ 6,800/月<br>
+                    📄 <b>診前 15 秒「去敏身心軌跡莫蘭迪 PDF」生成機制</b>：+ NT$ 3,500/月<br>
+                    ⚡ <b>跨院回診健保缺號自動無聲捕蚊燈 (No-show 填補)</b>：+ NT$ 5,200/月<br>
+                    💊 <b>診所自費藥局精準營養素交叉地圖維護 API</b>：+ NT$ 8,800/月<br>
+                    📈 <b>自費身心科「臨床療效量化評估與 OMOP CDM 對照流」</b>：+ NT$ 9,800/月<br>
+                    🔄 <b>連鎖院區「個案異地調診去敏病歷快捷拋接」</b>：+ NT$ 6,000/月<br>
+                    🏷️ <b>連鎖診所品牌特許「SaMD 軟體專利聯名上架通關包」</b>：NT$ 120,000/案<br>
+                    🌐 <b>社交孤立預警（GPS 位移 ✕ 通訊頻率分析）</b>：+ NT$ 3,200/月<br>
+                    🌧️ <b>環境壓力感測（氣壓/濕度/噪音 ✕ 萌寵安撫頻率）</b>：+ NT$ 2,800/月<br>
+                    💓 <b>循環與免疫監測（rPPG 監測 HRV ✕ 量化發炎負擔）</b>：+ NT$ 4,500/月<br>
+                    🌲 <b>倒懸松果閣 ‧ 智性放鬆生活地圖（異業合作系統）</b>：開通費 NT$ 50,000
                 </div>
                 <div style="margin-top: 16px; text-align: center; font-size:0.8rem; color:#B29562;">
                     📞 專案加購專線：(02) 2396-6070 ｜ 信箱：service@curio.studio
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    @st.dialog("📑 健保 / 自費高階療程評估對照卡")
+    def treatment_card_dialog():
+        st.markdown(
+            """
+            <div style="background: linear-gradient(145deg, #FAF8F5, #F4F0E8); padding: 22px; border-radius: 20px; border: 1.5px solid #C2A675;">
+                <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.25rem; margin-top: 0;">自費醫療高階療程對照建議卡</h3>
+                <p style="font-size: 0.84rem; color: #596B60;">個案去敏密鑰：<b>#SYM-C701</b> ｜ 近 7 日心流一致性：<b>92.5%</b></p>
+                <hr style="border:0; border-top:1px solid #E4DCD0; margin:10px 0;">
+                <div style="font-size: 0.86rem; color: #25352B; line-height: 1.8;">
+                    <b>✨ 建議引導自費項目：</b><br>
+                    1. <b>rTMS 重複經顱磁刺激療程</b>：適合交感神經高活性、夜間應激偏態者。<br>
+                    2. <b>0.067Hz 深度心流聲學共振訓練</b>：搭配莫蘭迪音場進行 15 分鐘診前深層放鬆。<br>
+                    3. <b>自費精準營養抗發炎點滴</b>：修復長期焦慮引發之 Cortisol 生理發炎負擔。
+                </div>
+                <div style="margin-top: 16px; text-align: center; font-size:0.8rem; color:#B29562;">
+                    💡 本卡可一鍵轉向病患螢幕展示，提升自費療程續單率。
                 </div>
             </div>
             """,
@@ -527,7 +548,7 @@ if not st.session_state["authenticated"]:
 
 
 # ==============================================================================
-# 5. 側邊欄：郭醫師指定 YouTube 原生嵌入 ✕ 音訊卡 ✕ 動態 QR Code
+# 5. 側邊欄：郭醫師指定 YouTube 原生嵌入 ✕ 備用音效全功能選播 ✕ 動態 QR Code
 # ==============================================================================
 with st.sidebar:
     st.markdown(
@@ -541,9 +562,9 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-    # 郭醫師指定 YouTube 音樂原生無縫嵌入（100% 播放原汁原味 YouTube 聲景）
+    # 郭醫師指定 YouTube 音樂原生無縫嵌入（100% 播放 YouTube 音響）
     with st.expander("🎵 郭醫師指定 YouTube 聲景音場", expanded=True):
-        st.write("郭醫師最新指定曲 ‧ 迷幻心流深層共振 (YouTube 原生):")
+        st.write("郭醫師最新指定曲 ‧ 迷幻心流深層共振:")
         st.components.v1.html(
             """
             <iframe width="100%" height="180" src="https://www.youtube.com/embed/_eCGu2Te3ZA?autoplay=0&loop=1&playlist=_eCGu2Te3ZA" 
@@ -643,12 +664,12 @@ with st.sidebar:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # SoundHelix Progressive 音色選播列
+    # 備用古典與 Ambient 音色選播列 (完整補齊隨機切換 ✕ 循環開關)
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
             <div style="font-size:0.85rem; font-weight:600; color:#25352B; margin-bottom:6px;">
-                <span class="curio-3d-icon">🎶</span>古典與 Ambient Progressive 備用音場
+                <span class="curio-3d-icon">🎶</span>古典與 Ambient 備用音場
             </div>
     """,
         unsafe_allow_html=True,
@@ -661,18 +682,47 @@ with st.sidebar:
         index=st.session_state["current_track_idx"],
     )
 
+    col_m1, col_m2 = st.columns(2)
+    with col_m1:
+        if st.button("🔀 隨機切換"):
+            st.session_state["current_track_idx"] = random.randint(
+                0, len(PLAYLIST) - 1
+            )
+            st.rerun()
+    with col_m2:
+        loop_status_str = (
+            "🔁 循環中" if st.session_state["audio_loop"] else "➡️ 單次"
+        )
+        if st.button(f"模式: {loop_status_str}"):
+            st.session_state["audio_loop"] = not st.session_state["audio_loop"]
+            st.rerun()
+
     current_audio_url = PLAYLIST[selected_track_idx]["url"]
 
     st.components.v1.html(
         f"""
         <div style="background:#F4F0E8; padding:10px; border-radius:14px; border:1px solid #C2A675; text-align:center;">
-            <audio id="curio-player" controls loop preload="auto" style="width: 100%; height: 40px;">
+            <audio id="curio-player" controls preload="auto" style="width: 100%; height: 40px;">
                 <source src="{current_audio_url}" type="audio/mpeg">
             </audio>
-            <div style="font-size: 10px; color: #25352B; margin-top: 4px;">🎵 備用音場播放中</div>
+            <div style="font-size: 10px; color: #25352B; margin-top: 4px; font-weight: 600;">
+                🎵 備用音場：{PLAYLIST[selected_track_idx]['title']}
+            </div>
+            <script>
+                var audio = document.getElementById('curio-player');
+                if (audio) {{
+                    audio.volume = 0.8;
+                    audio.addEventListener('ended', function() {{
+                        if ({str(st.session_state['audio_loop']).lower()}) {{
+                            this.currentTime = 0;
+                            this.play();
+                        }}
+                    }}, false);
+                }}
+            </script>
         </div>
         """,
-        height=100,
+        height=130,
     )
 
     st.markdown("</div>", unsafe_allow_html=True)
@@ -738,7 +788,7 @@ with st.sidebar:
 
 
 # ==============================================================================
-# 6. 主面板邏輯
+# 6. 主面板邏輯 (含莫蘭迪茶飲/沉香建議 ✕ 銷毀倒數 ✕ 療程評估卡)
 # ==============================================================================
 def fetch_patient_data(user_key):
     return global_db.get(user_key, None)
@@ -769,7 +819,7 @@ st.markdown(
         <div style="flex-grow: 1; margin-right: 20px;">
             <div class="doctor-care-text">
                 午安。今日預約看診 <b>{total_patients}</b> 位探險家 ｜ 目前進度：<b>{completed}/{total_patients}</b> ({int(progress_pct*100)}%) ｜ 心流諧振指數 <b>94%</b><br>
-                <span style="font-size:0.82rem; color:#596B60;">🍵 喝口溫水，系統已為您準備好去敏身心軌跡，開啟優雅高效的一診吧。</span>
+                <span style="font-size:0.82rem; color:#596B60;">🍵 <b>診間莫蘭迪茶飲/沉香建議</b>：本日交感神經活性略高，建議搭配<b>澳洲檀香/煙燻雪松</b>香氛 ✕ <b>薄荷甘菊茶</b>。</span>
             </div>
         </div>
         <div class="doctor-timer-badge">
@@ -798,21 +848,26 @@ if elapsed_minutes >= 45:
         unsafe_allow_html=True,
     )
 
-top_col1, top_col2, top_col3 = st.columns([2.5, 0.8, 0.8])
+# 頂樓認證欄 + 240 分鐘剛性銷毀倒數 + 療程評估卡按鈕
+top_col1, top_col2, top_col3, top_col4 = st.columns([2.2, 0.9, 0.8, 0.8])
 with top_col1:
     st.markdown(
         """
-        <div style="background:#FFFFFF; border:1px solid #E4DCD0; border-radius:30px; padding:10px 22px; font-size:0.86rem; color:#25352B;">
-            <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">🟢</span> 已通過診間安全認證 ｜ 🏛️ 診間號：C701 ｜ <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">🛡️</span> <b>0 個資死鎖狀態</b>
+        <div style="background:#FFFFFF; border:1px solid #E4DCD0; border-radius:30px; padding:10px 22px; font-size:0.85rem; color:#25352B;">
+            <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">🟢</span> 安全認證 ｜ 🏛️ 診間 C701 ｜ <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">🛡️</span> <b>0 個資死鎖</b> ｜ <span style="color:#C2A675; font-weight:600;">⏳ 快取銷毀倒數：182 m</span>
         </div>
     """,
         unsafe_allow_html=True,
     )
 with top_col2:
+    if st.button("📑 療程評估卡", use_container_width=True):
+        if hasattr(st, "dialog"):
+            treatment_card_dialog()
+with top_col3:
     if st.button("💎 升級與加購", use_container_width=True):
         if hasattr(st, "dialog"):
             upgrade_subscription_dialog()
-with top_col3:
+with top_col4:
     if st.button("⚙️ 診間金鑰", use_container_width=True):
         if hasattr(st, "dialog"):
             change_password_dialog()
