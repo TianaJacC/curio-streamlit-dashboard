@@ -106,12 +106,8 @@ if "audio_loop" not in st.session_state:
 
 MASTER_KEY = "CURIO-999"
 
-# 100% 穩定發聲之高音質法式 Progressive 音樂庫 (已修復郭醫師指定曲)
+# 包含 SoundHelix 的高品質長時音軌
 PLAYLIST = [
-    {
-        "title": "✨ 郭醫師最新指定曲 ‧ 迷幻心流 60Min 深層聲景 (Deep Drift)",
-        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
-    },
     {
         "title": "Underworld - Dark & Long (Dark Train Extended Mix) [郭醫師首選]",
         "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
@@ -425,7 +421,7 @@ if hasattr(st, "dialog"):
                     3. <b>HTTPS TLS 1.3 & AES-256 加密</b>：前端至中繼站全通道高階加密，徹底防禦中間人截取。<br>
                     4. <b>Air-Gapped 雙盲實體與邏輯隔離</b>：本系統與診所行政 HIS/LINE 實施資料庫實體隔離，斷絕任何個資對照可能性。
                 </div>
-                <div style="margin-top: 20px; padding: 12px; background: rgba(194, 166, 117, 0.12); border-radius: 12px; font-size: 0.78rem; color: #B29562; text-align: center; font-family: 'Garamond', serif;">
+                <div style="margin-top: 20px; padding: 12px; background: rgba(194, 166, 117, 0.12); border-radius: 12px; font-size: 0.78rem; color:#B29562; text-align: center; font-family: 'Garamond', serif;">
                     🏛️ 發布單位：居里研創股份有限公司 (Curio & Studio) ｜ 日期：2026 年 07 月 31 日
                 </div>
             </div>
@@ -531,7 +527,7 @@ if not st.session_state["authenticated"]:
 
 
 # ==============================================================================
-# 5. 側邊欄：100% 穩定發聲之音樂卡 ✕ 自動抓取網址 QR Code
+# 5. 側邊欄：郭醫師指定 YouTube 原生嵌入 ✕ 音訊卡 ✕ 動態 QR Code
 # ==============================================================================
 with st.sidebar:
     st.markdown(
@@ -544,6 +540,17 @@ with st.sidebar:
     """,
         unsafe_allow_html=True,
     )
+
+    # 郭醫師指定 YouTube 音樂原生無縫嵌入（100% 播放原汁原味 YouTube 聲景）
+    with st.expander("🎵 郭醫師指定 YouTube 聲景音場", expanded=True):
+        st.write("郭醫師最新指定曲 ‧ 迷幻心流深層共振 (YouTube 原生):")
+        st.components.v1.html(
+            """
+            <iframe width="100%" height="180" src="https://www.youtube.com/embed/_eCGu2Te3ZA?autoplay=0&loop=1&playlist=_eCGu2Te3ZA" 
+            title="郭醫師指定曲" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            """,
+            height=190,
+        )
 
     with st.expander("📱 手機連線 Demo QR Code"):
         current_host = "https://curio-studio.streamlit.app"
@@ -636,61 +643,36 @@ with st.sidebar:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 包含郭醫師最新指定曲（修復有聲版）之音樂卡
+    # SoundHelix Progressive 音色選播列
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
             <div style="font-size:0.85rem; font-weight:600; color:#25352B; margin-bottom:6px;">
-                <span class="curio-3d-icon">🎵</span>郭醫師專屬 Progressive 音場
+                <span class="curio-3d-icon">🎶</span>古典與 Ambient Progressive 備用音場
             </div>
     """,
         unsafe_allow_html=True,
     )
 
     selected_track_idx = st.selectbox(
-        "選擇聲景曲目：",
+        "選擇備用聲景：",
         range(len(PLAYLIST)),
         format_func=lambda x: PLAYLIST[x]["title"],
         index=st.session_state["current_track_idx"],
     )
 
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
-        if st.button("🔀 隨機切換"):
-            st.session_state["current_track_idx"] = random.randint(
-                0, len(PLAYLIST) - 1
-            )
-            st.rerun()
-
-    with col_btn2:
-        loop_status_str = (
-            "🔁 循環中" if st.session_state["audio_loop"] else "➡️ 單次"
-        )
-        if st.button(f"模式: {loop_status_str}"):
-            st.session_state["audio_loop"] = not st.session_state["audio_loop"]
-            st.rerun()
-
     current_audio_url = PLAYLIST[selected_track_idx]["url"]
-    loop_attr = "loop" if st.session_state["audio_loop"] else ""
 
     st.components.v1.html(
         f"""
-        <div style="background:#F4F0E8; padding:12px; border-radius:16px; border:1.5px solid #C2A675; text-align:center;">
-            <audio id="curio-player" controls {loop_attr} preload="auto" style="width: 100%; height: 45px;">
+        <div style="background:#F4F0E8; padding:10px; border-radius:14px; border:1px solid #C2A675; text-align:center;">
+            <audio id="curio-player" controls loop preload="auto" style="width: 100%; height: 40px;">
                 <source src="{current_audio_url}" type="audio/mpeg">
-                您的瀏覽器不支援音樂播放。
             </audio>
-            <div style="font-size: 11px; color: #25352B; margin-top: 8px; font-weight: 600; font-family: sans-serif;">
-                🎵 正在播放：{PLAYLIST[selected_track_idx]['title']}<br>
-                <span style="color:#B29562;">💡 點擊播放器 ▶️ 按鈕即可聆聽聲景音場</span>
-            </div>
-            <script>
-                var audio = document.getElementById('curio-player');
-                if (audio) {{ audio.volume = 0.8; }}
-            </script>
+            <div style="font-size: 10px; color: #25352B; margin-top: 4px;">🎵 備用音場播放中</div>
         </div>
         """,
-        height=180,
+        height=100,
     )
 
     st.markdown("</div>", unsafe_allow_html=True)
@@ -820,7 +802,7 @@ top_col1, top_col2, top_col3 = st.columns([2.5, 0.8, 0.8])
 with top_col1:
     st.markdown(
         """
-        <div style="background:#FFFFFF; border:1px solid #E4DCD0; border-radius:30px; padding:10px 26px; font-size:0.86rem; color:#25352B;">
+        <div style="background:#FFFFFF; border:1px solid #E4DCD0; border-radius:30px; padding:10px 22px; font-size:0.86rem; color:#25352B;">
             <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">🟢</span> 已通過診間安全認證 ｜ 🏛️ 診間號：C701 ｜ <span class="curio-3d-icon" style="width:22px; height:22px; font-size:0.75rem;">🛡️</span> <b>0 個資死鎖狀態</b>
         </div>
     """,
