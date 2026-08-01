@@ -47,7 +47,7 @@ def get_global_database():
             "stress_index": "Morandi Soft Blue",
             "stress_desc": "莫蘭迪藍放縮區 ‧ 平穩",
             "sleep_hours": 7.2,
-            "timestamp": "2026-07-31 01:20:15",
+            "timestamp": "2026-08-01 01:20:15",
             "weekly_trend": [82, 85, 87, 84, 89, 91, 92.5],
             "nudge": "探險家近 3 天夜間無應激爆發，心流穩定（92.5%）。建議問診重點：維持優質睡眠時數。",
             "summary": "【去敏身心軌跡摘要】個案於看診前 15 秒於候診區完成 0.067 Hz 心流共振調息。連續 7 日數據顯示夜間無應激爆發，心流一致性維持於 90% 以上高諧振區間。",
@@ -58,7 +58,7 @@ def get_global_database():
             "stress_index": "Morandi Sage",
             "stress_desc": "莫蘭迪綠區域 ‧ 輕度交感活性",
             "sleep_hours": 6.1,
-            "timestamp": "2026-07-31 01:25:00",
+            "timestamp": "2026-08-01 01:25:00",
             "weekly_trend": [70, 75, 78, 80, 82, 85, 88.0],
             "nudge": "探險家睡眠時數偏低（6.1hr），生理指標顯示交感活性上升。建議問診重點：關懷換季氣壓調節。",
             "summary": "【去敏身心軌跡摘要】個案於候診區完成心流調息。近 7 日睡眠時數偏低，生理指標顯示交感神經活性略微上升。",
@@ -109,10 +109,23 @@ if "patient_view_mode" not in st.session_state:
 
 MASTER_KEY = "CURIO-999"
 
+# 包含郭醫師指定與新增 3 首 Progressive 頂級歌單
 PLAYLIST = [
     {
         "title": "Underworld - Dark & Long (Dark Train Extended Mix) [郭醫師首選]",
         "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    },
+    {
+        "title": "✨ 新增 01 ‧ Underworld - Spoon Deep (心流低頻重拍神曲)",
+        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3",
+    },
+    {
+        "title": "✨ 新增 02 ‧ Sasha - Rooms (Scene Delete) [百大 DJ 心流修復]",
+        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
+    },
+    {
+        "title": "✨ 新增 03 ‧ Tycho - A Walk (法式莫蘭迪感官 Progressive)",
+        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3",
     },
     {
         "title": "Underworld - Born Slippy .NUXX (Progressive 心流長音軌)",
@@ -121,10 +134,6 @@ PLAYLIST = [
     {
         "title": "Bicep - Glue (法式知性 Ambient Electronic 沉浸集)",
         "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-    },
-    {
-        "title": "Jon Hopkins - Music for Psychedelic Therapy (深層調息)",
-        "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
     },
 ]
 
@@ -367,7 +376,7 @@ st.markdown(
 
 
 # ==============================================================================
-# 3. 診所專屬 13 大高階選購模組 ✕ 一鍵論文 RWE Modal 彈窗
+# 3. 診所專屬 13 大高階選購模組 ✕ 一鍵論文 RWE 實裝 Modal 彈窗
 # ==============================================================================
 if hasattr(st, "dialog"):
 
@@ -378,22 +387,43 @@ if hasattr(st, "dialog"):
     def paper_rwe_dialog():
         st.markdown(
             """
-            <div style="background: linear-gradient(145deg, #FAF8F5, #F4F0E8); padding: 20px; border-radius: 20px; border: 1.5px solid #C2A675;">
-                <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.25rem; margin-top: 0;">一鍵生成 OMOP CDM 論文研究數據庫與表格</h3>
-                <p style="font-size: 0.85rem; color: #596B60;">系統已自動將本院近 14 天去敏個案心流軌跡，對射至國際 OMOP CDM v5.4 資料庫標準：</p>
+            <div style="background: linear-gradient(145deg, #FAF8F5, #F4F0E8); padding: 22px; border-radius: 20px; border: 1.5px solid #C2A675;">
+                <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.25rem; margin-top: 0;">一鍵生成符合 NJE / SCI 投稿規範之 RWE 論文數據庫</h3>
+                <p style="font-size: 0.85rem; color: #596B60;">對齊 Nova Journal Experts (NJE) 投稿標準 ✕ 國際 OMOP CDM v5.4 資料庫對照：</p>
                 <hr style="border:0; border-top:1px solid #E4DCD0; margin:10px 0;">
-                <div style="font-size: 0.86rem; color: #25352B; line-height: 1.8;">
-                    • <b>樣本總數 (Sample Size, N)</b>：N = 142 組（去識別化雙盲代碼）<br>
-                    • <b>統計顯著性 ($p$-value)</b>：前測 vs 後測心流共振上升率 $p < 0.001$<br>
-                    • <b>SCI 期刊 Table 1 自動產出</b>：包含年齡層分佈、0.067Hz 諧振方差與睡眠時數標準差。<br>
+                <div style="font-size: 0.86rem; color: #25352B; line-height: 1.85;">
+                    • <b>樣本總數與組態 (Sample Size N)</b>：N = 142（去敏化雙盲代碼，無名個資死鎖）<br>
+                    • <b>統計顯著性對照 ($p$-value)</b>：前測 vs 後測心流一致性上升率 $p < 0.001$（雙尾檢定）<br>
+                    • <b>SCI 期刊 Table 1 標準產出</b>：包含年齡層、0.067Hz 諧振方差與睡眠時數標準差。<br>
                     • <b>免 IRB 審查通關宣告包</b>：附帶《個資法》第 2 條去識別化證明，免送學術委員會漫長審查！
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        if st.button("📥 一鍵匯出 SCI 期刊投稿格式 CSV / PDF", use_container_width=True):
-            st.toast("🎉 已成功生成符合 Lancet / JAD 格式之論文數據備查包！")
+
+        st.markdown("##### 📊 SCI 期刊 Table 1：心流調息臨床對照數據預覽")
+        sample_df = pd.DataFrame(
+            {
+                "指標項目 (Metric)": [
+                    "心流一致性 (Coherence %)",
+                    "夜間應激爆發次數 (Events)",
+                    "平均睡眠時數 (Hours)",
+                ],
+                "介入前 (Baseline)": ["68.2 ± 5.4", "4.2 ± 1.1", "5.4 ± 0.8"],
+                "介入後 (14 Days)": ["92.5 ± 3.1", "0.4 ± 0.2", "7.2 ± 0.5"],
+                "p-value (Significance)": ["< 0.001***", "< 0.001***", "< 0.005**"],
+            }
+        ).set_index("指標項目 (Metric)")
+        st.table(sample_df)
+
+        if st.button(
+            "📥 一鍵匯出符合 NJE/SCI 期刊格式之論文數據備查包 (CSV / PDF)",
+            use_container_width=True,
+        ):
+            st.toast(
+                "🎉 已成功生成符合 Lancet Psychiatry / JAD 格式之論文數據備查包！"
+            )
 
     @st.dialog(
         "💎 Curio & Studio 診間高階臨床與營運效能選配中心", width="large"
@@ -551,7 +581,7 @@ if hasattr(st, "dialog"):
                     4. <b>Air-Gapped 雙盲實體與邏輯隔離</b>：本系統與診所行政 HIS/LINE 實施資料庫實體隔離，斷絕任何個資對照可能性。
                 </div>
                 <div style="margin-top: 20px; padding: 12px; background: rgba(194, 166, 117, 0.12); border-radius: 12px; font-size: 0.78rem; color:#B29562; text-align: center; font-family: 'Garamond', serif;">
-                    🏛️ 發布單位：居里研創股份有限公司 (Curio & Studio) ｜ 日期：2026 年 07 月 31 日
+                    🏛️ 發布單位：居里研創股份有限公司 (Curio & Studio) ｜ 日期：2026 年 08 月 01 日
                 </div>
             </div>
             """,
@@ -772,7 +802,7 @@ with st.sidebar:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 備用古典與 Ambient 音色選播列
+    # 備用古典與 Progressive 音色選播列
     st.markdown(
         """
         <div class="sidebar-ateliers-box">
