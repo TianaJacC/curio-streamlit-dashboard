@@ -7,7 +7,7 @@ import pandas as pd
 import streamlit as st
 
 # ==============================================================================
-# 0. 頁面配置與高奢莫蘭迪樣式
+# 0. 頁面配置與莫蘭迪法式高奢樣式
 # ==============================================================================
 st.set_page_config(
     page_title="夢境珍奇櫃 ‧ 探險家日誌",
@@ -71,11 +71,13 @@ if "step3_done" not in st.session_state:
 if "hrv_score" not in st.session_state:
     st.session_state["hrv_score"] = 93.5
 
-# 剛性安全：自動尋找專案內任何已存在的蔻恩圖檔，若無則完美相容無損載入
+# 搜尋專案內所有可能的實體蔻恩圖檔
 LOCAL_CONE_PATHS = [
     "assets/cone.png",
     "cone.png",
-    "2026-08-02 15 01 17.png"
+    "2026-08-02 15 01 17.png",
+    "image_26abe5.jpg",
+    "image_27067e.jpg"
 ]
 
 cone_img_target = None
@@ -88,7 +90,6 @@ for p in LOCAL_CONE_PATHS:
 st.markdown(
     f"""
     <div style="background: linear-gradient(135deg, #25352B 0%, #1A261F 100%); padding: 26px; border-radius: 26px; text-align: center; border: 1.5px solid #C2A675; margin-bottom: 20px;">
-        <div style="font-size: 2.2rem; margin-bottom: 4px;">🐿️</div>
         <h2 style="color: #FAF8F5 !important; font-family: 'Didot', serif; margin: 0 0 6px 0;">夢境珍奇櫃 ‧ 探險家日誌</h2>
         <p style="color: #D3E0D7 !important; font-size: 0.88rem; margin: 0;">夢境知性主理人陪伴您 ｜ 去敏密鑰：<b style="color:#D4AF37;">{st.session_state['token']}</b></p>
     </div>
@@ -101,17 +102,22 @@ st.markdown(
 # ==============================================================================
 st.markdown("### 👑 今日心靈主理人卡牌")
 
-col_img, col_detail = st.columns([1.3, 1.7])
+col_img, col_detail = st.columns([1.4, 1.6])
 
 with col_img:
     if cone_img_target:
         st.image(cone_img_target, caption="夢境知性主理人：小松鼠蔻恩閣長", use_container_width=True)
     else:
+        # 當線上無實體檔時，渲染 3D 高奢卡牌說明
         st.markdown("""
-            <div style="background:#25352B; border:2px solid #C2A675; border-radius:20px; padding:30px; text-align:center;">
-                <div style="font-size:5rem;">🐿️</div>
-                <div style="color:#FAF8F5; font-weight:600; margin-top:8px;">小松鼠蔻恩閣長</div>
-                <div style="color:#C2A675; font-size:0.8rem;">(3D 軟膠高奢主理人)</div>
+            <div style="background: linear-gradient(145deg, #25352B, #1A261F); border: 2px solid #C2A675; border-radius: 22px; padding: 20px; text-align: center; color: #FAF8F5;">
+                <h4 style="color: #D4AF37 !important; font-family: 'Didot', serif; margin-top:0;">小松鼠蔻恩閣長 (Cone)</h4>
+                <div style="font-size:0.85rem; color:#D3E0D7; line-height:1.6; text-align:left;">
+                    • <b>單片金絲圓框眼鏡</b>：象徵清澈、知性與專業的聆聽者。<br>
+                    • <b>Q 彈肉感臉頰</b>：提供視覺上的軟糯療癒感。<br>
+                    • <b>溫柔雙爪</b>：負責捧著暖光、遞出金鑰與吹熄燭火。<br>
+                    • <b>蓬鬆大尾巴</b>：翻轉到頭頂，作為遮蔽外界雜訊的專屬小傘。
+                </div>
             </div>
         """, unsafe_allow_html=True)
 
@@ -216,23 +222,44 @@ if st.button("🌬️ 開始 4-7-8 蔻恩閣長腹部起伏調息"):
         # 吸氣 4 秒
         for t in range(1, 5):
             b_display.markdown(f"### 🌬️ 吸氣 (Inhale) ── 腹部膨脹 ({t}/4秒)")
-            if cone_img_target: st.image(cone_img_target, width=int(220 + t * 25))
-            else: st.markdown(f"<div style='font-size:{3+t*0.5}rem; text-align:center;'>🐿️</div>", unsafe_allow_html=True)
+            if cone_img_target:
+                st.image(cone_img_target, width=int(220 + t * 25))
+            else:
+                st.markdown(f"""
+                    <div style="background:#25352B; border:2px solid #C2A675; border-radius:20px; padding:{20+t*5}px; text-align:center; color:#FAF8F5;">
+                        <h3 style="color:#D4AF37;">小松鼠蔻恩閣長 (Inhale)</h3>
+                        <p>單片金絲圓框眼鏡 ‧ Q 彈肉感臉頰腹部膨脹中 ({t}/4s)</p>
+                    </div>
+                """, unsafe_allow_html=True)
             time.sleep(1)
 
         # 留氣 7 秒
         for t in range(1, 8):
             b_display.markdown(f"### ⏸️ 留氣懸息 (Hold) ── 迷走神經活化 ({t}/7秒)")
-            if cone_img_target: st.image(cone_img_target, width=320)
-            else: st.markdown("<div style='font-size:5rem; text-align:center;'>🐿️</div>", unsafe_allow_html=True)
+            if cone_img_target:
+                st.image(cone_img_target, width=320)
+            else:
+                st.markdown(f"""
+                    <div style="background:#25352B; border:2px solid #D4AF37; border-radius:20px; padding:40px; text-align:center; color:#FAF8F5;">
+                        <h3 style="color:#D4AF37;">小松鼠蔻恩閣長 (Hold)</h3>
+                        <p>雙爪捧暖光 ‧ 迷走神經活化懸息中 ({t}/7s)</p>
+                    </div>
+                """, unsafe_allow_html=True)
             time.sleep(1)
 
         # 吐氣 8 秒
         for t in range(1, 9):
             w_val = max(190, int(320 - t * 16))
             b_display.markdown(f"### 💨 吐氣 (Exhale) ── 嘴唇微張長吐 ({t}/8秒)")
-            if cone_img_target: st.image(cone_img_target, width=w_val)
-            else: st.markdown(f"<div style='font-size:{max(2, 5-t*0.3)}rem; text-align:center;'>🐿️</div>", unsafe_allow_html=True)
+            if cone_img_target:
+                st.image(cone_img_target, width=w_val)
+            else:
+                st.markdown(f"""
+                    <div style="background:#25352B; border:2px solid #C2A675; border-radius:20px; padding:{max(15, 40-t*2)}px; text-align:center; color:#FAF8F5;">
+                        <h3 style="color:#7B8B9A;">小松鼠蔻恩閣長 (Exhale)</h3>
+                        <p>蓬鬆大尾巴遮蔽雜訊 ‧ 舒緩吐氣中 ({t}/8s)</p>
+                    </div>
+                """, unsafe_allow_html=True)
             time.sleep(1)
 
     b_display.success("✨ 4-7-8 迷走神經調息完成！Cortisol 壓力負擔已完全釋放。")
