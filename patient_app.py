@@ -7,7 +7,7 @@ import pandas as pd
 import streamlit as st
 
 # ==============================================================================
-# 0. 頁面配置與莫蘭迪法式高奢樣式
+# 0. 頁面配置與莫蘭迪高奢樣式
 # ==============================================================================
 st.set_page_config(
     page_title="夢境珍奇櫃 ‧ 探險家日誌",
@@ -71,12 +71,11 @@ if "step3_done" not in st.session_state:
 if "hrv_score" not in st.session_state:
     st.session_state["hrv_score"] = 93.5
 
-# 搜尋專案內所有可能的實體蔻恩圖檔
+# 尋找專案內實體圖檔
 LOCAL_CONE_PATHS = [
     "assets/cone.png",
     "cone.png",
     "2026-08-02 15 01 17.png",
-    "image_26abe5.jpg",
     "image_27067e.jpg"
 ]
 
@@ -89,7 +88,7 @@ for p in LOCAL_CONE_PATHS:
 # Header
 st.markdown(
     f"""
-    <div style="background: linear-gradient(135deg, #25352B 0%, #1A261F 100%); padding: 26px; border-radius: 26px; text-align: center; border: 1.5px solid #C2A675; margin-bottom: 20px;">
+    <div style="background: linear-gradient(135deg, #25352B 0%, #1A261F 100%); padding: 24px; border-radius: 24px; text-align: center; border: 1.5px solid #C2A675; margin-bottom: 20px;">
         <h2 style="color: #FAF8F5 !important; font-family: 'Didot', serif; margin: 0 0 6px 0;">夢境珍奇櫃 ‧ 探險家日誌</h2>
         <p style="color: #D3E0D7 !important; font-size: 0.88rem; margin: 0;">夢境知性主理人陪伴您 ｜ 去敏密鑰：<b style="color:#D4AF37;">{st.session_state['token']}</b></p>
     </div>
@@ -98,25 +97,24 @@ st.markdown(
 )
 
 # ==============================================================================
-# 👑 夢境的知性主理人：小松鼠蔻恩閣長 實體展示區
+# 👑 夢境知性主理人：小松鼠蔻恩閣長 實體卡牌
 # ==============================================================================
 st.markdown("### 👑 今日心靈主理人卡牌")
 
-col_img, col_detail = st.columns([1.4, 1.6])
+col_img, col_detail = st.columns([1.3, 1.7])
 
 with col_img:
     if cone_img_target:
-        st.image(cone_img_target, caption="夢境知性主理人：小松鼠蔻恩閣長", use_container_width=True)
+        st.image(cone_img_target, caption="小松鼠蔻恩閣長", use_container_width=True)
     else:
-        # 當線上無實體檔時，渲染 3D 高奢卡牌說明
         st.markdown("""
-            <div style="background: linear-gradient(145deg, #25352B, #1A261F); border: 2px solid #C2A675; border-radius: 22px; padding: 20px; text-align: center; color: #FAF8F5;">
-                <h4 style="color: #D4AF37 !important; font-family: 'Didot', serif; margin-top:0;">小松鼠蔻恩閣長 (Cone)</h4>
-                <div style="font-size:0.85rem; color:#D3E0D7; line-height:1.6; text-align:left;">
-                    • <b>單片金絲圓框眼鏡</b>：象徵清澈、知性與專業的聆聽者。<br>
-                    • <b>Q 彈肉感臉頰</b>：提供視覺上的軟糯療癒感。<br>
-                    • <b>溫柔雙爪</b>：負責捧著暖光、遞出金鑰與吹熄燭火。<br>
-                    • <b>蓬鬆大尾巴</b>：翻轉到頭頂，作為遮蔽外界雜訊的專屬小傘。
+            <div style="background: #25352B; border: 2px solid #C2A675; border-radius: 20px; padding: 20px; text-align: center; color: #FAF8F5;">
+                <h4 style="color: #D4AF37 !important; font-family: 'Didot', serif; margin:0;">小松鼠蔻恩閣長 (Cone)</h4>
+                <div style="font-size:0.82rem; color:#D3E0D7; line-height:1.6; text-align:left; margin-top:10px;">
+                    1. 單片金絲圓框眼鏡<br>
+                    2. Q 彈肉感臉頰<br>
+                    3. 雙爪捧暖光<br>
+                    4. 蓬鬆遮雜訊大尾巴
                 </div>
             </div>
         """, unsafe_allow_html=True)
@@ -144,7 +142,7 @@ with col_detail:
 
 st.markdown("---")
 
-# Step 1: 莫蘭迪畫布
+# Step 1: 塗鴉
 st.markdown("### Step 1 🎨 莫蘭迪沙龍手繪畫布 (1 分鐘簽到)")
 st.write("請用手指或滑鼠在下方畫布上記錄心流筆觸壓力：")
 user_color = st.color_picker("🎨 請選擇畫筆色彩（自由調色）：", "#C2A675")
@@ -181,9 +179,9 @@ if st.button("✨ 確認完成 1 分鐘畫布塗鴉"):
 
 st.markdown("---")
 
-# Step 2: 60 秒 rPPG
+# Step 2: rPPG
 st.markdown("### Step 2 💓 60 秒 rPPG 自律神經檢測 (HRV 提取)")
-st.write("請將食指輕貼於手機鏡頭與閃光燈上，進行光譜分析：")
+st.write("請將食指輕貼於手機鏡頭與閃光燈上，進行光譜對焦：")
 
 if st.button("🔴 開始 60 秒 rPPG 光譜檢測"):
     prep_box = st.empty()
@@ -206,60 +204,66 @@ if st.button("🔴 開始 60 秒 rPPG 光譜檢測"):
 
 st.markdown("---")
 
-# Step 3: 4-7-8 蔻恩閣長腹部動態起伏
+# ==============================================================================
+# Step 3: 4-7-8 蔻恩閣長「局部腹部」動態膨脹呼吸法（框體不放大，只動腹部心流）
+# ==============================================================================
 st.markdown("### Step 3 🌿 身心科 4-7-8 迷走神經呼吸法 (蔻恩閣長腹部動態起伏)")
-st.write("**【郭家穎院長身心科臨床衛教指引】** 請跟隨蔻恩閣長腹部的起伏節奏：**吸氣 4 秒 ➔ 留氣 7 秒 ➔ 吐氣 8 秒**")
+st.write("**【郭家穎院長身心科臨床衛教指引】** 請跟隨蔻恩閣長雙爪暖光腹部的起伏節奏：**吸氣 4 秒 ➔ 留氣 7 秒 ➔ 吐氣 8 秒**")
 
 b_display = st.empty()
-b_display.info("按下下方按鈕，開始跟隨蔻恩閣長進行 4-7-8 腹部起伏調息")
+b_display.info("按下下方按鈕，開始跟隨蔻恩閣長腹部暖光起伏進行調息")
 
 if st.button("🌬️ 開始 4-7-8 蔻恩閣長腹部起伏調息"):
     for prep in range(3, 0, -1):
         b_display.warning(f"⏳ 請放鬆肩膀，準備用鼻子深吸氣... ({prep} 秒)")
         time.sleep(1)
 
+    # 4-7-8 調息循環
     for cycle in range(1, 3):
-        # 吸氣 4 秒
+        # 1. 吸氣 4 秒 (框架完全固定，內部腹部暖光圓環膨脹)
         for t in range(1, 5):
-            b_display.markdown(f"### 🌬️ 吸氣 (Inhale) ── 腹部膨脹 ({t}/4秒)")
-            if cone_img_target:
-                st.image(cone_img_target, width=int(220 + t * 25))
-            else:
-                st.markdown(f"""
-                    <div style="background:#25352B; border:2px solid #C2A675; border-radius:20px; padding:{20+t*5}px; text-align:center; color:#FAF8F5;">
-                        <h3 style="color:#D4AF37;">小松鼠蔻恩閣長 (Inhale)</h3>
-                        <p>單片金絲圓框眼鏡 ‧ Q 彈肉感臉頰腹部膨脹中 ({t}/4s)</p>
+            scale_size = 60 + t * 25
+            opacity_val = 0.3 + t * 0.15
+            b_display.markdown(f"""
+                <div style="background: linear-gradient(135deg, #25352B 0%, #1A261F 100%); border: 2px solid #C2A675; border-radius: 28px; padding: 24px; text-align: center; color: #FAF8F5;">
+                    <h3 style="color:#A88B8B !important; margin:0 0 10px 0;">🌬️ 吸氣 (Inhale) ── 蔻恩閣長腹部膨脹 ({t}/4秒)</h3>
+                    <div style="width: 220px; height: 180px; margin: 0 auto; position: relative; background: rgba(0,0,0,0.2); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
+                        <div style="font-size: 3.5rem; z-index: 2; position: relative;">🐿️</div>
+                        <div style="position: absolute; width: {scale_size}px; height: {scale_size}px; background: rgba(212, 175, 55, {opacity_val}); border-radius: 50%; box-shadow: 0 0 25px rgba(212, 175, 55, 0.8); z-index: 1; transition: all 0.8s ease;"></div>
                     </div>
-                """, unsafe_allow_html=True)
+                    <div style="font-size:0.82rem; color:#D3E0D7; margin-top:8px;">單片眼鏡與雙爪位置固定 ｜ 腹部迷走神經共振膨脹中</div>
+                </div>
+            """, unsafe_allow_html=True)
             time.sleep(1)
 
-        # 留氣 7 秒
+        # 2. 留氣 7 秒 (腹部保持最大並呈現高頻微震)
         for t in range(1, 8):
-            b_display.markdown(f"### ⏸️ 留氣懸息 (Hold) ── 迷走神經活化 ({t}/7秒)")
-            if cone_img_target:
-                st.image(cone_img_target, width=320)
-            else:
-                st.markdown(f"""
-                    <div style="background:#25352B; border:2px solid #D4AF37; border-radius:20px; padding:40px; text-align:center; color:#FAF8F5;">
-                        <h3 style="color:#D4AF37;">小松鼠蔻恩閣長 (Hold)</h3>
-                        <p>雙爪捧暖光 ‧ 迷走神經活化懸息中 ({t}/7s)</p>
+            b_display.markdown(f"""
+                <div style="background: linear-gradient(135deg, #25352B 0%, #1A261F 100%); border: 2px solid #D4AF37; border-radius: 28px; padding: 24px; text-align: center; color: #FAF8F5;">
+                    <h3 style="color:#D4AF37 !important; margin:0 0 10px 0;">⏸️ 留氣懸息 (Hold) ── 迷走神經活化 ({t}/7秒)</h3>
+                    <div style="width: 220px; height: 180px; margin: 0 auto; position: relative; background: rgba(0,0,0,0.2); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
+                        <div style="font-size: 3.5rem; z-index: 2; position: relative;">🐿️</div>
+                        <div style="position: absolute; width: 160px; height: 160px; background: rgba(212, 175, 55, 0.95); border-radius: 50%; box-shadow: 0 0 35px rgba(212, 175, 55, 0.95); z-index: 1; transform: scale(1.03);"></div>
                     </div>
-                """, unsafe_allow_html=True)
+                    <div style="font-size:0.82rem; color:#D4AF37; margin-top:8px;">雙爪暖光懸息錨定 ｜ 大腦 Cortisol 阻斷中</div>
+                </div>
+            """, unsafe_allow_html=True)
             time.sleep(1)
 
-        # 吐氣 8 秒
+        # 3. 吐氣 8 秒 (腹部平緩收縮)
         for t in range(1, 9):
-            w_val = max(190, int(320 - t * 16))
-            b_display.markdown(f"### 💨 吐氣 (Exhale) ── 嘴唇微張長吐 ({t}/8秒)")
-            if cone_img_target:
-                st.image(cone_img_target, width=w_val)
-            else:
-                st.markdown(f"""
-                    <div style="background:#25352B; border:2px solid #C2A675; border-radius:20px; padding:{max(15, 40-t*2)}px; text-align:center; color:#FAF8F5;">
-                        <h3 style="color:#7B8B9A;">小松鼠蔻恩閣長 (Exhale)</h3>
-                        <p>蓬鬆大尾巴遮蔽雜訊 ‧ 舒緩吐氣中 ({t}/8s)</p>
+            scale_size = max(50, 160 - t * 13)
+            opacity_val = max(0.2, 0.95 - t * 0.09)
+            b_display.markdown(f"""
+                <div style="background: linear-gradient(135deg, #25352B 0%, #1A261F 100%); border: 2px solid #C2A675; border-radius: 28px; padding: 24px; text-align: center; color: #FAF8F5;">
+                    <h3 style="color:#7B8B9A !important; margin:0 0 10px 0;">💨 吐氣 (Exhale) ── 嘴唇微張長吐 ({t}/8秒)</h3>
+                    <div style="width: 220px; height: 180px; margin: 0 auto; position: relative; background: rgba(0,0,0,0.2); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
+                        <div style="font-size: 3.5rem; z-index: 2; position: relative;">🐿️</div>
+                        <div style="position: absolute; width: {scale_size}px; height: {scale_size}px; background: rgba(212, 175, 55, {opacity_val}); border-radius: 50%; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); z-index: 1; transition: all 0.8s ease;"></div>
                     </div>
-                """, unsafe_allow_html=True)
+                    <div style="font-size:0.82rem; color:#D3E0D7; margin-top:8px;">蓬鬆大尾巴遮蔽雜訊 ｜ 生理應激釋放中</div>
+                </div>
+            """, unsafe_allow_html=True)
             time.sleep(1)
 
     b_display.success("✨ 4-7-8 迷走神經調息完成！Cortisol 壓力負擔已完全釋放。")
