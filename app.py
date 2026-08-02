@@ -12,12 +12,12 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# 極簡剛性 CSS：解決手機上按鈕與 Toggle 切換看不見的問題
+# 極簡剛性 CSS：解決文字被吃掉與按鈕開關問題
 st.markdown(
     """
     <style>
-    .stApp { background-color: #FAF8F5; }
-    h1, h2, h3, h4, h5, h6, p, label, span, div { color: #1A261F !important; }
+    .stApp { background-color: #FAF8F5 !important; }
+    h1, h2, h3, h4, h5, h6, p, label, span, div { color: #1A261F !important; font-family: "Garamond", "PingFang TC", serif; }
     .stButton>button {
         background-color: #25352B !important;
         color: #FAF8F5 !important;
@@ -59,7 +59,7 @@ else:
     if "token" in query_params:
         st.session_state["selected_token"] = query_params["token"]
 
-# 頂樓雙螢幕病患視角切換開關 (清晰高對比版)
+# 頂樓雙螢幕病患視角切換開關
 patient_mode = st.checkbox("🔄 翻轉/病患視角 (雙螢幕模式)", value=False)
 
 if patient_mode:
@@ -103,7 +103,7 @@ if data:
         f"**【去敏軌跡摘要】**\n\n{data['summary']}\n\n🕒 時間戳記：{data['timestamp']}"
     )
 else:
-    # 若接收到病患端新 Token，動態生成去敏資料
+    # 動態接收病患端拋出之新 Token
     st.success(
         f"✨ **1 秒問診焦點提示 (Clinical Nudge)**：探險家 {user_key}"
         " 已完成 4-7-8 迷走神經調息，心流一致性指數為"
