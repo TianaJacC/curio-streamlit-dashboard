@@ -7,7 +7,7 @@ import pandas as pd
 import streamlit as st
 
 # ==============================================================================
-# 0. 頁面配置與莫蘭迪法式高奢樣式
+# 0. 頁面配置與高奢莫蘭迪樣式
 # ==============================================================================
 st.set_page_config(
     page_title="夢境珍奇櫃 ‧ 探險家日誌",
@@ -24,7 +24,6 @@ st.markdown(
     .stApp { background-color: #FAF8F5 !important; }
     h1, h2, h3, h4, h5, h6, p, label, span, div { color: #1A261F !important; font-family: "Garamond", "PingFang TC", serif; }
 
-    /* 高奢 3D 萌寵展台卡牌 */
     .pet-hero-container {
         background: linear-gradient(145deg, #FFFFFF 0%, #F4F0E8 100%);
         border: 2px solid #C2A675;
@@ -72,8 +71,18 @@ if "step3_done" not in st.session_state:
 if "hrv_score" not in st.session_state:
     st.session_state["hrv_score"] = 93.5
 
-# 讀取 GitHub assets 資料夾中的實體圖片，若無實體檔則自動相容備用檔
-CONE_IMG_URL = "https://raw.githubusercontent.com/TianaJacC/curio-streamlit-dashboard/main/assets/cone.png"
+# 剛性安全：自動尋找專案內任何已存在的蔻恩圖檔，若無則完美相容無損載入
+LOCAL_CONE_PATHS = [
+    "assets/cone.png",
+    "cone.png",
+    "2026-08-02 15 01 17.png"
+]
+
+cone_img_target = None
+for p in LOCAL_CONE_PATHS:
+    if os.path.exists(p):
+        cone_img_target = p
+        break
 
 # Header
 st.markdown(
@@ -95,12 +104,16 @@ st.markdown("### 👑 今日心靈主理人卡牌")
 col_img, col_detail = st.columns([1.3, 1.7])
 
 with col_img:
-    # 渲染小松鼠蔻恩閣長高清實體圖
-    st.image(
-        CONE_IMG_URL,
-        caption="夢境知性主理人：小松鼠蔻恩閣長",
-        use_container_width=True,
-    )
+    if cone_img_target:
+        st.image(cone_img_target, caption="夢境知性主理人：小松鼠蔻恩閣長", use_container_width=True)
+    else:
+        st.markdown("""
+            <div style="background:#25352B; border:2px solid #C2A675; border-radius:20px; padding:30px; text-align:center;">
+                <div style="font-size:5rem;">🐿️</div>
+                <div style="color:#FAF8F5; font-weight:600; margin-top:8px;">小松鼠蔻恩閣長</div>
+                <div style="color:#C2A675; font-size:0.8rem;">(3D 軟膠高奢主理人)</div>
+            </div>
+        """, unsafe_allow_html=True)
 
 with col_detail:
     st.markdown(
@@ -125,18 +138,10 @@ with col_detail:
 
 st.markdown("---")
 
-# ==============================================================================
-# Step 1: 莫蘭迪沙龍手繪畫布
-# ==============================================================================
+# Step 1: 莫蘭迪畫布
 st.markdown("### Step 1 🎨 莫蘭迪沙龍手繪畫布 (1 分鐘簽到)")
-st.write(
-    "請用手指或滑鼠在下方畫布上記錄心流筆觸壓力（無感採集 11"
-    " 維度運動動態學）："
-)
-
-user_color = st.color_picker(
-    "🎨 請選擇畫筆色彩（自由調色，無顏色限制）：", "#C2A675"
-)
+st.write("請用手指或滑鼠在下方畫布上記錄心流筆觸壓力：")
+user_color = st.color_picker("🎨 請選擇畫筆色彩（自由調色）：", "#C2A675")
 
 st.components.v1.html(
     f"""
@@ -170,32 +175,23 @@ if st.button("✨ 確認完成 1 分鐘畫布塗鴉"):
 
 st.markdown("---")
 
-# ==============================================================================
-# Step 2: 60 秒 rPPG 自律神經檢測 (含 3 秒準備倒數)
-# ==============================================================================
+# Step 2: 60 秒 rPPG
 st.markdown("### Step 2 💓 60 秒 rPPG 自律神經檢測 (HRV 提取)")
-st.write(
-    "請將食指輕貼於手機鏡頭與閃光燈上，系統運用 NumPy 在本機進行微血管光譜分析："
-)
+st.write("請將食指輕貼於手機鏡頭與閃光燈上，進行光譜分析：")
 
 if st.button("🔴 開始 60 秒 rPPG 光譜檢測"):
     prep_box = st.empty()
     for prep in range(3, 0, -1):
-        prep_box.warning(
-            f"⏳ 請將手指完全蓋住鏡頭... 準備開始 ({prep} 秒)"
-        )
+        prep_box.warning(f"⏳ 請將手指完全蓋住鏡頭... 準備開始 ({prep} 秒)")
         time.sleep(1)
     prep_box.empty()
 
     p_bar = st.progress(0)
     p_txt = st.empty()
-
     for sec in range(1, 61):
-        time.sleep(0.1)
+        time.sleep(0.08)
         p_bar.progress(int(sec / 60 * 100))
-        p_txt.write(
-            f"💓 光譜掃描對焦中... 剩餘 **{60-sec}** 秒 (微血管波形 FFT 計算中)"
-        )
+        p_txt.write(f"💓 光譜掃描對焦中... 剩餘 **{60-sec}** 秒 (微血管波形 FFT 計算中)")
 
     st.session_state["hrv_score"] = 93.5
     st.session_state["step2_done"] = True
@@ -204,74 +200,52 @@ if st.button("🔴 開始 60 秒 rPPG 光譜檢測"):
 
 st.markdown("---")
 
-# ==============================================================================
-# Step 3: 身心科 4-7-8 迷走神經呼吸法 (蔻恩閣長實體圖片腹部動態起伏)
-# ==============================================================================
-st.markdown(
-    "### Step 3 🌿 身心科 4-7-8 迷走神經呼吸法 (蔻恩閣長腹部動態起伏)"
-)
-st.write(
-    "**【郭家穎院長身心科臨床衛教指引】** 請跟隨蔻恩閣長腹部的起伏節奏：**吸氣 4 秒 ➔ 留氣 7 秒 ➔ 吐氣 8 秒**"
-)
+# Step 3: 4-7-8 蔻恩閣長腹部動態起伏
+st.markdown("### Step 3 🌿 身心科 4-7-8 迷走神經呼吸法 (蔻恩閣長腹部動態起伏)")
+st.write("**【郭家穎院長身心科臨床衛教指引】** 請跟隨蔻恩閣長腹部的起伏節奏：**吸氣 4 秒 ➔ 留氣 7 秒 ➔ 吐氣 8 秒**")
 
 b_display = st.empty()
 b_display.info("按下下方按鈕，開始跟隨蔻恩閣長進行 4-7-8 腹部起伏調息")
 
 if st.button("🌬️ 開始 4-7-8 蔻恩閣長腹部起伏調息"):
     for prep in range(3, 0, -1):
-        b_display.warning(
-            f"⏳ 請放鬆肩膀，準備用鼻子深吸氣... ({prep} 秒)"
-        )
+        b_display.warning(f"⏳ 請放鬆肩膀，準備用鼻子深吸氣... ({prep} 秒)")
         time.sleep(1)
 
     for cycle in range(1, 3):
-        # 1. 吸氣 4 秒 (圖片實體膨脹)
+        # 吸氣 4 秒
         for t in range(1, 5):
-            b_display.markdown(
-                f"### 🌬️ 吸氣 (Inhale) ── 腹部膨脹 ({t}/4秒)"
-            )
-            st.image(CONE_IMG_URL, width=int(220 + t * 25))
+            b_display.markdown(f"### 🌬️ 吸氣 (Inhale) ── 腹部膨脹 ({t}/4秒)")
+            if cone_img_target: st.image(cone_img_target, width=int(220 + t * 25))
+            else: st.markdown(f"<div style='font-size:{3+t*0.5}rem; text-align:center;'>🐿️</div>", unsafe_allow_html=True)
             time.sleep(1)
 
-        # 2. 留氣 7 秒 (懸息微震)
+        # 留氣 7 秒
         for t in range(1, 8):
-            b_display.markdown(
-                f"### ⏸️ 留氣懸息 (Hold) ── 迷走神經活化 ({t}/7秒)"
-            )
-            st.image(CONE_IMG_URL, width=320)
+            b_display.markdown(f"### ⏸️ 留氣懸息 (Hold) ── 迷走神經活化 ({t}/7秒)")
+            if cone_img_target: st.image(cone_img_target, width=320)
+            else: st.markdown("<div style='font-size:5rem; text-align:center;'>🐿️</div>", unsafe_allow_html=True)
             time.sleep(1)
 
-        # 3. 吐氣 8 秒 (圖片平緩收縮)
+        # 吐氣 8 秒
         for t in range(1, 9):
             w_val = max(190, int(320 - t * 16))
-            b_display.markdown(
-                f"### 💨 吐氣 (Exhale) ── 嘴唇微張長吐 ({t}/8秒)"
-            )
-            st.image(CONE_IMG_URL, width=w_val)
+            b_display.markdown(f"### 💨 吐氣 (Exhale) ── 嘴唇微張長吐 ({t}/8秒)")
+            if cone_img_target: st.image(cone_img_target, width=w_val)
+            else: st.markdown(f"<div style='font-size:{max(2, 5-t*0.3)}rem; text-align:center;'>🐿️</div>", unsafe_allow_html=True)
             time.sleep(1)
 
-    b_display.success(
-        "✨ 4-7-8 迷走神經調息完成！Cortisol 壓力負擔已完全釋放。"
-    )
+    b_display.success("✨ 4-7-8 迷走神經調息完成！Cortisol 壓力負擔已完全釋放。")
     st.session_state["step3_done"] = True
 
 st.markdown("---")
 
-# 🕊️ 數據拋接至郭醫師經典 app.py 面板
-if (
-    st.session_state["step1_done"]
-    and st.session_state["step2_done"]
-    and st.session_state["step3_done"]
-):
+# 數據拋接
+if st.session_state["step1_done"] and st.session_state["step2_done"] and st.session_state["step3_done"]:
     token_code = st.session_state["token"]
-    st.success(
-        f"🕊️ 信鴿 Singer 準備就緒！去敏密鑰：**{token_code}** ｜ 心流分數：**{st.session_state['hrv_score']}%**"
-    )
-
-    doc_url = (
-        f"https://curio-streamlit-dashboard.streamlit.app/?token={token_code}"
-    )
-
+    st.success(f"🕊️ 信鴿 Singer 準備就緒！去敏密鑰：**{token_code}** ｜ 心流分數：**{st.session_state['hrv_score']}%**")
+    
+    doc_url = f"https://curio-streamlit-dashboard.streamlit.app/?token={token_code}"
     st.markdown(
         f"""
         <div style="text-align:center; margin-top:14px;">
