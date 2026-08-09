@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 
-# 本地影片轉 Base64 剛性安全解法 (徹底解決影片消失黑屏問題)
+# 本地影片轉 Base64 剛性安全解法
 def get_local_video_b64():
     video_candidates = [
         "video.mp4",
@@ -36,7 +36,7 @@ def get_local_video_b64():
 
 video_src_code = get_local_video_b64()
 
-# 清潔封裝 CSS，解決頂部程式碼溢出問題
+# 清潔 CSS 封裝，消除頂部原始碼溢出問題
 st.markdown(
     """
     <style>
@@ -51,7 +51,6 @@ st.markdown(
         color: #1A261F !important;
     }
 
-    /* 溫暖冒險卡牌 */
     .adventure-card {
         background: #FFFFFF;
         border: 2px solid #C2A675;
@@ -61,7 +60,6 @@ st.markdown(
         box-shadow: 0 6px 18px rgba(194, 166, 117, 0.1);
     }
 
-    /* 任務提示框 */
     .quest-box {
         background: #F4EFEA;
         border-left: 5px solid #C2A675;
@@ -70,7 +68,6 @@ st.markdown(
         margin-bottom: 16px;
     }
 
-    /* 按鈕樣式 (高對比黑金) */
     .stButton>button {
         background: linear-gradient(135deg, #25352B 0%, #1A261F 100%) !important;
         color: #D4AF37 !important;
@@ -91,7 +88,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 初始化狀態
 if "token" not in st.session_state:
     st.session_state["token"] = f"#SYM-P{random.randint(100, 999)}"
 if "step1_done" not in st.session_state:
@@ -104,7 +100,7 @@ if "canvas_color" not in st.session_state:
     st.session_state["canvas_color"] = "#2A9D8F"
 
 # ==============================================================================
-# 1. 頁面頂樓 Header：俐落標題與高對比去敏密鑰 (黑底黃金粗體)
+# 1. 頁面頂樓 Header：俐落標題與高對比黑底黃金去敏密鑰 (字字清晰)
 # ==============================================================================
 st.markdown(
     f"""
@@ -130,7 +126,7 @@ st.markdown(
 )
 
 # ==============================================================================
-# Step 1: 🗺️ 冒險地圖畫布 ✕ 無引導色塊調色盤 (手機版高度鎖定，不拉長)
+# Step 1: 🗺️ 冒險地圖畫布 ✕ 60 色純色視覺板 (無引導字眼，不拉長直排)
 # ==============================================================================
 st.markdown(
     """
@@ -145,7 +141,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 60 色臨床研究純色盤 (無任何引導文字)
 RESEARCH_COLORS = [
     "#E85D04",
     "#DC2F02",
@@ -209,7 +204,6 @@ RESEARCH_COLORS = [
     "#CCD5AE",
 ]
 
-# 手機版 CSS Flex / Grid 調色盤 (高 110px，不拉長直排)
 colors_json = str(RESEARCH_COLORS)
 cur_color = st.session_state["canvas_color"]
 
@@ -252,7 +246,6 @@ color_picker_html = f"""
 st.components.v1.html(color_picker_html, height=145)
 selected_c = st.session_state["canvas_color"]
 
-# 滿版繪圖畫布
 st.components.v1.html(
     f"""
     <div style="text-align:center;">
@@ -326,7 +319,7 @@ if st.button("⚡ 開始 60 秒能量校準"):
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ==============================================================================
-# Step 3: 🌰 蔻恩閣長 4-7-8 呼吸調息 (正播 4s + 憋氣脈動 7s + 倒播 8s)
+# Step 3: 🌰 蔻恩閣長 4-7-8 呼吸調息 (正播 4s ➔ 脈動 7s ➔ 倒播 8s)
 # ==============================================================================
 st.markdown(
     """
@@ -342,7 +335,7 @@ st.markdown(
     """
     <div class="quest-box">
         <div style="font-size: 0.95rem; font-weight: 700; color: #25352B; margin-bottom: 4px;">
-            📜 蔻恩閣長的調息祕訣：
+            📜 蔻恩閣長的的調息祕訣：
         </div>
         <div style="font-size: 0.88rem; color: #33443B; line-height: 1.7;">
             • <b>吸氣 4 秒</b>：深吸氣，感覺自然能量充盈。<br>
@@ -354,7 +347,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 前端 JS 智慧控制（吸氣 4s ➔ 憋氣微幅脈動 7s ➔ 吐氣倒播 8s）
 st.components.v1.html(
     f"""
     <style>
@@ -480,7 +472,6 @@ st.components.v1.html(
     height=460,
 )
 
-# 修正文案：這是開始前的一個準備動作！
 if st.button("✨ 完成準備，開始冒險旅程"):
     st.session_state["step3_done"] = True
     st.success("✨ 調息準備完畢！已開啟拋接連線。")
@@ -488,7 +479,7 @@ if st.button("✨ 完成準備，開始冒險旅程"):
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ==============================================================================
-# 4. 數據拋接至診間面板 (精準拋接，診間即時顯示)
+# 4. 數據拋接至郭醫師診間面板
 # ==============================================================================
 if (
     st.session_state["step1_done"]
