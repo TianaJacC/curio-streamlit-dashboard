@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 
-# 本地影片轉 Base64 剛性安全解法
+# 本地影片轉 Base64 剛性安全解法 (徹底解決影片消失黑屏問題)
 def get_local_video_b64():
     video_candidates = [
         "video.mp4",
@@ -36,13 +36,12 @@ def get_local_video_b64():
 
 video_src_code = get_local_video_b64()
 
-# 清潔封裝 CSS，解決手機版程式碼溢出問題
+# 清潔封裝 CSS，解決頂部程式碼溢出問題
 st.markdown(
     """
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Noto+Serif+TC:wght@500;700&display=swap');
 
-    /* 全局背景與字體 */
     .stApp {
         background-color: #FAF6F0 !important;
     }
@@ -62,7 +61,7 @@ st.markdown(
         box-shadow: 0 6px 18px rgba(194, 166, 117, 0.1);
     }
 
-    /* 提示任務框 */
+    /* 任務提示框 */
     .quest-box {
         background: #F4EFEA;
         border-left: 5px solid #C2A675;
@@ -105,7 +104,7 @@ if "canvas_color" not in st.session_state:
     st.session_state["canvas_color"] = "#2A9D8F"
 
 # ==============================================================================
-# 1. 頁面頂樓 Header：俐落標題與高對比去敏密鑰
+# 1. 頁面頂樓 Header：俐落標題與高對比去敏密鑰 (黑底黃金粗體)
 # ==============================================================================
 st.markdown(
     f"""
@@ -117,11 +116,11 @@ st.markdown(
             🌰 蔻恩閣長陪您開始冒險旅程
         </div>
         
-        <div style="display: inline-block; background: #FFD700; border: 2px solid #1A261F; padding: 8px 20px; border-radius: 25px; box-shadow: 0 3px 10px rgba(212,175,55,0.3);">
-            <span style="color: #1A261F !important; font-size: 0.95rem; font-weight: 700;">
-                🗝️ 通行密鑰：
+        <div style="display: inline-block; background: #1A261F; border: 2px solid #D4AF37; padding: 8px 24px; border-radius: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+            <span style="color: #FAF8F5 !important; font-size: 0.95rem; font-weight: 600;">
+                🗝️ 0 個資去敏密鑰：
             </span>
-            <span style="color: #1A261F !important; font-size: 1.25rem; font-weight: 900; font-family: monospace; letter-spacing: 2px;">
+            <span style="color: #FFD700 !important; font-size: 1.3rem; font-weight: 900; font-family: monospace; letter-spacing: 2.5px;">
                 {st.session_state['token']}
             </span>
         </div>
@@ -131,7 +130,7 @@ st.markdown(
 )
 
 # ==============================================================================
-# Step 1: 🗺️ 冒險地圖畫布 ✕ 手機版專用超緊密響應式調色盤
+# Step 1: 🗺️ 冒險地圖畫布 ✕ 無引導色塊調色盤 (手機版高度鎖定，不拉長)
 # ==============================================================================
 st.markdown(
     """
@@ -146,7 +145,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 60 色臨床研究色盤資料庫
+# 60 色臨床研究純色盤 (無任何引導文字)
 RESEARCH_COLORS = [
     "#E85D04",
     "#DC2F02",
@@ -210,17 +209,17 @@ RESEARCH_COLORS = [
     "#CCD5AE",
 ]
 
-# 解決手機版長直排問題：採用 HTML/CSS 網格元件，高度鎖定在 110px 以內！
+# 手機版 CSS Flex / Grid 調色盤 (高 110px，不拉長直排)
 colors_json = str(RESEARCH_COLORS)
 cur_color = st.session_state["canvas_color"]
 
 color_picker_html = f"""
 <div style="background: #F9F6F0; border: 1.5px solid #C2A675; border-radius: 12px; padding: 10px; margin-bottom: 12px;">
     <div style="font-size: 0.85rem; font-weight: bold; color: #1A261F; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-        <span>🎨 靈魂色彩調色盤 (點擊選色)</span>
+        <span>🎨 選擇色彩代碼</span>
         <span id="colorCodeDisplay" style="color: {cur_color}; font-family: monospace; font-size: 0.95rem; font-weight: 800;">{cur_color}</span>
     </div>
-    <div id="colorGrid" style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; max-height: 120px; overflow-y: auto; padding-right: 2px;">
+    <div id="colorGrid" style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; max-height: 110px; overflow-y: auto; padding-right: 2px;">
     </div>
 </div>
 
@@ -241,7 +240,6 @@ color_picker_html = f"""
         btn.onclick = function() {{
             codeDisplay.innerText = hex;
             codeDisplay.style.color = hex;
-            // 透過 postMessage 或更新畫布
             window.parent.postMessage({{type: 'COLOR_SELECT', color: hex}}, '*');
         }};
         btn.onmouseover = function() {{ btn.style.transform = "scale(1.15)"; }};
@@ -251,26 +249,10 @@ color_picker_html = f"""
 </script>
 """
 
-st.components.v1.html(color_picker_html, height=155)
-
-# 快速常見色選取備用
-col_a, col_b, col_c, col_d = st.columns(4)
-with col_a:
-    if st.button("🌿 鼠尾草綠"):
-        st.session_state["canvas_color"] = "#2A9D8F"
-with col_b:
-    if st.button("🌅 暖日橘光"):
-        st.session_state["canvas_color"] = "#E76F51"
-with col_c:
-    if st.button("🌊 靜謐深海"):
-        st.session_state["canvas_color"] = "#264653"
-with col_d:
-    if st.button("✨ 晨曦沙金"):
-        st.session_state["canvas_color"] = "#E9C46A"
-
+st.components.v1.html(color_picker_html, height=145)
 selected_c = st.session_state["canvas_color"]
 
-# 滿版觸控畫布
+# 滿版繪圖畫布
 st.components.v1.html(
     f"""
     <div style="text-align:center;">
@@ -344,7 +326,7 @@ if st.button("⚡ 開始 60 秒能量校準"):
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ==============================================================================
-# Step 3: 🌰 蔻恩閣長 4-7-8 智慧動態調息（利用正播+憋氣脈動+倒播，徹底打破 10 秒限制）
+# Step 3: 🌰 蔻恩閣長 4-7-8 呼吸調息 (正播 4s + 憋氣脈動 7s + 倒播 8s)
 # ==============================================================================
 st.markdown(
     """
@@ -372,7 +354,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 前端 JS 智慧控制核心（吸氣正播 4s ➔ 憋氣微幅脈動 7s ➔ 吐氣倒播 8s）
+# 前端 JS 智慧控制（吸氣 4s ➔ 憋氣微幅脈動 7s ➔ 吐氣倒播 8s）
 st.components.v1.html(
     f"""
     <style>
@@ -418,12 +400,11 @@ st.components.v1.html(
             startInhale();
         }}
 
-        // 1. 吸氣 4 秒 (影片順播)
         function startInhale() {{
             container.classList.remove("pulsing");
             statusTitle.innerText = "🌬️ 深吸氣 (4秒) ── 感覺能量流入";
             video.currentTime = 0;
-            video.playbackRate = 0.3; // 慢速流暢順播
+            video.playbackRate = 0.3;
             video.play();
 
             var count = 4;
@@ -439,10 +420,9 @@ st.components.v1.html(
             }}, 1000);
         }}
 
-        // 2. 憋氣 7 秒 (畫面定格於腹部最飽滿幀，加入微幅活體脈動)
         function startHold() {{
             video.pause();
-            container.classList.add("pulsing"); // 啟動微微張縮呼吸動態
+            container.classList.add("pulsing");
             statusTitle.innerText = "⏸️ 靜心閉氣 (7秒) ── 心神完全沉澱";
 
             var count = 7;
@@ -458,12 +438,10 @@ st.components.v1.html(
             }}, 1000);
         }}
 
-        // 3. 吐氣 8 秒 (智慧倒播：從擴張順暢收縮回閉眼平靜)
         function startExhale() {{
             container.classList.remove("pulsing");
             statusTitle.innerText = "💨 緩吐氣 (8秒) ── 釋放身上所有疲憊";
             
-            // 利用 setInterval 實現極度順暢的影片倒播 (Reverse Video Playback)
             var duration = 8000;
             var startFrameTime = video.currentTime;
             var startTime = performance.now();
@@ -492,7 +470,7 @@ st.components.v1.html(
         }}
 
         function finishCycle() {{
-            statusTitle.innerText = "✨ 能量充沛！已完成調息冒險";
+            statusTitle.innerText = "✨ 能量充沛！準備完成";
             statusTimer.innerText = "心流諧振成功";
             startBtn.disabled = false;
             startBtn.style.opacity = "1.0";
@@ -502,14 +480,15 @@ st.components.v1.html(
     height=460,
 )
 
-if st.button("💎 完成調息冒險（領取冒險證書）"):
+# 修正文案：這是開始前的一個準備動作！
+if st.button("✨ 完成準備，開始冒險旅程"):
     st.session_state["step3_done"] = True
-    st.success("✨ 恭喜完成今天的冒險旅程！")
+    st.success("✨ 調息準備完畢！已開啟拋接連線。")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ==============================================================================
-# 4. 數據拋接至診間
+# 4. 數據拋接至診間面板 (精準拋接，診間即時顯示)
 # ==============================================================================
 if (
     st.session_state["step1_done"]
@@ -532,4 +511,4 @@ if (
         unsafe_allow_html=True,
     )
 else:
-    st.info("💡 完成三站冒險後，即可將探險日誌拋接至診間！")
+    st.info("💡 完成三站準備後，即可將日誌拋接至郭醫師診間！")
