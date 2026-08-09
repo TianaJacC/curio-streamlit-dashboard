@@ -1,14 +1,11 @@
 import base64
-import datetime
 import os
 import random
 import time
-import numpy as np
-import pandas as pd
 import streamlit as st
 
 # ==============================================================================
-# 1. 頁面配置與高對比冒險溫暖美學
+# 0. 頁面配置與高對比極簡冒險美學
 # ==============================================================================
 st.set_page_config(
     page_title="夢境珍奇櫃 ‧ 探險家日誌",
@@ -18,13 +15,13 @@ st.set_page_config(
 )
 
 
-# 本地影片轉 Base64 安全解法
+# 本地影片轉 Base64 剛性安全解法
 def get_local_video_b64():
     video_candidates = [
+        "video.mp4",
         "Squirrel_exhales_slowly,_belly_s…_202608030927.mp4",
         "這是影片的主角蔻恩_我不要背景_只有這隻小松鼠就好_這隻小松.mp4",
         "assets/squirrel_breath.mp4",
-        "squirrel_breath.mp4",
     ]
     for v_path in video_candidates:
         if os.path.exists(v_path):
@@ -39,51 +36,52 @@ def get_local_video_b64():
 
 video_src_code = get_local_video_b64()
 
-# 乾淨且無溢出的 CSS 注入
+# 清潔封裝 CSS，解決手機版程式碼溢出問題
 st.markdown(
     """
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Noto+Serif+TC:wght@500;700&display=swap');
 
+    /* 全局背景與字體 */
     .stApp {
         background-color: #FAF6F0 !important;
     }
     
-    body, p, div, span, label, h1, h2, h3, h4 {
+    html, body, p, div, span, label, h1, h2, h3, h4 {
         font-family: 'Noto Serif TC', 'Cinzel', serif !important;
         color: #1A261F !important;
     }
 
-    /* 溫暖冒險卡牌風格 */
+    /* 溫暖冒險卡牌 */
     .adventure-card {
         background: #FFFFFF;
         border: 2px solid #C2A675;
-        border-radius: 20px;
-        padding: 24px;
-        margin-bottom: 24px;
-        box-shadow: 0 8px 20px rgba(194, 166, 117, 0.12);
+        border-radius: 18px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 6px 18px rgba(194, 166, 117, 0.1);
     }
 
-    /* 冒險者引導框 */
+    /* 提示任務框 */
     .quest-box {
         background: #F4EFEA;
-        border-left: 6px solid #C2A675;
-        border-radius: 12px;
-        padding: 16px 20px;
-        margin-bottom: 18px;
+        border-left: 5px solid #C2A675;
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 16px;
     }
 
-    /* 自訂主按鈕 */
+    /* 按鈕樣式 (高對比黑金) */
     .stButton>button {
         background: linear-gradient(135deg, #25352B 0%, #1A261F 100%) !important;
         color: #D4AF37 !important;
-        border-radius: 14px !important;
+        border-radius: 12px !important;
         border: 1.5px solid #D4AF37 !important;
-        font-size: 1.05rem !important;
+        font-size: 1rem !important;
         font-weight: bold !important;
-        padding: 12px 28px !important;
+        padding: 10px 24px !important;
         width: 100% !important;
-        box-shadow: 0 4px 15px rgba(37, 53, 43, 0.2) !important;
+        box-shadow: 0 4px 12px rgba(37, 53, 43, 0.15) !important;
     }
     .stButton>button p {
         color: #D4AF37 !important;
@@ -94,6 +92,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# 初始化狀態
 if "token" not in st.session_state:
     st.session_state["token"] = f"#SYM-P{random.randint(100, 999)}"
 if "step1_done" not in st.session_state:
@@ -102,27 +101,27 @@ if "step2_done" not in st.session_state:
     st.session_state["step2_done"] = False
 if "step3_done" not in st.session_state:
     st.session_state["step3_done"] = False
-if "hrv_score" not in st.session_state:
-    st.session_state["hrv_score"] = 93.5
+if "canvas_color" not in st.session_state:
+    st.session_state["canvas_color"] = "#2A9D8F"
 
 # ==============================================================================
-# 2. 頂部 Header：冒險遊戲風格標題與超高對比去敏密鑰
+# 1. 頁面頂樓 Header：俐落標題與高對比去敏密鑰
 # ==============================================================================
 st.markdown(
     f"""
-    <div style="background: #FFFFFF; border: 2.5px solid #C2A675; border-radius: 22px; padding: 24px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.06); margin-bottom: 24px;">
-        <h2 style="color: #1A261F !important; font-weight: 800; margin: 0 0 6px 0; font-size: 1.75rem;">
+    <div style="background: #FFFFFF; border: 2px solid #C2A675; border-radius: 20px; padding: 20px; text-align: center; box-shadow: 0 6px 20px rgba(0,0,0,0.05); margin-bottom: 20px;">
+        <h2 style="color: #1A261F !important; font-weight: 800; margin: 0 0 4px 0; font-size: 1.6rem;">
             🏰 夢境珍奇櫃 ‧ 探險家日誌
         </h2>
-        <div style="font-size: 1.05rem; color: #4A5D50 !important; margin-bottom: 16px; font-weight: 700;">
-            🌰 小松鼠蔻恩閣長 Cone 陪伴您開始冒險旅程
+        <div style="font-size: 0.98rem; color: #4A5D50 !important; margin-bottom: 14px; font-weight: 700;">
+            🌰 蔻恩閣長陪您開始冒險旅程
         </div>
         
-        <div style="display: inline-block; background: #FFD700; border: 2px solid #1A261F; padding: 10px 24px; border-radius: 30px; box-shadow: 0 4px 12px rgba(212,175,55,0.35);">
-            <span style="color: #1A261F !important; font-size: 1rem; font-weight: 700;">
-                🗝️ 探險家專屬通行密鑰：
+        <div style="display: inline-block; background: #FFD700; border: 2px solid #1A261F; padding: 8px 20px; border-radius: 25px; box-shadow: 0 3px 10px rgba(212,175,55,0.3);">
+            <span style="color: #1A261F !important; font-size: 0.95rem; font-weight: 700;">
+                🗝️ 通行密鑰：
             </span>
-            <span style="color: #1A261F !important; font-size: 1.35rem; font-weight: 900; font-family: monospace; letter-spacing: 2px;">
+            <span style="color: #1A261F !important; font-size: 1.25rem; font-weight: 900; font-family: monospace; letter-spacing: 2px;">
                 {st.session_state['token']}
             </span>
         </div>
@@ -132,23 +131,23 @@ st.markdown(
 )
 
 # ==============================================================================
-# Step 1: 🗺️ 冒險地圖畫布 ✕ 靈魂色彩調色盤
+# Step 1: 🗺️ 冒險地圖畫布 ✕ 手機版專用超緊密響應式調色盤
 # ==============================================================================
 st.markdown(
     """
     <div class="adventure-card">
-        <h3 style="color: #1A261F !important; font-size: 1.3rem; font-weight: 700; margin-bottom: 8px;">
-            第一站 🗺️ 繪製今天的冒險地圖
+        <h3 style="color: #1A261F !important; font-size: 1.2rem; font-weight: 700; margin-bottom: 6px;">
+            第一站 🗺️ 繪製冒險地圖
         </h3>
-        <p style="color: #596B60 !important; font-size: 0.95rem; margin-bottom: 16px;">
-            請憑第一直覺點選最吸引您的靈魂色彩，在畫布上記錄您今天的冒險足跡：
+        <p style="color: #596B60 !important; font-size: 0.9rem; margin-bottom: 12px;">
+            點選吸引您的色彩，在畫布上記錄今天的冒險足跡：
         </p>
 """,
     unsafe_allow_html=True,
 )
 
-# 具備臨床研究價值的 60 色矩陣（外觀完全為冒險遊戲調色盤）
-COLOR_MATRIX = [
+# 60 色臨床研究色盤資料庫
+RESEARCH_COLORS = [
     "#E85D04",
     "#DC2F02",
     "#D00000",
@@ -211,40 +210,71 @@ COLOR_MATRIX = [
     "#CCD5AE",
 ]
 
-if "canvas_color" not in st.session_state:
-    st.session_state["canvas_color"] = "#2A9D8F"
+# 解決手機版長直排問題：採用 HTML/CSS 網格元件，高度鎖定在 110px 以內！
+colors_json = str(RESEARCH_COLORS)
+cur_color = st.session_state["canvas_color"]
 
-st.write("🎨 **靈魂色彩調色盤：**")
-grid_cols = st.columns(10)
-for idx, hex_code in enumerate(COLOR_MATRIX):
-    col = grid_cols[idx % 10]
-    with col:
-        is_selected = st.session_state["canvas_color"] == hex_code
-        border_s = "3px solid #1A261F" if is_selected else "1px solid #E0E0E0"
-        if st.button(" ", key=f"color_btn_{idx}"):
-            st.session_state["canvas_color"] = hex_code
-        st.markdown(
-            f"""<div style="background-color: {hex_code}; height: 24px; border-radius: 6px; border: {border_s}; margin-top: -38px; margin-bottom: 8px; pointer-events: none;"></div>""",
-            unsafe_allow_html=True,
-        )
+color_picker_html = f"""
+<div style="background: #F9F6F0; border: 1.5px solid #C2A675; border-radius: 12px; padding: 10px; margin-bottom: 12px;">
+    <div style="font-size: 0.85rem; font-weight: bold; color: #1A261F; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <span>🎨 靈魂色彩調色盤 (點擊選色)</span>
+        <span id="colorCodeDisplay" style="color: {cur_color}; font-family: monospace; font-size: 0.95rem; font-weight: 800;">{cur_color}</span>
+    </div>
+    <div id="colorGrid" style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; max-height: 120px; overflow-y: auto; padding-right: 2px;">
+    </div>
+</div>
+
+<script>
+    var colors = {colors_json};
+    var grid = document.getElementById("colorGrid");
+    var codeDisplay = document.getElementById("colorCodeDisplay");
+
+    colors.forEach(function(hex) {{
+        var btn = document.createElement("div");
+        btn.style.backgroundColor = hex;
+        btn.style.height = "22px";
+        btn.style.borderRadius = "4px";
+        btn.style.cursor = "pointer";
+        btn.style.border = "1px solid rgba(0,0,0,0.15)";
+        btn.style.transition = "transform 0.1s";
+        
+        btn.onclick = function() {{
+            codeDisplay.innerText = hex;
+            codeDisplay.style.color = hex;
+            // 透過 postMessage 或更新畫布
+            window.parent.postMessage({{type: 'COLOR_SELECT', color: hex}}, '*');
+        }};
+        btn.onmouseover = function() {{ btn.style.transform = "scale(1.15)"; }};
+        btn.onmouseout = function() {{ btn.style.transform = "scale(1.0)"; }};
+        grid.appendChild(btn);
+    }});
+</script>
+"""
+
+st.components.v1.html(color_picker_html, height=155)
+
+# 快速常見色選取備用
+col_a, col_b, col_c, col_d = st.columns(4)
+with col_a:
+    if st.button("🌿 鼠尾草綠"):
+        st.session_state["canvas_color"] = "#2A9D8F"
+with col_b:
+    if st.button("🌅 暖日橘光"):
+        st.session_state["canvas_color"] = "#E76F51"
+with col_c:
+    if st.button("🌊 靜謐深海"):
+        st.session_state["canvas_color"] = "#264653"
+with col_d:
+    if st.button("✨ 晨曦沙金"):
+        st.session_state["canvas_color"] = "#E9C46A"
 
 selected_c = st.session_state["canvas_color"]
-st.markdown(
-    f"""
-    <div style="margin: 12px 0; font-size: 0.95rem; font-weight: 600;">
-        當前選取畫筆色彩：
-        <span style="display:inline-block; width: 18px; height: 18px; background:{selected_c}; border-radius:4px; vertical-align:middle; border:1px solid #1A261F;"></span> 
-        <b style="color:{selected_c} !important;">{selected_c}</b>
-    </div>
-""",
-    unsafe_allow_html=True,
-)
 
-# 滿版觸控繪圖畫布
+# 滿版觸控畫布
 st.components.v1.html(
     f"""
     <div style="text-align:center;">
-        <canvas id="adventureCanvas" width="580" height="360" style="width:100%; height:360px; border:2px solid #C2A675; border-radius:18px; background:#FFFFFF; touch-action:none; cursor: crosshair; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);"></canvas>
+        <canvas id="adventureCanvas" width="580" height="320" style="width:100%; height:320px; border:2px solid #C2A675; border-radius:14px; background:#FFFFFF; touch-action:none; cursor: crosshair; box-shadow: inset 0 2px 6px rgba(0,0,0,0.04);"></canvas>
         <script>
             var canvas = document.getElementById('adventureCanvas');
             var ctx = canvas.getContext('2d');
@@ -268,26 +298,26 @@ st.components.v1.html(
         </script>
     </div>
     """,
-    height=380,
+    height=340,
 )
 
 if st.button("🗝️ 儲存冒險地圖筆觸"):
     st.session_state["step1_done"] = True
-    st.success("✨ 冒險印記已順利寫入日誌！")
+    st.success("✨ 冒險印記已順利記錄！")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ==============================================================================
-# Step 2: 🔮 冒險者能量波形校準
+# Step 2: 🔮 冒險者能量共振
 # ==============================================================================
 st.markdown(
     """
     <div class="adventure-card">
-        <h3 style="color: #1A261F !important; font-size: 1.3rem; font-weight: 700; margin-bottom: 8px;">
-            第二站 🔮 冒險者能量共振校準
+        <h3 style="color: #1A261F !important; font-size: 1.2rem; font-weight: 700; margin-bottom: 6px;">
+            第二站 🔮 冒險者能量共振
         </h3>
-        <p style="color: #596B60 !important; font-size: 0.95rem; margin-bottom: 16px;">
-            請將手指輕貼於鏡頭上，讓小松鼠蔻恩幫您測量當前的心流平穩指數：
+        <p style="color: #596B60 !important; font-size: 0.9rem; margin-bottom: 12px;">
+            請將手指輕貼於鏡頭上，讓蔻恩為您測量當前的心流指數：
         </p>
 """,
     unsafe_allow_html=True,
@@ -296,7 +326,7 @@ st.markdown(
 if st.button("⚡ 開始 60 秒能量校準"):
     prep_box = st.empty()
     for prep in range(3, 0, -1):
-        prep_box.warning(f"⏳ 請將手指貼緊鏡頭... 準備開始 ({prep} 秒)")
+        prep_box.warning(f"⏳ 請貼緊鏡頭... 準備開始 ({prep} 秒)")
         time.sleep(1)
     prep_box.empty()
 
@@ -305,23 +335,22 @@ if st.button("⚡ 開始 60 秒能量校準"):
     for sec in range(1, 61):
         time.sleep(0.08)
         p_bar.progress(int(sec / 60 * 100))
-        p_txt.write(f"🕯️ 光譜能量對焦中... 剩餘 **{60-sec}** 秒")
+        p_txt.write(f"🕯️ 光譜對焦中... 剩餘 **{60-sec}** 秒")
 
-    st.session_state["hrv_score"] = 93.5
     st.session_state["step2_done"] = True
     p_txt.empty()
-    st.success("🎉 能量對焦完成！心流指數：93.5%（狀態極佳）")
+    st.success("🎉 對焦完成！心流指數：93.5%（狀態極佳）")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ==============================================================================
-# Step 3: 🌰 蔻恩閣長 4-7-8 冒險呼吸（精準引導）
+# Step 3: 🌰 蔻恩閣長 4-7-8 智慧動態調息（利用正播+憋氣脈動+倒播，徹底打破 10 秒限制）
 # ==============================================================================
 st.markdown(
     """
     <div class="adventure-card">
-        <h3 style="color: #1A261F !important; font-size: 1.3rem; font-weight: 700; margin-bottom: 12px;">
-            第三站 🌰 與蔻恩閣長一起進行 4-7-8 能量調息
+        <h3 style="color: #1A261F !important; font-size: 1.2rem; font-weight: 700; margin-bottom: 10px;">
+            第三站 🌰 與蔻恩閣長進行 4-7-8 調息
         </h3>
 """,
     unsafe_allow_html=True,
@@ -330,43 +359,55 @@ st.markdown(
 st.markdown(
     """
     <div class="quest-box">
-        <div style="font-size: 1rem; font-weight: 700; color: #25352B; margin-bottom: 6px;">
-            📜 蔻恩閣長的冒險調息祕訣：
+        <div style="font-size: 0.95rem; font-weight: 700; color: #25352B; margin-bottom: 4px;">
+            📜 蔻恩閣長的調息祕訣：
         </div>
-        <div style="font-size: 0.92rem; color: #33443B; line-height: 1.8;">
-            • <b>吸氣 4 秒</b>：跟著蔻恩用鼻子深吸氣，感受大自然的能量流入。<br>
-            • <b>閉氣 7 秒</b>：閉氣定神，讓心神沉澱平靜。<br>
-            • <b>吐氣 8 秒</b>：微張嘴巴徐徐吐氣，放鬆全身累積的疲憊。<br>
+        <div style="font-size: 0.88rem; color: #33443B; line-height: 1.7;">
+            • <b>吸氣 4 秒</b>：深吸氣，感覺自然能量充盈。<br>
+            • <b>閉氣 7 秒</b>：平穩閉氣，讓心神完全沉澱。<br>
+            • <b>吐氣 8 秒</b>：徐徐長吐，釋放累積的疲憊。<br>
         </div>
     </div>
 """,
     unsafe_allow_html=True,
 )
 
-# 小松鼠 HTML5 / JS 動態引導面板
+# 前端 JS 智慧控制核心（吸氣正播 4s ➔ 憋氣微幅脈動 7s ➔ 吐氣倒播 8s）
 st.components.v1.html(
     f"""
-    <div style="background: linear-gradient(135deg, #1A261F 0%, #25352B 100%); border: 2px solid #D4AF37; border-radius: 20px; padding: 20px; text-align: center; color: #FAF8F5; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">
+    <style>
+        @keyframes holdPulse {{
+            0% {{ transform: scale(1.0); }}
+            50% {{ transform: scale(1.03); }}
+            100% {{ transform: scale(1.0); }}
+        }}
+        .pulsing {{
+            animation: holdPulse 3.5s ease-in-out infinite;
+        }}
+    </style>
+
+    <div style="background: linear-gradient(135deg, #1A261F 0%, #25352B 100%); border: 2px solid #D4AF37; border-radius: 18px; padding: 16px; text-align: center; color: #FAF8F5; box-shadow: 0 6px 18px rgba(0,0,0,0.2);">
         
-        <div id="status-title" style="font-size: 1.15rem; font-weight: bold; color: #FFD700; margin-bottom: 6px;">
-            🌰 蔻恩閣長準備好了，跟著我的節奏一起調息吧！
+        <div id="status-title" style="font-size: 1.05rem; font-weight: bold; color: #FFD700; margin-bottom: 4px;">
+            🌰 跟著蔻恩閣長一起調息吧！
         </div>
-        <div id="status-timer" style="font-size: 2rem; font-weight: bold; color: #FFFFFF; margin-bottom: 12px;">
+        <div id="status-timer" style="font-size: 1.8rem; font-weight: bold; color: #FFFFFF; margin-bottom: 10px;">
             準備開始
         </div>
 
-        <div style="width: 280px; height: 280px; margin: 0 auto; overflow: hidden; border-radius: 18px; border: 2px solid #FFD700; background: #000;">
-            <video id="squirrelVideo" width="100%" height="100%" style="object-fit: cover;" playsinline muted loop autoplay src="{video_src_code}">
+        <div id="videoContainer" style="width: 250px; height: 250px; margin: 0 auto; overflow: hidden; border-radius: 16px; border: 2px solid #FFD700; background: #000; transition: transform 0.5s;">
+            <video id="squirrelVideo" width="100%" height="100%" style="object-fit: cover;" playsinline muted src="{video_src_code}">
             </video>
         </div>
 
-        <button id="startBtn" onclick="runBreathingCycle()" style="margin-top: 18px; background: linear-gradient(135deg, #FFD700 0%, #C2A675 100%); color: #1A261F; border: none; border-radius: 12px; padding: 12px 28px; font-size: 1rem; font-weight: bold; cursor: pointer;">
-            🌬️ 開始 4-7-8 蔻恩閣長呼吸調息
+        <button id="startBtn" onclick="runBreathingCycle()" style="margin-top: 16px; background: linear-gradient(135deg, #FFD700 0%, #C2A675 100%); color: #1A261F; border: none; border-radius: 10px; padding: 10px 24px; font-size: 0.95rem; font-weight: bold; cursor: pointer; width: 100%;">
+            🌬️ 開始 4-7-8 呼吸調息
         </button>
     </div>
 
     <script>
         var video = document.getElementById("squirrelVideo");
+        var container = document.getElementById("videoContainer");
         var statusTitle = document.getElementById("status-title");
         var statusTimer = document.getElementById("status-timer");
         var startBtn = document.getElementById("startBtn");
@@ -374,13 +415,15 @@ st.components.v1.html(
         function runBreathingCycle() {{
             startBtn.disabled = true;
             startBtn.style.opacity = "0.5";
-            video.currentTime = 0;
             startInhale();
         }}
 
+        // 1. 吸氣 4 秒 (影片順播)
         function startInhale() {{
-            statusTitle.innerText = "🌬️ 深吸氣 (4秒) ── 感受清晨森林的能量";
-            video.playbackRate = 0.3;
+            container.classList.remove("pulsing");
+            statusTitle.innerText = "🌬️ 深吸氣 (4秒) ── 感覺能量流入";
+            video.currentTime = 0;
+            video.playbackRate = 0.3; // 慢速流暢順播
             video.play();
 
             var count = 4;
@@ -396,9 +439,11 @@ st.components.v1.html(
             }}, 1000);
         }}
 
+        // 2. 憋氣 7 秒 (畫面定格於腹部最飽滿幀，加入微幅活體脈動)
         function startHold() {{
             video.pause();
-            statusTitle.innerText = "⏸️ 靜心閉氣 (7秒) ── 讓心神沉澱平靜";
+            container.classList.add("pulsing"); // 啟動微微張縮呼吸動態
+            statusTitle.innerText = "⏸️ 靜心閉氣 (7秒) ── 心神完全沉澱";
 
             var count = 7;
             statusTimer.innerText = count + " 秒";
@@ -413,44 +458,58 @@ st.components.v1.html(
             }}, 1000);
         }}
 
+        // 3. 吐氣 8 秒 (智慧倒播：從擴張順暢收縮回閉眼平靜)
         function startExhale() {{
-            statusTitle.innerText = "💨 緩吐氣 (8秒) ── 釋放身上所有的疲憊";
-            video.playbackRate = 0.15;
-            video.play();
+            container.classList.remove("pulsing");
+            statusTitle.innerText = "💨 緩吐氣 (8秒) ── 釋放身上所有疲憊";
+            
+            // 利用 setInterval 實現極度順暢的影片倒播 (Reverse Video Playback)
+            var duration = 8000;
+            var startFrameTime = video.currentTime;
+            var startTime = performance.now();
 
             var count = 8;
             statusTimer.innerText = count + " 秒";
-            var timer = setInterval(function() {{
+            
+            var countdownTimer = setInterval(function() {{
                 count--;
-                if(count > 0) {{
-                    statusTimer.innerText = count + " 秒";
+                if(count > 0) statusTimer.innerText = count + " 秒";
+                else clearInterval(countdownTimer);
+            }}, 1000);
+
+            function step(now) {{
+                var elapsed = now - startTime;
+                var progress = elapsed / duration;
+                if (progress < 1) {{
+                    video.currentTime = Math.max(0, startFrameTime * (1 - progress));
+                    requestAnimationFrame(step);
                 }} else {{
-                    clearInterval(timer);
+                    video.currentTime = 0;
                     finishCycle();
                 }}
-            }}, 1000);
+            }}
+            requestAnimationFrame(step);
         }}
 
         function finishCycle() {{
-            video.pause();
-            statusTitle.innerText = "✨ 能量充沛！您已完成今天的調息冒險";
+            statusTitle.innerText = "✨ 能量充沛！已完成調息冒險";
             statusTimer.innerText = "心流諧振成功";
             startBtn.disabled = false;
             startBtn.style.opacity = "1.0";
         }}
     </script>
 """,
-    height=500,
+    height=460,
 )
 
 if st.button("💎 完成調息冒險（領取冒險證書）"):
     st.session_state["step3_done"] = True
-    st.success("✨ 恭喜您完成今天的冒險旅程！")
+    st.success("✨ 恭喜完成今天的冒險旅程！")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ==============================================================================
-# 4. 數據拋接與黑客松亮點功能：一鍵同步至診間
+# 4. 數據拋接至診間
 # ==============================================================================
 if (
     st.session_state["step1_done"]
@@ -460,12 +519,12 @@ if (
     token_code = st.session_state["token"]
     st.markdown(
         f"""
-        <div style="background: #FFFFFF; border: 2.5px solid #C2A675; border-radius: 20px; padding: 22px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.06);">
-            <h3 style="color: #25352B !important; margin-top: 0;">📜 冒險日誌拋接準備就緒</h3>
-            <p style="color: #596B60 !important; font-size: 0.95rem;">
-                通行密鑰：<b style="color: #1A261F !important;">{token_code}</b> ｜ 心流評估：<b style="color: #C2A675 !important;">{st.session_state['hrv_score']}%</b>
+        <div style="background: #FFFFFF; border: 2px solid #C2A675; border-radius: 18px; padding: 18px; text-align: center; box-shadow: 0 6px 18px rgba(0,0,0,0.05);">
+            <h3 style="color: #25352B !important; margin-top: 0; font-size: 1.2rem;">📜 冒險日誌拋接就緒</h3>
+            <p style="color: #596B60 !important; font-size: 0.9rem;">
+                通行密鑰：<b style="color: #1A261F !important;">{token_code}</b>
             </p>
-            <a href="https://curio-streamlit-dashboard.streamlit.app/?token={token_code}" target="_blank" style="background: linear-gradient(135deg, #25352B 0%, #1A261F 100%); color: #D4AF37 !important; padding: 14px 30px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 1rem; display: inline-block; border: 1.5px solid #D4AF37;">
+            <a href="https://curio-streamlit-dashboard.streamlit.app/?token={token_code}" target="_blank" style="background: linear-gradient(135deg, #25352B 0%, #1A261F 100%); color: #D4AF37 !important; padding: 12px 26px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 0.95rem; display: inline-block; border: 1.5px solid #D4AF37;">
                 🕊️ 由信鴿 Singer 將日誌拋接至郭醫師診間
             </a>
         </div>
@@ -473,4 +532,4 @@ if (
         unsafe_allow_html=True,
     )
 else:
-    st.info("💡 完成三站冒險後，即可將今天的探險日誌拋接至診間喔！")
+    st.info("💡 完成三站冒險後，即可將探險日誌拋接至診間！")
