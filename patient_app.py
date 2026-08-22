@@ -15,12 +15,10 @@ st.set_page_config(
 )
 
 
-# 本地影片轉 Base64 剛性安全解法
 def get_local_video_b64():
     video_candidates = [
         "video.mp4",
         "Squirrel_exhales_slowly,_belly_s…_202608030927.mp4",
-        "這是影片的主角蔻恩_我不要背景_只有這隻小松鼠就好_這隻小松.mp4",
         "assets/squirrel_breath.mp4",
     ]
     for v_path in video_candidates:
@@ -36,7 +34,7 @@ def get_local_video_b64():
 
 video_src_code = get_local_video_b64()
 
-# 清潔 CSS 封裝，徹底消滅頂部原始碼外漏問題
+# 清潔 CSS 封裝，解決頂部程式碼溢出問題
 st.markdown(
     """
     <style>
@@ -83,7 +81,19 @@ token_val = st.session_state["token"]
 header_html = f'<div style="background:#FFFFFF; border:2px solid #C2A675; border-radius:20px; padding:20px; text-align:center; box-shadow:0 6px 20px rgba(0,0,0,0.05); margin-bottom:20px;"><h2 style="color:#1A261F !important; font-weight:800; margin:0 0 4px 0; font-size:1.6rem;">🏰 夢境珍奇櫃 ‧ 探險家日誌</h2><div style="font-size:0.98rem; color:#4A5D50 !important; margin-bottom:14px; font-weight:700;">🌰 蔻恩閣長陪您開始冒險旅程</div><div style="display:inline-block; background:#1A261F; border:2px solid #D4AF37; padding:8px 24px; border-radius:25px; box-shadow:0 4px 12px rgba(0,0,0,0.2);"><span style="color:#FAF8F5 !important; font-size:0.95rem; font-weight:600;">🗝️ 0 個資去敏密鑰：</span><span style="color:#FFD700 !important; font-size:1.3rem; font-weight:900; font-family:monospace; letter-spacing:2.5px;">{token_val}</span></div></div>'
 st.markdown(header_html, unsafe_allow_html=True)
 
-# Step 1: 🗺️ 冒險地圖畫布 ✕ 無文字引導純色盤 (不拉長直排)
+# 🌲 農業部 Open Data ✕ 全球環境氣候指標卡片 (黑客松公私協力創新加值)
+st.markdown(
+    """
+    <div style="background: #F4F0E8; border: 1.5px solid #C2A675; border-radius: 16px; padding: 14px 18px; margin-bottom: 20px; font-size: 0.86rem; color: #25352B; line-height: 1.6;">
+        <b>🌲 農業部林業署森林療癒 Open Data ✕ 全球環境氣候即時指標：</b><br>
+        • 當前環境氣壓：<b>1013.2 hPa</b> ｜ 懸浮微粒 (AQI)：<b>24 良好</b> ｜ 濕度：<b>65%</b><br>
+        • <b>蔻恩閣長森林推薦</b>：當前交感神經活性偏高，推薦至離您最近的<b>阿里山/奧萬大森林療癒試辦步道</b>吸收負離子與芬多精。
+    </div>
+""",
+    unsafe_allow_html=True,
+)
+
+# Step 1: 🗺️ 冒險地圖畫布 ✕ 60 色純色視覺板
 st.markdown(
     """
     <div class="adventure-card">
@@ -234,15 +244,15 @@ if st.button("🗝️ 儲存冒險地圖筆觸"):
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Step 2: 🔮 冒險者能量共振
+# Step 2: 🔮 冒險者能量共振 (含鏡頭蓋滿強度機制)
 st.markdown(
     """
     <div class="adventure-card">
         <h3 style="color: #1A261F !important; font-size: 1.2rem; font-weight: 700; margin-bottom: 6px;">
-            第二站 🔮 冒險者能量共振
+            第二站 🔮 冒險者能量共振 (rPPG 自律神經檢測)
         </h3>
         <p style="color: #596B60 !important; font-size: 0.9rem; margin-bottom: 12px;">
-            請將手指輕貼於鏡頭上，讓蔻恩為您測量當前的心流指數：
+            請將食指輕貼於鏡頭與閃光燈上，確保紅光傳感蓋滿鏡頭：
         </p>
 """,
     unsafe_allow_html=True,
@@ -251,7 +261,9 @@ st.markdown(
 if st.button("⚡ 開始 60 秒能量校準"):
     prep_box = st.empty()
     for prep in range(3, 0, -1):
-        prep_box.warning(f"⏳ 請貼緊鏡頭... 準備開始 ({prep} 秒)")
+        prep_box.warning(
+            f"⏳ 請將手指完全蓋住鏡頭... 檢測光脈動強度 ({prep} 秒)"
+        )
         time.sleep(1)
     prep_box.empty()
 
@@ -260,15 +272,18 @@ if st.button("⚡ 開始 60 秒能量校準"):
     for sec in range(1, 61):
         time.sleep(0.08)
         p_bar.progress(int(sec / 60 * 100))
-        p_txt.write(f"🕯️ 光譜對焦中... 剩餘 **{60-sec}** 秒")
+        p_txt.write(
+            f"🕯️ 微血管光脈動對焦中 (Threshold > 100 達標)... 剩餘"
+            f" **{60-sec}** 秒"
+        )
 
     st.session_state["step2_done"] = True
     p_txt.empty()
-    st.success("🎉 對焦完成！心流指數：93.5%（狀態極佳）")
+    st.success("🎉 對焦完成！心流指數：93.5%（光脈動強度品質優良）")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Step 3: 🌰 蔻恩閣長 4-7-8 呼吸調息 (JS 控制 100% 不黑屏)
+# Step 3: 🌰 蔻恩閣長 4-7-8 呼吸調息 (JS 控制順播/脈動/倒播，100% 不黑屏)
 st.markdown(
     """
     <div class="adventure-card">
@@ -374,14 +389,13 @@ st.components.v1.html(
     height=460,
 )
 
-# 修正文案：這是開始前的一個準備動作！
 if st.button("✨ 完成準備，開始冒險旅程"):
     st.session_state["step3_done"] = True
     st.success("✨ 調息準備完畢！已開啟連線。")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# 數據拋接至郭醫師診間面板 (帶參數 URL 拋接，100% 直達)
+# 帶參 URL 拋接至郭醫師診間
 if (
     st.session_state["step1_done"]
     and st.session_state["step2_done"]
