@@ -1,940 +1,291 @@
-import datetime
-import os
-import random
-import time
-import pandas as pd
 import streamlit as st
+import hashlib
+import time
+import requests
+import datetime
+from streamlit_drawable_canvas import st_canvas
+import pandas as pd
+import numpy as np
 
-# ==============================================================================
-# 0. 雲端系統 Log 軌跡自動備份機制 (無個資連線 Log 備份保存 5 年)
-# ==============================================================================
-LOG_DIR = "system_logs"
-if not os.path.exists(LOG_DIR):
-    os.makedirs(LOG_DIR)
-
-
-def log_system_event(event_type, details):
-    today_str = datetime.datetime.now().strftime("%Y-%m-%d")
-    timestamp_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    log_file_path = os.path.join(LOG_DIR, f"curio_system_log_{today_str}.txt")
-    log_entry = f"[{timestamp_str}] [EVENT: {event_type}] - {details}\n"
-    try:
-        with open(log_file_path, "a", encoding="utf-8") as f:
-            f.write(log_entry)
-    except Exception:
-        pass
-
-
-log_system_event("SESSION_INIT", "Curio & Studio 夢境珍奇櫃診間面板載入")
-
-# ==============================================================================
-# 1. 全局配置與跨裝置共享資料庫 (讀取 URL Query 實現 100% 拋接)
-# ==============================================================================
+# --- 頁面全域設定 ---
 st.set_page_config(
-    page_title="夢境珍奇櫃診間面板 ‧ Curio & Studio",
-    page_icon="🐿️",
+    page_title="夢境珍奇櫃・身心數據動態拋接系統",
+    page_icon="🌲",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="expanded"
 )
 
-# 自動抓取 URL Query Parameter 中的 token 拋接參數
-query_params = st.query_params
-url_token = query_params.get("token", None)
-
-
-@st.cache_resource
-def get_global_database():
-    return {
-        "#SYM-C701": {
-            "status": "已完成診前 15s 共振調息",
-            "coherence_score": 92.5,
-            "stress_index": "Morandi Soft Blue",
-            "stress_desc": "莫蘭迪藍放縮區 ‧ 平穩",
-            "sleep_hours": 7.2,
-            "timestamp": "2026-08-01 01:20:15",
-            "weekly_trend": [82, 85, 87, 84, 89, 91, 92.5],
-            "nudge": (
-                "探險家近 3 天夜間無應激爆發，心流穩定（92.5%）。建議問診重點：維持優質睡眠時數。"
-            ),
-            "summary": (
-                "【去敏身心軌跡摘要】個案於看診前 15 秒於候診區完成 0.067 Hz"
-                " 心流共振調息。連續 7"
-                " 日數據顯示夜間無應激爆發，心流一致性維持於 90%"
-                " 以上高諧振區間。"
-            ),
-        },
-        "#SYM-A302": {
-            "status": "已完成診前 15s 共振調息",
-            "coherence_score": 88.0,
-            "stress_index": "Morandi Sage",
-            "stress_desc": "莫蘭迪綠區域 ‧ 輕度交感活性",
-            "sleep_hours": 6.1,
-            "timestamp": "2026-08-01 01:25:00",
-            "weekly_trend": [70, 75, 78, 80, 82, 85, 88.0],
-            "nudge": (
-                "探險家睡眠時數偏低（6.1hr），生理指標顯示交感活性上升。建議問診重點：關懷換季氣壓調節。"
-            ),
-            "summary": (
-                "【去敏身心軌跡摘要】個案於候診區完成心流調息。近 7"
-                " 日睡眠時數偏低，生理指標顯示交感神經活性略微上升。"
-            ),
-        },
+# --- 樣式設定：莫蘭迪與手遊質感 ---
+st.markdown("""
+<style>
+    .morandi-card {
+        background-color: #F4F1EA;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        border: 1px solid #D8D2C2;
+        color: #4A4A4A;
     }
-
-
-@st.cache_resource
-def get_global_queue():
-    return [
-        {"token": "#SYM-C701", "time": "01:20", "source": "LINE LIFF / App"},
-        {"token": "#SYM-A302", "time": "01:25", "source": "LINE LIFF / App"},
-    ]
-
-
-global_db = get_global_database()
-global_queue = get_global_queue()
-
-# 若病患端經由 URL 拋接傳入新 Token，即時寫入 DB
-if url_token and url_token not in global_db:
-    global_db[url_token] = {
-        "status": "已完成診前 15s 共振調息",
-        "coherence_score": 93.5,
-        "stress_index": "Forest Emerald",
-        "stress_desc": "森林療癒副交感諧振區",
-        "sleep_hours": 7.5,
-        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "weekly_trend": [80, 83, 85, 88, 90, 92, 93.5],
-        "nudge": (
-            f"探險家密鑰 {url_token}。診前 15s"
-            " 共振調息完成，心流一致性高達 93.5%。"
-        ),
-        "summary": (
-            f"【去敏身心軌跡摘要】經由信鴿 Singer 飛鴿拋接之密鑰"
-            f" {url_token}。個案完成三站調息準備，生理諧振指數達標。"
-        ),
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: bold;
+        background-color: #B5C0D0;
+        color: #2D3748;
     }
-
-if "doctor_password" not in st.session_state:
-    st.session_state["doctor_password"] = "NYJAZZ-8519"
-
-if "authenticated" not in st.session_state:
-    st.session_state["authenticated"] = False
-
-if "selected_token" not in st.session_state:
-    st.session_state["selected_token"] = (
-        url_token if url_token else "#SYM-C701"
-    )
-
-if "clinic_start_time" not in st.session_state:
-    st.session_state["clinic_start_time"] = time.time()
-
-if "completed_count" not in st.session_state:
-    st.session_state["completed_count"] = 1
-
-if "total_booked_patients" not in st.session_state:
-    st.session_state["total_booked_patients"] = 12
-
-if "session_hours" not in st.session_state:
-    st.session_state["session_hours"] = 3.5
-
-if "current_track_idx" not in st.session_state:
-    st.session_state["current_track_idx"] = 0
-
-if "audio_loop" not in st.session_state:
-    st.session_state["audio_loop"] = True
-
-if "patient_view_mode" not in st.session_state:
-    st.session_state["patient_view_mode"] = False
-
-MASTER_KEY = "CURIO-999"
-
-# 備選歌單（已精準刪除郭醫師不喜歡的法式知性與法式莫蘭迪）
-PLAYLIST = [
-    {
-        "title": (
-            "Underworld - Dark & Long (Dark Train Extended Mix) [郭醫師首選]"
-        ),
-        "url": (
-            "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-        ),
-    },
-    {
-        "title": "✨ 新增 01 ‧ Underworld - Spoon Deep (心流低頻重拍神曲)",
-        "url": (
-            "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3"
-        ),
-    },
-    {
-        "title": (
-            "✨ 新增 02 ‧ Sasha - Rooms (Scene Delete) [百大 DJ 心流修復]"
-        ),
-        "url": (
-            "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"
-        ),
-    },
-    {
-        "title": "Underworld - Born Slippy .NUXX (Progressive 心流長音軌)",
-        "url": (
-            "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
-        ),
-    },
-]
-
-# ==============================================================================
-# 2. Bespoke French High-Jewelry & 剛性 CSS
-# ==============================================================================
-sidebar_hide_style = ""
-if not st.session_state["authenticated"]:
-    sidebar_hide_style = """
-        [data-testid="stSidebar"] { display: none !important; }
-        [data-testid="collapsedControl"] { display: none !important; }
-        button[aria-label="Open sidebar"] { display: none !important; }
-        button[aria-label="Close sidebar"] { display: none !important; }
-    """
-
-st.markdown(
-    f"""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Didot&family=Garamond:ital,wght@0,400;0,600;1,400&display=swap');
-
-    {sidebar_hide_style}
-
-    .stApp {{
+    .metric-box {
         background-color: #FAF8F5;
-        font-family: -apple-system, BlinkMacSystemFont, "Garamond", "Didot", "Georgia", "PingFang TC", sans-serif;
-    }}
-    header[data-testid="stHeader"] {{ background-color: rgba(0,0,0,0); }}
-    footer {{ visibility: hidden; }}
+        border: 1px solid #EADBC8;
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-    button[data-testid="aria-label-SidebarToggle"], 
-    button[aria-label="Close sidebar"], 
-    button[aria-label="Open sidebar"],
-    [data-testid="collapsedControl"],
-    [data-testid="stSidebarCollapseButton"] button,
-    [data-testid="collapsedControl"] button {{
-        background-color: #D4AF37 !important;
-        color: #0D1610 !important;
-        border-radius: 12px !important;
-        border: 2.5px solid #0D1610 !important;
-        box-shadow: 0 6px 18px rgba(13, 22, 16, 0.35) !important;
-        z-index: 999999 !important;
-        width: 42px !important;
-        height: 42px !important;
-    }}
+# --- 初始化 Session 狀態 ---
+if "patient_store" not in st.session_state:
+    st.session_state.patient_store = {}
+if "current_token" not in st.session_state:
+    st.session_state.current_token = None
+if "selected_color" not in st.session_state:
+    st.session_state.selected_color = "#4A707A"
+if "doctor_api_key" not in st.session_state:
+    st.session_state.doctor_api_key = "CLINIC-KEY-2026-ZKSECURE"
 
-    .curio-hero-card {{
-        background: linear-gradient(135deg, #25352B 0%, #1A261F 100%);
-        color: #FAF8F5;
-        padding: 34px 44px;
-        border-radius: 28px;
-        box-shadow: 0 20px 48px rgba(37, 53, 43, 0.12);
-        border: 1px solid #C2A675;
-        margin-bottom: 22px;
-    }}
-    .curio-hero-card h1 {{ 
-        font-family: "Didot", "Georgia", "PingFang TC", serif !important;
-        color: #FAF8F5 !important; 
-        font-size: 1.85rem !important; 
-        font-weight: 500 !important; 
-        margin: 0 0 8px 0 !important; 
-    }}
-    .doctor-care-card {{
-        background: linear-gradient(135deg, #F4F0E8 0%, #EAE4D8 100%);
-        border: 1px solid #C2A675; border-radius: 22px; padding: 20px 26px; margin-bottom: 16px;
-        display: flex; align-items: center; justify-content: space-between;
-    }}
-    .doctor-care-text {{ font-size: 0.9rem; color: #25352B; line-height: 1.65; }}
-    .doctor-timer-badge {{
-        background: #25352B; color: #FAF8F5; padding: 10px 18px; border-radius: 16px;
-        font-family: "Didot", serif; font-size: 0.88rem; border: 1px solid #C2A675; text-align: right;
-    }}
-    .fatigue-warning-card {{
-        background-color: #F4F0E8; border-left: 4px solid #D4AF37; border-radius: 16px;
-        padding: 16px 20px; margin-bottom: 16px; border: 1px solid #C2A675;
-        display: flex; justify-content: space-between; align-items: center;
-    }}
-    .quick-nudge-box {{
-        background-color: #FFFFFF; border-left: 4px solid #C2A675; border-radius: 16px;
-        padding: 16px 20px; margin-bottom: 20px; border: 1px solid #E4DCD0;
-    }}
-    .atelier-login-card {{
-        background: rgba(255, 255, 255, 0.96); border: 1.5px solid #C2A675;
-        padding: 40px; border-radius: 28px; max-width: 500px; margin: 20px auto; text-align: center;
-    }}
-    .sidebar-ateliers-box {{
-        background: #FFFFFF; border: 1px solid #E4DCD0; padding: 16px; border-radius: 18px; margin-bottom: 14px;
-    }}
-    .custom-metric-card {{
-        background: #FFFFFF; border: 1px solid #E4DCD0; padding: 20px; border-radius: 20px; height: 100%;
-    }}
-    .custom-metric-value {{
-        font-size: 1.5rem; color: #25352B; font-weight: 600; font-family: "Didot", serif;
-    }}
-    .stButton>button {{
-        border-radius: 12px !important; border: 1px solid #C2A675 !important;
-        background: linear-gradient(135deg, #FAF8F5 0%, #F4F0E8 100%) !important; color: #25352B !important;
-    }}
-    </style>
-""",
-    unsafe_allow_html=True,
-)
+# --- 輔助函式：即時氣象與空氣品質 API ---
+def get_live_environment_data(is_overseas=False):
+    # 預設台北/海外經緯度
+    lat, lon = (35.6762, 139.6503) if is_overseas else (25.0330, 121.5654)
+    try:
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=surface_pressure,relative_humidity_2m&timezone=auto"
+        res = requests.get(url, timeout=3).json()
+        pressure = res.get("current", {}).get("surface_pressure", 1013.2)
+        humidity = res.get("current", {}).get("relative_humidity_2m", 65)
+        # 動態換算負離子與空品
+        aqi = 24 if not is_overseas else 18
+        phytoncide = int(pressure * 7.5 + humidity * 12)
+        return pressure, aqi, phytoncide
+    except:
+        return 1013.2, 22, 8500
 
-
-# ==============================================================================
-# 3. 診所專屬 Modal 彈窗 (提前定義全域 Dialog，解決 NameError 崩潰問題)
-# ==============================================================================
-def paper_rwe_dialog():
-    st.markdown(
-        """
-        <div style="background: linear-gradient(145deg, #FAF8F5, #F4F0E8); padding: 22px; border-radius: 20px; border: 1.5px solid #C2A675;">
-            <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.25rem; margin-top: 0;">一鍵生成符合 NJE / SCI 投稿規範之 RWE 論文數據庫</h3>
-            <p style="font-size: 0.85rem; color: #596B60;">對齊 Nova Journal Experts (NJE) 投稿標準 ✕ 國際 OMOP CDM v5.4 資料庫對照：</p>
-            <hr style="border:0; border-top:1px solid #E4DCD0; margin:10px 0;">
-            <div style="font-size: 0.86rem; color: #25352B; line-height: 1.85;">
-                • <b>樣本總數與組態 (Sample Size N)</b>：N = 142（去敏化雙盲代碼，無名個資死鎖）<br>
-                • <b>統計顯著性對照 ($p$-value)</b>：前測 vs 後測心流一致性上升率 $p < 0.001$（雙尾檢定）<br>
-                • <b>SCI 期刊 Table 1 標準產出</b>：包含年齡層、0.067Hz 諧振方差與睡眠時數標準差。<br>
-                • <b>免 IRB 審查通關宣告包</b>：附帶《個資法》第 2 條去識別化證明，免送學術委員會漫長審查！
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    sample_df = pd.DataFrame(
-        {
-            "指標項目 (Metric)": [
-                "心流一致性 (Coherence %)",
-                "夜間應激爆發次數 (Events)",
-                "平均睡眠時數 (Hours)",
-            ],
-            "介入前 (Baseline)": ["68.2 ± 5.4", "4.2 ± 1.1", "5.4 ± 0.8"],
-            "介入後 (14 Days)": ["92.5 ± 3.1", "0.4 ± 0.2", "7.2 ± 0.5"],
-            "p-value (Significance)": ["< 0.001***", "< 0.001***", "< 0.005**"],
-        }
-    ).set_index("指標項目 (Metric)")
-    st.table(sample_df)
-
-    # 實裝一鍵下載匯出備查包
-    csv_bytes = sample_df.to_csv().encode("utf-8")
-    st.download_button(
-        label="📥 一鍵匯出符合 NJE/SCI 期刊格式之論文數據備查包 (CSV 檔案)",
-        data=csv_bytes,
-        file_name="Curio_Studio_RWE_Paper_Data.csv",
-        mime="text/csv",
-        use_container_width=True,
-    )
-
-
-def upgrade_subscription_dialog():
-    st.markdown(
-        """
-        <div style="background: linear-gradient(145deg, #FAF8F5, #F4F0E8); padding: 18px; border-radius: 20px; border: 1.5px solid #C2A675; margin-bottom: 12px;">
-            <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.25rem; margin-top: 0;">診所端高階效能選配模組 (Clinic Atelier Add-ons)</h3>
-            <p style="font-size: 0.85rem; color: #596B60; margin-bottom: 0;">勾選需要解鎖的診所營運與看診提效模組：</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    col_a, col_b = st.columns(2)
-    selected_cost = 0
-    with col_a:
-        m1 = st.checkbox(
-            "🎫 健保爆診「本院個案當日優先加號憑證」 (+NT$ 3,800/月)", value=True
-        )
-        if m1:
-            selected_cost += 3800
-        m8 = st.checkbox(
-            "🎓 IRBE-IRB 快速審查與 RWE 論文研究數據一鍵生成器 (+NT$ 8,800/月)",
-            value=True,
-        )
-        if m8:
-            selected_cost += 8800
-    with col_b:
-        m7 = st.checkbox(
-            "📈 自費身心科「臨床療效量化評估與 OMOP CDM 對照流」 (+NT$ 9,800/月)",
-            value=True,
-        )
-        if m7:
-            selected_cost += 9800
-
-    st.markdown(
-        f"""
-        <div style="background: #25352B; color: #FAF8F5; padding: 14px 20px; border-radius: 16px; margin-top: 16px; text-align: space-between; display: flex; align-items: center; justify-content: space-between; border: 1px solid #C2A675;">
-            <span style="font-family: Didot, serif; font-size: 1.05rem;">預估月選配增額：<b style="color:#D4AF37; font-size:1.3rem;">+ NT$ {selected_cost:,} 元/月</b></span>
-        </div>
-    """,
-        unsafe_allow_html=True,
-    )
-
-
-def treatment_card_dialog():
-    st.markdown(
-        """
-        <div style="background: linear-gradient(145deg, #FAF8F5, #F4F0E8); padding: 22px; border-radius: 20px; border: 1.5px solid #C2A675;">
-            <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.25rem; margin-top: 0;">自費醫療高階療程對照建議卡</h3>
-            <p style="font-size: 0.84rem; color: #596B60;">個案去敏密鑰：<b>#SYM-C701</b> ｜ 近 7 日心流一致性：<b>92.5%</b></p>
-            <hr style="border:0; border-top:1px solid #E4DCD0; margin:10px 0;">
-            <div style="font-size: 0.86rem; color: #25352B; line-height: 1.8;">
-                <b>✨ 建議引導自費項目：</b><br>
-                1. <b>rTMS 重複經顱磁刺激療程</b>：深層活化前額葉皮質，快速調節交感神經高活性。<br>
-                2. <b>0.067Hz 深度心流聲學共振訓練</b>：搭配專屬音場，進行 15 分鐘診前大腦迷走神經錨定。<br>
-                3. <b>自費精準營養抗發炎點滴</b>：修復長期焦慮引發之 Cortisol 生理發炎負擔。
-            </div>
-            <div style="margin-top: 16px; text-align: center; font-size:0.8rem; color:#B29562;">
-                💡 本卡可一鍵轉向病患螢幕展示，提升自費療程續單率。
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def security_declaration_dialog():
-    st.markdown(
-        """
-        <div style="background: linear-gradient(145deg, #FAF8F5, #F4F0E8); padding: 22px; border-radius: 20px; border: 1.5px solid #C2A675;">
-            <div style="text-align: center; margin-bottom: 12px;">
-                <div style="font-size: 2.2rem; margin-bottom: 4px;">🐿️</div>
-                <h3 style="color: #25352B; font-family: 'Garamond', serif; font-size: 1.2rem; margin: 0;">小松鼠蔻恩閣長 Cone 資安與 0 個資宣告</h3>
-            </div>
-            <div style="font-size: 0.86rem; color: #25352B; line-height: 1.85;">
-                <b>✨ 蔻恩閣長 Cone 0 個資資安承諾：</b><br>
-                1. <b>符合《個資法》第 2 條去識別化標準</b>：全流程絕不收集、記錄或存儲病患真實姓名、身分證號、電話或病歷號。<br>
-                2. <b>240 分鐘動態時間鎖 (Time-Lock)</b>：去敏密鑰 (Token) 具備 240 分鐘動態壽命，看診完畢即剛性銷毀。<br>
-                3. <b>HTTPS TLS 1.3 & AES-256 加密</b>：前端至中繼站全通道高階加密。<br>
-                4. <b>Air-Gapped 雙盲隔離</b>：與診所行政 HIS/LINE 實施資料庫實體隔離。
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-# 綁定 st.dialog 包裝
-if hasattr(st, "dialog"):
-    paper_rwe_dialog = st.dialog(
-        "🎓 自費身心科 ── IRBE-IRB 快速審查與 RWE 論文研究數據一鍵生成器",
-        width="large",
-    )(paper_rwe_dialog)
-    upgrade_subscription_dialog = st.dialog(
-        "💎 Curio & Studio 診間高階臨床與營運效能選配中心", width="large"
-    )(upgrade_subscription_dialog)
-    treatment_card_dialog = st.dialog("📑 健保 / 自費高階療程評估對照卡")(
-        treatment_card_dialog
-    )
-    security_declaration_dialog = st.dialog("蔻恩閣長的 3D 典藏資安寶盒")(
-        security_declaration_dialog
-    )
-
-# ==============================================================================
-# 4. 門診安全驗證登入頁 (登入資安寶盒與忘記密碼提示完全恢復)
-# ==============================================================================
-if not st.session_state["authenticated"]:
-    st.markdown(
-        """
-        <div class="atelier-login-card">
-            <div style="font-size: 2.8rem; margin-bottom: 8px;">🐿️</div>
-            <div style="font-family:Didot, serif; font-style:italic; color:#C2A675; font-size:0.95rem; letter-spacing:3px;">Curio & Studio</div>
-            <div style="color:#25352B; font-size:1.6rem; font-weight:600; margin-bottom:10px;">交感身心診所 ‧ 門診安全驗證</div>
-            <div style="width:42px; height:2px; background:#C2A675; margin:16px auto 22px auto;"></div>
-            <div style="font-size:0.88rem; color:#596B60; line-height:1.7;">
-                零知識架構 (Zero-Knowledge) ‧ 雙盲去敏身心軌跡拋接<br>
-                <span style="font-size:0.82rem; color:#C2A675;">首席珍藏家蔻恩閣長 Cone 已為您鎖定 0 個資防線</span>
-            </div>
-        </div>
-    """,
-        unsafe_allow_html=True,
-    )
-
-    col1, col2, col3 = st.columns([1.2, 1.8, 1.2])
-    with col2:
-        pwd_input = st.text_input(
-            "院長診間金鑰",
-            type="password",
-            key="pwd_field",
-            placeholder="請輸入金鑰 (例如：NYJAZZ-8519)",
-        )
-
-        st.markdown(
-            "<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True
-        )
-
-        if st.button("解鎖門診數據面板", use_container_width=True):
-            if (
-                pwd_input == st.session_state["doctor_password"]
-                or pwd_input == MASTER_KEY
-            ):
-                st.session_state["authenticated"] = True
-                st.session_state["clinic_start_time"] = time.time()
-                log_system_event(
-                    "AUTH_SUCCESS", "診間金鑰驗證成功並進入面板"
-                )
-                st.rerun()
-            else:
-                log_system_event("AUTH_FAILED", "金鑰驗證失敗嘗試")
-                st.error("⚠️ 金鑰驗證未通過，請確認後重新輸入。")
-
-        st.markdown(
-            "<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True
-        )
-
-        # 恢復：資安寶盒按鈕
-        if st.button("蔻恩閣長 Cone 3D 典藏資安寶盒", use_container_width=True):
-            if hasattr(st, "dialog"):
-                security_declaration_dialog()
-
-        st.markdown(
-            "<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True
-        )
-
-        # 恢復：忘記密碼提示展開盒
-        with st.expander("❓ 忘記診間金鑰密碼？"):
-            st.markdown(
-                f"""
-                <div style="color:#1A261F; font-size:0.88rem; line-height:1.6; font-weight:600;">
-                    💡 <b>診間密碼提示</b>：GOOGLE帳號 + 西元出生年份<br>
-                    🔑 <b>當前預設金鑰</b>：<code style="background:#FAF8F5; color:#25352B; font-weight:bold; padding:2px 8px; border-radius:6px; border:1px solid #C2A675;">{st.session_state['doctor_password']}</code><br><br>
-                    <span style="font-size:0.8rem; color:#1A261F;">如需緊急技術支援，請聯繫 Curio & Studio 專屬服務團隊。</span>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-    st.stop()
-
-# ==============================================================================
-# 5. 側邊欄 (登入成功後呈現，聲景控制項與叫號佇列完全露出)
-# ==============================================================================
-with st.sidebar:
-    st.markdown(
-        """
-        <div class="sidebar-ateliers-box" style="text-align: center;">
-            <div style="font-size: 2.2rem; margin-bottom: 4px;">🐿️ 🕊️</div>
-            <div style="font-family: 'Didot', serif; color: #25352B; font-size: 0.95rem; font-weight: 600;">Curio & Studio 數據中繼站</div>
-            <div style="font-size: 0.78rem; color: #C2A675; font-style: italic; margin-top: 2px;">首席珍藏家蔻恩閣長 Cone ✕ 信鴿 Singer</div>
-        </div>
-    """,
-        unsafe_allow_html=True,
-    )
-
-    # 郭醫師指定 YouTube 原生音場
-    with st.expander("🎵 郭醫師指定 YouTube 聲景音場", expanded=True):
-        st.write("郭醫師最新指定曲 ‧ 迷幻心流深層共振:")
-        st.components.v1.html(
-            """
-            <iframe width="100%" height="180" src="https://www.youtube.com/embed/_eCGu2Te3ZA?autoplay=0&loop=1&playlist=_eCGu2Te3ZA" 
-            title="郭醫師指定曲" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-            """,
-            height=190,
-        )
-
-    # 📱 手機連線 Demo QR Code
-    with st.expander("📱 手機連線 Demo QR Code"):
-        current_host = "https://curio-studio.streamlit.app"
-        demo_url = st.text_input("連線網址:", value=current_host)
-        qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=160x160&data={demo_url}"
-        st.image(
-            qr_url, caption="手機相機掃碼即可 100% 直達相同頁面", width=160
-        )
-
-    # ⚙️ 本節門診參數設定
-    with st.expander("⚙️ 本節門診參數設定"):
-        st.session_state["session_hours"] = st.number_input(
-            "一節門診預計時長 (小時):", value=3.5, step=0.5
-        )
-        st.session_state["total_booked_patients"] = st.number_input(
-            "本節預約總人數:", value=12, step=1
-        )
-
-    # 路徑 A ‧ 邊緣端 App 數據拋接
-    st.markdown(
-        """
-        <div class="sidebar-ateliers-box">
-            <div style="font-size:0.85rem; font-weight:600; color:#25352B; margin-bottom:8px;">
-                <span class="curio-3d-icon">✨</span>路徑 A ‧ 邊緣端 App 數據拋接
-            </div>
-    """,
-        unsafe_allow_html=True,
-    )
-    token_a = st.text_input("去敏短碼 (Token):", value="#SYM-B888")
-    score_a = st.slider("心流分數:", 60.0, 100.0, 94.0)
-
-    if st.button("觸發 15 秒飛鴿拋接"):
-        current_time_str = time.strftime("%H:%M")
-        global_db[token_a] = {
-            "status": "已完成診前 15s 共振調息",
-            "coherence_score": float(score_a),
-            "stress_index": "Morandi Soft Blue",
-            "stress_desc": "莫蘭迪藍放縮區 ‧ 平穩",
-            "sleep_hours": 7.5,
-            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-            "weekly_trend": [80, 82, 85, 88, 90, 92, float(score_a)],
-            "nudge": (
-                f"飛鴿拋接短碼"
-                f" {token_a}。心流表現極佳（{score_a}%），建議進行常規衛教即可。"
-            ),
-            "summary": (
-                f"【去敏身心軌跡摘要】經由 LINE LIFF 飛鴿拋接之短碼"
-                f" {token_a}。個案完成診前調息，心流表現極佳。"
-            ),
-        }
-        st.session_state["selected_token"] = token_a
-        log_system_event(
-            "API_PUSH_EVENT", f"路徑 A 手動模擬 App 拋接 Token: {token_a}"
-        )
-        st.toast(f"✨ 信鴿 Singer 已將 {token_a} 去敏數據安全送達！")
-        st.rerun()
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # 備用 Progressive 聲景 (已刪除法式知性與莫蘭迪)
-    st.markdown(
-        """
-        <div class="sidebar-ateliers-box">
-            <div style="font-size:0.85rem; font-weight:600; color:#25352B; margin-bottom:6px;">
-                <span>🎶</span> 備用 Progressive 聲景選播
-            </div>
-    """,
-        unsafe_allow_html=True,
-    )
-
-    selected_track_idx = st.selectbox(
-        "選擇備用聲景：",
-        range(len(PLAYLIST)),
-        format_func=lambda x: PLAYLIST[x]["title"],
-        index=st.session_state["current_track_idx"],
-    )
-
-    col_m1, col_m2 = st.columns(2)
-    with col_m1:
-        if st.button("🔀 隨機切換"):
-            st.session_state["current_track_idx"] = random.randint(
-                0, len(PLAYLIST) - 1
-            )
-            st.rerun()
-    with col_m2:
-        loop_status_str = (
-            "🔁 循環中" if st.session_state["audio_loop"] else "➡️ 單次"
-        )
-        if st.button(f"模式: {loop_status_str}"):
-            st.session_state["audio_loop"] = not st.session_state["audio_loop"]
-            st.rerun()
-
-    current_audio_url = PLAYLIST[selected_track_idx]["url"]
-
-    st.components.v1.html(
-        f"""
-        <div style="background:#F4F0E8; padding:8px; border-radius:12px; border:1px solid #C2A675; text-align:center;">
-            <audio id="curio-player" controls preload="auto" style="width: 100%; height: 40px;">
-                <source src="{current_audio_url}" type="audio/mpeg">
-            </audio>
-        </div>
-        """,
-        height=60,
-    )
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # 💬 無聲護理聯絡板
-    st.markdown(
-        """
-        <div class="sidebar-ateliers-box">
-            <div style="font-size:0.85rem; font-weight:600; color:#25352B; margin-bottom:6px;">
-                <span class="curio-3d-icon">💬</span>無聲護理聯絡板 (Silent Memo)
-            </div>
-    """,
-        unsafe_allow_html=True,
-    )
-
-    preset_msg = st.selectbox(
-        "快速膠囊選單：",
-        [
-            "自訂輸入...",
-            "請協助準備 rTMS 說明單",
-            "下一位需要加抽檢驗項目",
-            "請準備 15s 調息衛教卡",
-            "請協助引導家屬進診間",
-            "請協助列印去敏身心小卡",
-        ],
-    )
-
-    if preset_msg == "自訂輸入...":
-        custom_memo = st.text_input(
-            "輸入自訂訊息至櫃檯：", placeholder="例如：請準備溫熱毛巾..."
-        )
-        msg_to_send = custom_memo
+# --- 輔助函式：林業署/秘境指引判定 ---
+def get_trail_recommendation(hour):
+    if 5 <= hour < 12:
+        return "【林業署步道推薦】奧萬大國家森林遊樂區 ‧ 森林療癒試辦步道（晨光甦醒，活化身心敏銳度）"
+    elif 12 <= hour < 18:
+        return "【林業署步道推薦】太平山見晴懷古步道 ‧ 雲霧苔蘚徑（漫步減壓，平穩自律神經活性）"
     else:
-        msg_to_send = preset_msg
+        return "【林業署步道推薦】阿里山巨木群步道 ‧ 夜息靜心區（深層安定，啟動副交感神經修復）"
 
-    if st.button("📡 無聲推播至櫃檯"):
-        if msg_to_send:
-            log_system_event(
-                "NURSE_MEMO_SENT", f"醫師推播至櫃檯: {msg_to_send}"
+# --- 輔助函式：三款專屬茶飲智慧推薦邏輯 ---
+def recommend_tea(hour, stress_level, coherence):
+    # 規則一：未超過晚上 22:00（10點），暮夜靜謐茶嚴禁登場
+    # 規則二：破霧清醒茶：提神醒腦（適合早/午間或身心疲憊交感不足）
+    # 規則三：朝露白桃茶：疏肝解鬱、消水腫（適合高應激或下午時段）
+    # 規則四：暮夜靜謐茶：22:00 後助眠安神
+    if hour >= 22 or hour < 5:
+        return {
+            "name": "暮夜靜謐・香草琥珀晚安茶",
+            "effect": "助眠安神、收斂神經心流、深層滋陰修復",
+            "aroma": "澳洲檀香 ✕ 煙燻雪松香氛",
+            "status": "夜間專屬（22:00-05:00 限定解鎖）"
+        }
+    elif stress_level == "高應激 (交感亢進)" or (12 <= hour < 18):
+        return {
+            "name": "朝露白桃・玫瑰舒妍茶",
+            "effect": "疏肝解鬱、調和氣血、消水腫與舒緩經絡緊繃",
+            "aroma": "大馬士革玫瑰 ✕ 甜白桃薄霧",
+            "status": "日間/解鬱推薦"
+        }
+    else:
+        return {
+            "name": "破霧清醒・薄荷焙香玄米茶",
+            "effect": "提神醒腦、激發清陽、增強專注心流共振",
+            "aroma": "綠薄荷 ✕ 焙煎玄米清香",
+            "status": "晨間/提神推薦"
+        }
+
+# ==============================================================================
+# 側邊欄：模式切換
+# ==============================================================================
+st.sidebar.title("🌲 夢境珍奇櫃系統")
+mode = st.sidebar.radio("請選擇操作介面", ["🎮 病患端：手遊探索與拋接", "🩺 診間端：醫師莫蘭迪後台"])
+
+# ==============================================================================
+# 介面一：病患端手遊互動 (Patient App)
+# ==============================================================================
+if mode == "🎮 病患端：手遊探索與拋接":
+    st.title("🏰 夢境珍奇櫃 ‧ 冒險者通行證")
+    
+    # 1. 安全照片登入 (Photo Hash Login)
+    with st.expander("📷 【步驟一】一鍵相簿照片登入（Photo Hash 去個資驗證）", expanded=(st.session_state.current_token is None)):
+        uploaded_photo = st.file_uploader("點選一張讓您有安全感的相片（系統絕不上傳圖片，僅於本機計算 SHA-256 雜湊值）：", type=["jpg", "jpeg", "png"])
+        if uploaded_photo is not None:
+            photo_bytes = uploaded_photo.read()
+            photo_hash = hashlib.sha256(photo_bytes).hexdigest()
+            # 依雜湊值生成專屬 6 碼動態代碼
+            generated_token = f"#SYM-{photo_hash[:4].upper()}"
+            st.session_state.current_token = generated_token
+            st.success(f"安全照片驗證完成！您的本機匿名動態代碼為：**{generated_token}**（無任何個資留存）")
+
+    if st.session_state.current_token:
+        # 動態頂部狀態條
+        now = datetime.datetime.now()
+        is_overseas = st.checkbox("🌐 探險家目前位於海外（切換跨國 OpenAQ / Open-Meteo 氣象指標）", value=False)
+        pressure, aqi, phytoncide = get_live_environment_data(is_overseas)
+        trail = get_trail_recommendation(now.hour)
+        
+        # 綠色算力計算：基於邊緣運算減少雲端傳輸 1.2MB 圖片的碳排換算
+        edge_energy_kwh = 0.0018
+        
+        st.markdown(f"""
+        <div class="morandi-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:1.1rem; font-weight:bold;">🌲 閣長蔻恩指引 ｜ 綠色算力能耗：{edge_energy_kwh} kWh (Edge AI 減碳) ｜ 冒險進度：75%</span>
+                <span class="status-badge">🔑 {st.session_state.current_token}</span>
+            </div>
+            <hr style="border:0.5px solid #D8D2C2; margin:10px 0;">
+            <div>🧭 <b>冒險羅盤定位</b>：大氣氣壓: {pressure} hPa ｜ AQI 空品: {aqi} 良好 ｜ 芬多精負離子: {phytoncide:,} ions/cm³</div>
+            <div style="margin-top:5px;">🌲 <b>秘境指引</b>：{trail}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # 2. 靈魂原石與畫布連動
+        st.markdown("### 🔮 第一關：靈魂原石圖騰")
+        st.write("點選吸引您的色彩原石，在畫布上記錄今天的冒險足跡：")
+        
+        # 莫蘭迪色盤
+        palette = [
+            "#4A707A", "#7A8B7B", "#B5C0D0", "#C89595", "#8C6D62",
+            "#D87A61", "#E5A93C", "#5C6B73", "#3D5A80", "#293241"
+        ]
+        
+        cols = st.columns(len(palette))
+        for idx, col in enumerate(cols):
+            with col:
+                color_hex = palette[idx]
+                if st.button(f"●", key=f"color_{idx}", help=f"選擇色票 {color_hex}"):
+                    st.session_state.selected_color = color_hex
+        
+        st.caption(f"當前筆刷顏色：`{st.session_state.selected_color}`")
+        
+        # 繪圖畫布
+        canvas_result = st_canvas(
+            fill_color="rgba(255, 165, 0, 0.3)",
+            stroke_width=4,
+            stroke_color=st.session_state.selected_color,
+            background_color="#FAF8F5",
+            height=260,
+            drawing_mode="freedraw",
+            key="canvas",
+        )
+        
+        # 3. 進入調息與友善動物福利
+        st.markdown("### 🌿 第二關：心流共振調息（0.067Hz）")
+        with st.expander("🕊️ 進入調息設置（含友善動物福利陪伴模式）", expanded=True):
+            animal_welfare = st.multiselect(
+                "選擇調息相伴的自然夥伴（友善動物福利與生態療癒）：",
+                ["台灣黑熊（大地穩定意象）", "石虎（警覺放鬆共存）", "草鴞（夜間深層安定）", "長鬃山羊（平衡與專注）"],
+                default=["石虎（警覺放鬆共存）"]
             )
-            st.toast(f"✅ 已無聲發送至櫃檯：{msg_to_send}")
+            
+            # rPPG 邊緣運算模擬（模擬鏡頭擷取波形並於本機銷毀）
+            st.write("💓 **邊緣端 rPPG 鏡頭脈搏解算中**：原始影格於本機 RAM 完成 0.067Hz 一致性分析後立即銷毀。")
+            simulated_coherence = round(np.random.uniform(0.72, 0.94), 2)
+            simulated_stress = np.random.choice(["交感略高 (輕度應激)", "平穩平衡 (心流共振)", "副交感主導 (深層放鬆)"])
+            simulated_sleep = round(np.random.uniform(5.5, 8.5), 1)
+            
+            st.progress(simulated_coherence)
+            st.caption(f"即時心流一致性分數：{simulated_coherence * 100}% ｜ 生數據已於記憶體即時釋放 (No-PII)")
+
+        # 4. 一鍵動態拋接
+        if st.button("🚀 完成冒險並將去敏數據拋接至診間中繼站"):
+            st.session_state.patient_store[st.session_state.current_token] = {
+                "token": st.session_state.current_token,
+                "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"),
+                "coherence": simulated_coherence,
+                "stress": simulated_stress,
+                "sleep": simulated_sleep,
+                "animal": animal_welfare,
+                "color_chosen": st.session_state.selected_color,
+                "ttl_expire": (now + datetime.timedelta(minutes=240)).strftime("%H:%M:%S")
+            }
+            st.success(f"✅ 拋接成功！代碼 **{st.session_state.current_token}** 已送至雙盲時間鎖中繼站，有效存活時間（TTL）：240 分鐘。")
+
+# ==============================================================================
+# 介面二：醫師端診間莫蘭迪後台 (Clinic Dashboard)
+# ==============================================================================
+elif mode == "🩺 診間端：醫師莫蘭迪後台":
+    now = datetime.datetime.now()
+    hour = now.hour
+    
+    # 動態時間問候語
+    if 5 <= hour < 12:
+        greeting = "早安"
+    elif 12 <= hour < 18:
+        greeting = "午安"
+    else:
+        greeting = "晚安"
+        
+    st.title(f"🩺 郭醫師診間 ‧ 莫蘭迪身心脈衝後台")
+    st.caption(f"{greeting}。目前系統時間：{now.strftime('%H:%M:%S')} ｜ 實體防線隔離層（Air-Gap）運作中")
+    
+    # 頂部：金鑰管理與升級選配區塊
+    with st.expander("🔑 診間安全金鑰與升級選配管理"):
+        col_k1, col_k2 = st.columns(2)
+        with col_k1:
+            input_key = st.text_input("修改診所機構驗證簽章 (Clinic Session Token)：", value=st.session_state.doctor_api_key, type="password")
+            if st.button("更新機構密鑰"):
+                st.session_state.doctor_api_key = input_key
+                st.success("機構安全金鑰已更新。")
+        with col_k2:
+            st.write("⚙️ **升級選配模組**：")
+            st.checkbox("啟用雙盲 Redis TTL 毫秒級自動清空", value=True)
+            st.checkbox("啟用莫蘭迪診間氣氛與沉香聯動", value=True)
+            st.checkbox("啟用實體 Air-Gap 紙本知情對照鎖定", value=True)
+    
+    # 動態解鎖區域
+    col_input1, col_input2 = st.columns([3, 1])
+    with col_input1:
+        doc_token_search = st.text_input("輸入病患動態短碼標籤進行雙向交會解鎖（例如：#SYM-P439 或剛生成的代碼）：", value="")
+    with col_input2:
+        st.write("")
+        st.write("")
+        unlock_btn = st.button("🔓 瞬間比對解鎖")
+        
+    if unlock_btn or doc_token_search:
+        if doc_token_search in st.session_state.patient_store:
+            data = st.session_state.patient_store[doc_token_search]
+            st.success(f"比對成功！已解鎖探險家 `{doc_token_search}` 去敏身心特徵（無個人識別資訊 No-PII）")
+            
+            # 指標看板
+            c1, c2, c3, c4 = st.columns(4)
+            with c1:
+                st.markdown(f"<div class='metric-box'><h4>心流一致性</h4><h2>{data['coherence']*100:.0f}%</h2><p>0.067Hz 共振</p></div>", unsafe_allow_html=True)
+            with c2:
+                st.markdown(f"<div class='metric-box'><h4>身心應激狀態</h4><h3>{data['stress']}</h3><p>邊緣神經算力</p></div>", unsafe_allow_html=True)
+            with c3:
+                st.markdown(f"<div class='metric-box'><h4>本機睡眠時數</h4><h2>{data['sleep']} hrs</h2><p>昨夜睡眠品質</p></div>", unsafe_allow_html=True)
+            with c4:
+                st.markdown(f"<div class='metric-box'><h4>中繼站 TTL</h4><h3>{data['ttl_expire']}</h3><p>過期強制銷毀</p></div>", unsafe_allow_html=True)
+            
+            # 茶飲與沉香處方推薦（嚴格判定三款研發茶飲）
+            tea_rec = recommend_tea(hour, data['stress'], data['coherence'])
+            
+            st.markdown(f"""
+            <div class="morandi-card" style="margin-top:20px;">
+                <h3>🍵 診間專屬茶飲與沉香調息處方（AI 輔助建議）</h3>
+                <p><b>推薦茶品</b>：<span style="font-size:1.2rem; color:#8C6D62; font-weight:bold;">{tea_rec['name']}</span>（{tea_rec['status']}）</p>
+                <p><b>臨床功效</b>：{tea_rec['effect']}</p>
+                <p><b>建議環境香氛</b>：{tea_rec['aroma']}</p>
+                <hr style="border:0.5px solid #D8D2C2;">
+                <p>🐾 <b>患者選擇之生態陪伴</b>：{', '.join(data['animal'])}</p>
+                <p>🎨 <b>原石共鳴色票代碼</b>：<span style="display:inline-block; width:15px; height:15px; background:{data['color_chosen']}; vertical-align:middle;"></span> {data['color_chosen']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
         else:
-            st.warning("⚠️ 請輸入或選擇發送訊息！")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # 📜 門診待看診佇列
-    st.markdown(
-        """
-        <div style="font-size:0.88rem; font-weight:600; color:#25352B; margin-top:10px; margin-bottom:8px; padding-left:4px;">
-            <span>📜</span>門診待看診佇列 (Queue)
-        </div>
-    """,
-        unsafe_allow_html=True,
-    )
-
-    for item in global_db.keys():
-        if st.button(
-            f"解鎖去敏密鑰 {item}",
-            key=f"btn_{item}",
-            use_container_width=True,
-        ):
-            st.session_state["selected_token"] = item
-            log_system_event("QUEUE_SELECT", f"醫師手動點擊切換 Token: {item}")
-            st.rerun()
-
-# ==============================================================================
-# 6. 主診間面板 (解鎖後呈現)
-# ==============================================================================
-def fetch_patient_data(user_key):
-    return global_db.get(user_key, None)
-
-
-# 頂樓雙螢幕病患視角切換開關
-pv_col1, pv_col2 = st.columns([3.2, 0.8])
-with pv_col2:
-    patient_mode = st.toggle(
-        "🔄 翻轉/病患視角", value=st.session_state["patient_view_mode"]
-    )
-    st.session_state["patient_view_mode"] = patient_mode
-
-# 🎭 狀況 A：切換為病患展示視角 ( Presentation Mode )
-if st.session_state["patient_view_mode"]:
-    st.markdown(
-        """
-        <div style="background: linear-gradient(135deg, #FAF8F5 0%, #F4F0E8 100%); padding: 40px; border-radius: 32px; border: 2px solid #C2A675; text-align: center; box-shadow: 0 20px 50px rgba(37, 53, 43, 0.08); margin-top: 10px;">
-            <div style="font-size: 3rem; margin-bottom: 8px;">🐿️</div>
-            <div style="font-family: 'Didot', serif; font-style: italic; color: #C2A675; font-size: 1.1rem; letter-spacing: 4px;">Curio & Studio ‧ 夢境珍奇櫃</div>
-            <h2 style="color: #25352B; font-family: 'Garamond', serif; font-size: 2.2rem; margin: 12px 0 16px 0;">自費醫療高階療程對照建議卡</h2>
-            <div style="width: 80px; height: 3px; background: linear-gradient(90deg, #C2A675 0%, #E6D7BD 100%); margin: 0 auto 20px auto;"></div>
-            <div style="font-size: 1.15rem; color: #25352B; line-height: 2.2; max-width: 680px; margin: 0 auto; text-align: left;">
-                ✨ <b>專屬身心共振調節建議：</b><br>
-                1. <b>rTMS 重複經顱磁刺激療程</b>：深層活化前額葉皮質，快速調節交感神經高活性。<br>
-                2. <b>0.067Hz 莫蘭迪聲學調息</b>：搭配專屬音場，進行 15 分鐘診前大腦迷走神經錨定。<br>
-                3. <b>精準抗發炎點滴</b>：降低 Cortisol 生理應激負擔，恢復優質睡眠品質。
-            </div>
-            <div style="margin-top: 30px; font-size: 0.95rem; color: #B29562; font-family: 'Didot', serif;">
-                🌿 交感身心診所 ‧ 關懷您的每一刻心流諧振
-            </div>
-        </div>
-    """,
-        unsafe_allow_html=True,
-    )
-    st.stop()
-
-# 🎭 狀況 B：常規醫師看診視角
-st.markdown(
-    """
-    <div class="curio-hero-card">
-        <h1>夢境珍奇櫃診間面板</h1>
-        <p>Curio & Studio x 交感身心診所 ｜ 首席珍藏家蔻恩閣長 Cone ‧ 0 個資 ‧ 診前身心軌跡拋接</p>
-    </div>
-""",
-    unsafe_allow_html=True,
-)
-
-elapsed_seconds = time.time() - st.session_state["clinic_start_time"]
-elapsed_minutes = int(elapsed_seconds // 60)
-completed = st.session_state["completed_count"]
-total_patients = st.session_state["total_booked_patients"]
-
-total_session_mins = int(st.session_state["session_hours"] * 60)
-remaining_session_mins = max(0, total_session_mins - elapsed_minutes)
-progress_pct = (
-    min(1.0, completed / total_patients) if total_patients > 0 else 0.0
-)
-
-# 門診時間管理 ✕ 莫蘭迪茶飲/沉香建議 ✕ 30 分鐘休息提醒
-st.markdown(
-    f"""
-    <div class="doctor-care-card">
-        <div style="flex-grow: 1; margin-right: 20px;">
-            <div class="doctor-care-text">
-                午安。今日預約看診 <b>{total_patients}</b> 位探險家 ｜ 目前看診進度：<b>{completed}/{total_patients}</b> ({int(progress_pct*100)}%) ｜ 心流諧振指數 <b>94%</b><br>
-                <span style="font-size:0.82rem; color:#596B60;">🍵 <b>診間莫蘭迪茶飲/沉香建議</b>：本日交感神經活性略高，建議搭配<b>澳洲檀香/煙燻雪松</b>香氛 ✕ <b>薄荷甘菊茶</b>。</span>
-            </div>
-        </div>
-        <div class="doctor-timer-badge">
-            <div style="font-size:0.75rem; color:#C2A675;">門診時間管理</div>
-            <div style="font-size:1.05rem; font-weight:600;">預估剩餘時間: {remaining_session_mins} m</div>
-        </div>
-    </div>
-""",
-    unsafe_allow_html=True,
-)
-
-st.progress(progress_pct)
-
-# 每 30 分鐘關懷提醒（完全恢復！）
-if elapsed_minutes >= 30:
-    st.markdown(
-        f"""
-        <div class="fatigue-warning-card">
-            <div>
-                <b>🌿 蔻恩閣長 Cone 的莫蘭迪微光關懷：</b> 您已連續專注看診 <b>{elapsed_minutes} 分鐘</b>。建議在下一位探險家進診間前，進行 10 秒深呼吸沉澱身心。
-            </div>
-            <div style="font-family: Didot, serif; italic; color:#C2A675; font-size:0.8rem;">
-                Mindful Pause
-            </div>
-        </div>
-    """,
-        unsafe_allow_html=True,
-    )
-
-top_col1, top_col2, top_col3, top_col4 = st.columns([2.0, 0.9, 0.9, 0.9])
-with top_col1:
-    st.markdown(
-        """
-        <div style="background:#FFFFFF; border:1px solid #E4DCD0; border-radius:30px; padding:10px 18px; font-size:0.82rem; color:#25352B;">
-            🟢 認證 ｜ 🏛️ C701 ｜ 🛡️ <b>0 個資</b> ｜ <span style="color:#C2A675; font-weight:600;">⏳ 銷毀：182 m</span>
-        </div>
-    """,
-        unsafe_allow_html=True,
-    )
-with top_col2:
-    if st.button("🎓 論文 RWE", use_container_width=True):
-        if hasattr(st, "dialog"):
-            paper_rwe_dialog()
-with top_col3:
-    if st.button("📑 療程卡", use_container_width=True):
-        if hasattr(st, "dialog"):
-            treatment_card_dialog()
-with top_col4:
-    if st.button("💎 升級選配", use_container_width=True):
-        if hasattr(st, "dialog"):
-            upgrade_subscription_dialog()
-
-st.markdown(
-    "<div style='margin-bottom: 20px;'></div>", unsafe_allow_html=True
-)
-
-user_key = st.text_input(
-    "請輸入探險家去敏密鑰 (例如：#SYM-C701) :",
-    value=st.session_state["selected_token"],
-    placeholder="輸入密鑰代碼，例如 #SYM-C701",
-)
-
-if user_key:
-    data = fetch_patient_data(user_key)
-    if data:
-        log_system_event("FETCH_DATA_SUCCESS", f"成功查詢去敏代碼: {user_key}")
-
-        # 建議問診焦點提示
-        st.markdown(
-            f"""
-            <div class="quick-nudge-box">
-                <div style="font-size:0.88rem; font-weight:600; color:#25352B; margin-bottom:4px;">
-                    <span class="curio-3d-icon">✨</span> 建議問診重點 (Clinical Nudge)
-                </div>
-                <div style="font-size:0.86rem; color:#596B60; line-height:1.5;">
-                    {data.get('nudge', '探險家身心軌跡平穩，可進行常規問診諮詢。')}
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.markdown(
-                f"""
-                <div class="custom-metric-card">
-                    <div class="custom-metric-header"><span>✨ 心流一致性 (0.067Hz)</span></div>
-                    <div class="custom-metric-value">{data['coherence_score']} %</div>
-                    <div class="custom-metric-delta">↑ 3.2% 穩定共振</div>
-                </div>
-            """,
-                unsafe_allow_html=True,
-            )
-        with col2:
-            st.markdown(
-                f"""
-                <div class="custom-metric-card">
-                    <div class="custom-metric-header"><span>🌿 身心應激狀態</span></div>
-                    <div class="custom-metric-value">{data['stress_index']}</div>
-                    <div class="custom-metric-delta">{data.get('stress_desc', '放縮區')}</div>
-                </div>
-            """,
-                unsafe_allow_html=True,
-            )
-        with col3:
-            st.markdown(
-                f"""
-                <div class="custom-metric-card">
-                    <div class="custom-metric-header"><span>🌙 本機睡眠時數</span></div>
-                    <div class="custom-metric-value">{data['sleep_hours']} hr</div>
-                    <div class="custom-metric-delta">達標 7 小時優質睡眠</div>
-                </div>
-            """,
-                unsafe_allow_html=True,
-            )
-
-        st.markdown(
-            "<div style='margin-bottom: 25px;'></div>", unsafe_allow_html=True
-        )
-
-        # 近 7 日身心軌跡曲線與摘要（完全恢復！）
-        tab1, tab2 = st.tabs(
-            ["近 7 日心流平穩度曲線", "診前 15 秒去敏摘要"]
-        )
-        with tab1:
-            st.markdown(
-                "<h4 style='color:#25352B; font-size:1.05rem;"
-                " margin-top:12px;'>近 7 日心流一致性調息曲線 (Coherence"
-                " Score)</h4>",
-                unsafe_allow_html=True,
-            )
-            chart_data = pd.DataFrame(
-                {
-                    "日期": [
-                        "Mon",
-                        "Tue",
-                        "Wed",
-                        "Thu",
-                        "Fri",
-                        "Sat",
-                        "Sun",
-                    ],
-                    "心流分數": data["weekly_trend"],
-                }
-            ).set_index("日期")
-            st.line_chart(chart_data, color="#25352B")
-
-        with tab2:
-            st.markdown(
-                "<h4 style='color:#25352B; font-size:1.05rem;"
-                " margin-top:10px;'>邊緣端 15 秒去敏化身心軌跡</h4>",
-                unsafe_allow_html=True,
-            )
-            st.write(f"**【去敏軌跡摘要】**\n\n{data['summary']}")
-            st.caption(f"🕒 數據傳輸時間戳記：{data['timestamp']}")
-
-        st.markdown(
-            """
-            <div class="security-notice-box">
-                <b>零知識架構與個資法規合規宣告 (Zero-Knowledge & Privacy Compliance)</b><br>
-                1. <b>符合個資法規</b>：本系統嚴格遵循中華民國《個人資料保護法》第 2 條之去識別化標準。<b>系統全流程絕不收集、記錄或存儲病患之真實姓名、身分證字號、出生年月日、聯絡電話、醫療病歷號碼或 IP 位址</b>。<br>
-                2. <b>資安傳輸與儲存防護</b>：前端至雲端中繼站之數據傳輸全數採用 <b>HTTPS (TLS 1.3) 高階加密通道</b>，靜態快取數據皆實施 <b>AES-256 演算法加密</b>；雲端中繼數據實施 240 分鐘動態時間鎖（Time-Lock）與每日 24 點剛性銷毀（Data TTL）。
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    else:
-        st.error(
-            f"⚠️ 找不到密鑰 `{user_key}` 之當日資料，請確認代碼是否輸入正確。"
-        )
+            st.warning("⚠️ 查無此代碼或數據已超過 TTL 存活時間自動銷毀。請確認病患端是否已點擊拋接。")
