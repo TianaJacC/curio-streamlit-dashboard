@@ -1,3 +1,4 @@
+import csv
 import datetime
 import hashlib
 import hmac
@@ -6,19 +7,6 @@ import random
 import time
 import pandas as pd
 import streamlit as st
-
-# ------------------------------------------------------------------------------
-# 醫師端 頂部工具列或側邊欄回饋按鈕
-# ------------------------------------------------------------------------------
-# 方案：放入頂樓導航列 top_col6
-top_col1, top_col2, top_col3, top_col4, top_col5, top_col6 = st.columns(
-    [1.8, 0.8, 0.8, 0.8, 0.8, 0.8]
-)
-# ... 前面 top_col1 ~ top_col5 維持不變 ...
-with top_col6:
-    if st.button("💬 回饋", use_container_width=True):
-        if hasattr(st, "dialog"):
-            feedback_dialog("臨床醫師", st.session_state["selected_token"])
 
 # ==============================================================================
 # 0. 雲端系統 Log 軌跡自動備份機制 (無個資連線 Log 備份保存 5 年)
@@ -42,9 +30,39 @@ def log_system_event(event_type, details):
 
 log_system_event("SESSION_INIT", "Curio & Studio 夢境珍奇櫃診間面板載入")
 
+# ==============================================================================
+# 1. 匿名問題回饋機制 (No-PII，前置定義確保絕不發生 NameError)
+# ==============================================================================
+FEEDBACK_LOG_FILE = os.path.join(LOG_DIR, "user_feedback_log.csv")
+
+
+def init_feedback_storage():
+    if not os.path.exists(FEEDBACK_LOG_FILE):
+        with open(FEEDBACK_LOG_FILE, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                "Timestamp",
+                "UserRole",
+                "Token",
+                "Category",
+                "FeedbackContent",
+            ])
+
+
+init_feedback_storage()
+
+
+def save_anonymous_feedback(
+    role: str, token: str, category: str, content: str
+):
+    timestamp_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(FEEDBACK_LOG_FILE, "a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow([timestamp_str, role, token, category, content.strip()])
+
 
 # ==============================================================================
-# 1. 核心安全金鑰生成演算法 (RFC 4226 微型化 ✕ No-PII)
+# 2. 核心安全金鑰生成演算法 (RFC 4226 微型化 ✕ No-PII)
 # ==============================================================================
 def generate_secure_token(seed_bytes: bytes = None) -> str:
     """開局即時生成密碼學安全短碼。若無相片則使用奈秒時間熵。"""
@@ -56,7 +74,7 @@ def generate_secure_token(seed_bytes: bytes = None) -> str:
 
 
 # ==============================================================================
-# 2. 50 款生活處方資料庫 ✕ 現場 3 款奉茶母體分類映射
+# 3. 50 款生活處方資料庫 ✕ 現場 3 款奉茶母體分類映射
 # ==============================================================================
 PRESCRIPTION_CATEGORIES = {
     0: {
@@ -149,7 +167,7 @@ def resolve_dynamic_prescription(
 
 
 # ==============================================================================
-# 3. 全局配置與跨裝置共享資料庫
+# 4. 全局配置與跨裝置共享資料庫
 # ==============================================================================
 st.set_page_config(
     page_title="夢境珍奇櫃診間面板 ‧ Curio & Studio",
@@ -163,7 +181,7 @@ st.set_page_config(
 def get_global_database():
     return {
         "#SYM-C701": {
-            "status": "已完成診前 15s 共振調息",
+            "status": "已完成診前 19s 共振調息",
             "coherence_score": 92.5,
             "stress_index": "Morandi Soft Blue",
             "stress_desc": "莫蘭迪藍放縮區 ‧ 平穩",
@@ -176,14 +194,14 @@ def get_global_database():
                 "探險家近 3 天夜間無應激爆發，心流穩定（92.5%）。建議問診重點：維持優質睡眠時數。"
             ),
             "summary": (
-                "【去敏身心軌跡摘要】個案於看診前 15 秒於候診區完成 0.067 Hz"
+                "【去敏身心軌跡摘要】個案於看診前在候診區完成 0.067 Hz"
                 " 心流共振調息。連續 7"
                 " 日數據顯示夜間無應激爆發，心流一致性維持於 90%"
                 " 以上高諧振區間。"
             ),
         },
         "#SYM-A302": {
-            "status": "已完成診前 15s 共振調息",
+            "status": "已完成診前 19s 共振調息",
             "coherence_score": 88.0,
             "stress_index": "Morandi Sage",
             "stress_desc": "莫蘭迪綠區域 ‧ 輕度交感活性",
@@ -280,7 +298,7 @@ PLAYLIST = [
 ]
 
 # ==============================================================================
-# 4. Bespoke French High-Jewelry & 剛性 CSS
+# 5. Bespoke French High-Jewelry & 剛性 CSS
 # ==============================================================================
 st.markdown(
     """
@@ -517,9 +535,37 @@ st.markdown(
 )
 
 # ==============================================================================
-# 5. 診所專屬 13 大高階選購模組 ✕ 一鍵論文 RWE 實裝 Modal 彈窗
+# 6. 診所專屬 13 大高階選購模組 ✕ 一鍵論文 RWE 實裝 Modal 彈窗 ✕ 匿名回饋
 # ==============================================================================
 if hasattr(st, "dialog"):
+
+    @st.dialog("💬 匿名問題與使用體驗回饋")
+    def feedback_dialog(user_role: str, current_token: str):
+        st.markdown(
+            f"""
+            <div style="font-size:0.86rem; color:#596B60; margin-bottom:12px; line-height:1.6;">
+                本回饋機制貫徹 <b>No-PII 零個資規範</b>，絕不上傳個人隱私與帳號資料。<br>
+                目前連線代碼：<code style="color:#C2A675; font-family:monospace;">{current_token}</code> ｜ 身分：<b>{user_role}</b>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        category = st.radio(
+            "請選擇遇到的問題或建議類型：",
+            options=["操作不順暢", "鏡頭感應不良", "視覺體驗建議"],
+            horizontal=True,
+        )
+        feedback_text = st.text_area(
+            "詳細說明（選填）：",
+            placeholder="請描述您遇到的狀況，感謝您的寶貴回饋！",
+            height=100,
+        )
+        if st.button("🚀 匿名送出回饋", use_container_width=True):
+            save_anonymous_feedback(
+                user_role, current_token, category, feedback_text
+            )
+            st.success("✅ 回饋已安全送達！系統將作為演算法優化依據。")
+            st.rerun()
 
     @st.dialog(
         "🎓 自費身心科 ── IRBE-IRB 快速審查與 RWE 論文研究數據一鍵生成器",
@@ -749,7 +795,7 @@ if hasattr(st, "dialog"):
 
 
 # ==============================================================================
-# 6. 門診安全驗證登入頁
+# 7. 門診安全驗證登入頁
 # ==============================================================================
 if not st.session_state["authenticated"]:
     st.markdown(
@@ -826,7 +872,7 @@ if not st.session_state["authenticated"]:
 
 
 # ==============================================================================
-# 7. 側邊欄：郭醫師指定 YouTube 原生嵌入 ✕ 備用音效全功能選播 ✕ 動態 QR Code
+# 8. 側邊欄：郭醫師指定 YouTube 原生嵌入 ✕ 備用音效全功能選播 ✕ 動態 QR Code
 # ==============================================================================
 with st.sidebar:
     st.markdown(
@@ -894,7 +940,7 @@ with st.sidebar:
         # 50 款動態分流與奉茶映射
         p_name, m_stock = resolve_dynamic_prescription(token_a, score_a)
         global_db[token_a] = {
-            "status": "已完成診前 15s 共振調息",
+            "status": "已完成診前 19s 共振調息",
             "coherence_score": float(score_a),
             "stress_index": "Morandi Soft Blue",
             "stress_desc": "莫蘭迪藍放縮區 ‧ 平穩",
@@ -1034,7 +1080,7 @@ with st.sidebar:
             "自訂輸入...",
             "請協助準備 rTMS 說明單",
             "下一位需要加抽檢驗項目",
-            "請準備 15s 調息衛教卡",
+            "請準備 19s 調息衛教卡",
             "請協助引導家屬進診間",
             "請協助補充電熱水與奉茶杯",
             "請協助列印去敏身心小卡",
@@ -1082,7 +1128,7 @@ with st.sidebar:
 
 
 # ==============================================================================
-# 8. 主面板邏輯 (含雙螢幕病患視角切換 ✕ 50款生活處方對照 ✕ 一鍵論文 RWE)
+# 9. 主面板邏輯 (含雙螢幕病患視角切換 ✕ 50款生活處方對照 ✕ 一鍵論文 RWE ✕ 匿名回饋)
 # ==============================================================================
 def fetch_patient_data(user_key):
     return global_db.get(user_key, None)
@@ -1125,7 +1171,7 @@ st.markdown(
     """
     <div class="curio-hero-card">
         <h1>夢境珍奇櫃診間面板</h1>
-        <p>Curio & Studio x 交感身心診所 ｜ 首席珍藏家蔻恩閣長 Cone ‧ 0 個資 ‧ 診前 15 秒身心軌跡拋接</p>
+        <p>Curio & Studio x 交感身心診所 ｜ 首席珍藏家蔻恩閣長 Cone ‧ 0 個資 ‧ 診前身心軌跡拋接</p>
     </div>
 """,
     unsafe_allow_html=True,
@@ -1175,9 +1221,9 @@ if elapsed_minutes >= 45:
         unsafe_allow_html=True,
     )
 
-# 頂樓認證欄 + 240 分鐘剛性銷毀倒數 + 療程評估卡 + 一鍵論文 RWE
-top_col1, top_col2, top_col3, top_col4, top_col5 = st.columns(
-    [2.0, 0.8, 0.8, 0.8, 0.8]
+# 頂樓 6 欄工具列（認證欄 + 論文 RWE + 療程卡 + 升級選配 + 金鑰設定 + 💬 回饋）
+top_col1, top_col2, top_col3, top_col4, top_col5, top_col6 = st.columns(
+    [1.7, 0.8, 0.8, 0.8, 0.8, 0.8]
 )
 with top_col1:
     st.markdown(
@@ -1204,6 +1250,10 @@ with top_col5:
     if st.button("⚙️ 金鑰", use_container_width=True):
         if hasattr(st, "dialog"):
             change_password_dialog()
+with top_col6:
+    if st.button("💬 回饋", use_container_width=True):
+        if hasattr(st, "dialog"):
+            feedback_dialog("臨床醫師", st.session_state["selected_token"])
 
 st.markdown(
     "<div style='margin-bottom: 22px;'></div>", unsafe_allow_html=True
@@ -1294,7 +1344,7 @@ if user_key:
         )
 
         tab1, tab2, tab3 = st.tabs(
-            ["近 7 日心流平穩度曲線", "診前 15 秒去敏摘要", "50 款生活處方配對庫"]
+            ["近 7 日心流平穩度曲線", "診前 19 秒去敏摘要", "50 款生活處方配對庫"]
         )
         with tab1:
             st.markdown(
@@ -1322,7 +1372,7 @@ if user_key:
         with tab2:
             st.markdown(
                 "<h4 style='color:#25352B; font-size:1.05rem;"
-                " margin-top:10px;'>邊緣端 15 秒去敏化身心軌跡</h4>",
+                " margin-top:10px;'>邊緣端 19 秒去敏化身心軌跡</h4>",
                 unsafe_allow_html=True,
             )
             st.write(f"**【去敏軌跡摘要】**\n\n{data['summary']}")
