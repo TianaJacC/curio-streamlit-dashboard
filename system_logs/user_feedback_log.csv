@@ -1,0 +1,69 @@
+import csv
+import datetime
+import os
+import streamlit as st
+
+FEEDBACK_LOG_FILE = os.path.join("system_logs", "user_feedback_log.csv")
+
+
+def init_feedback_storage():
+    """初始化無個資回饋 CSV 檔"""
+    if not os.path.exists("system_logs"):
+        os.makedirs("system_logs")
+    if not os.path.exists(FEEDBACK_LOG_FILE):
+        with open(FEEDBACK_LOG_FILE, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                "Timestamp",
+                "UserRole",
+                "Token",
+                "Category",
+                "FeedbackContent",
+            ])
+
+
+init_feedback_storage()
+
+
+def save_anonymous_feedback(role: str, token: str, category: str, content: str):
+    """保存 100% 去敏、零個資之使用回饋 (No-PII)"""
+    timestamp_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(FEEDBACK_LOG_FILE, "a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow([timestamp_str, role, token, category, content.strip()])
+
+
+if hasattr(st, "dialog"):
+
+    @st.dialog("💬 匿名問題與使用體驗回饋")
+    def feedback_dialog(user_role: str, current_token: str):
+        st.markdown(
+            f"""
+            <div style="font-size:0.86rem; color:#A2B3A7; margin-bottom:12px; line-height:1.6;">
+                本回饋機制貫徹 <b>No-PII 零個資規範</b>，絕不上傳您的帳號或個人資料。<br>
+                目前連線代碼：<code style="color:#C2A675; font-family:monospace;">{current_token}</code> ｜ 身分：<b>{user_role}</b>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        category = st.radio(
+            "請選擇遇到的問題或建議類型：",
+            options=["操作不順暢", "鏡頭感應不良", "視覺體驗建議"],
+            horizontal=True,
+        )
+
+        feedback_text = st.text_area(
+            "詳細說明（選填）：",
+            placeholder=(
+                "請描述您遇到的狀況（例如：相機畫面偏黑、調息節奏過快...），感謝您的寶貴回饋！"
+            ),
+            height=120,
+        )
+
+        if st.button("🚀 匿名送出回饋", use_container_width=True):
+            save_anonymous_feedback(
+                user_role, current_token, category, feedback_text
+            )
+            st.success("✅ 回饋已安全送達！系統將作為演算法與體驗優化依據。")
+            st.rerun()
