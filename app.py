@@ -1131,6 +1131,17 @@ with st.sidebar:
 # 9. 主面板邏輯 (含雙螢幕病患視角切換 ✕ 50款生活處方對照 ✕ 一鍵論文 RWE ✕ 匿名回饋)
 # ==============================================================================
 def fetch_patient_data(user_key):
+    # 優先從跨進程共享檔案讀取病患剛剛拋接的資料
+    shared_file = os.path.join("system_logs", "active_sessions.json")
+    if os.path.exists(shared_file):
+        try:
+            with open(shared_file, "r", encoding="utf-8") as f:
+                db = json.load(f)
+                if user_key in db:
+                    return db[user_key]
+        except Exception:
+            pass
+    # 若檔案沒有，則回退至預設全域字典
     return global_db.get(user_key, None)
 
 
