@@ -1,0 +1,29 @@
+name: Daily Weather Silent Nudge
+
+on:
+  schedule:
+    # 每天 UTC 12:30 執行 (等於台灣時間晚上 20:30)
+    - cron: '30 12 * * *'
+  workflow_dispatch: # 允許在 GitHub 介面上手動點按測試執行
+
+jobs:
+  check-weather:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Run weather nudge script
+        env:
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+        run: |
+          python weather_nudge.py
