@@ -11,6 +11,34 @@ import pandas as pd
 from scipy.signal import butter, filtfilt, find_peaks
 import streamlit as st
 
+# 讀取 URL 參數
+query_params = st.query_params
+is_recovery_mode = query_params.get("mode", "") == "recovery"
+
+if is_recovery_mode:
+    st.markdown("""
+        <div class="french-oat-card">
+            <h3>🔑 30秒一鍵金鑰救援 (Key-Stitching)</h3>
+            <p>請重新選取您剛才選過的同一張相片，系統將在 0.1 秒內在手機端重新計算密碼學金鑰，無痕還原您的今日處方！</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    rescue_pic = st.file_uploader("請選擇同一張照片", type=["jpg", "png", "jpeg"], key="rescue_uploader")
+    if rescue_pic:
+        recovered_token = generate_secure_token(rescue_pic.getvalue())
+        # 自共享資料庫檢索剛才的紀錄
+        if recovered_token in global_db:
+            rec = global_db[recovered_token]
+            st.success(f"🎉 成功尋回金鑰代碼：`{recovered_token}`")
+            st.markdown(f"""
+                <b>今日配對生活處方：</b> {rec['prescription_50']}<br>
+                <b>現場吧台奉茶：</b> <span style="color:#C2A675; font-weight:bold;">{rec['mapped_drink']}</span><br>
+                <b>心流平穩分數：</b> {rec['coherence_score']}%
+            """, unsafe_allow_html=True)
+        else:
+            st.warning(f"🔑 計算出代碼 `{recovered_token}`，但今日尚未有此代碼的拋接紀錄，請確認是否為同一張照片。")
+    st.stop()
+
 # ==============================================================================
 # 0. 頁面配置
 # ==============================================================================
