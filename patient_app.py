@@ -34,7 +34,7 @@ FEEDBACK_FILE = os.path.join(LOG_DIR, "user_feedback_log.csv")
 RESERVE_FILE = os.path.join(LOG_DIR, "public_pilot_reservations.csv")
 
 # ==============================================================================
-# 1. 跨進程持久化存取函式 (確保醫師端 100% 讀得到)
+# 1. 跨進程持久化存取函式 (打通病人端與醫師端)
 # ==============================================================================
 def save_to_shared_storage(token, record_data):
     db = {}
@@ -75,9 +75,8 @@ def read_from_shared_storage(token):
     return None
 
 # ==============================================================================
-# 2. 氣象與環境即時資料串接 (即時動態 Open-Meteo API)
+# 2. 全球/全台動態氣象連線函式 (Open-Meteo API)
 # ==============================================================================
-# 核心動態氣象請求函式 (支援全球任意經緯度)
 @st.cache_data(ttl=300)
 def fetch_dynamic_weather(lat: float, lon: float):
     try:
@@ -145,11 +144,9 @@ if "token_locked" not in st.session_state:
     st.session_state["token_locked"] = False
 if "app_step" not in st.session_state:
     st.session_state["app_step"] = "invite"
-if "is_overseas" not in st.session_state:
-    st.session_state["is_overseas"] = False
 
 # ==============================================================================
-# 5. 心理學實證原石模型 (Lüscher Color Diagnostics 投射指針)
+# 5. 心理學原石模型 (Lüscher Color Diagnostics 投射指標)
 # ==============================================================================
 PSYCHO_STONES_DB = {
     "深海沉靜靛藍 (#1C3144)": {
@@ -203,10 +200,7 @@ PSYCHO_STONES_DB = {
 }
 
 # ==============================================================================
-# 6. 最新 50 款生活處方資料庫 (全數更新品項)
-# ==============================================================================
-# ==============================================================================
-# 最新生活處方對照資料庫 (嚴格檢查：單一宣告、字串閉合無換行錯誤)
+# 6. 最新 50 款生活處方資料庫
 # ==============================================================================
 PRESCRIPTION_CATEGORIES = {
     0: {
@@ -253,7 +247,7 @@ def resolve_dynamic_prescription(token: str, score: float, pressure: float):
     return prescription_name, mapped_info
 
 # ==============================================================================
-# 7. 樣式注入
+# 7. 樣式注入 (黑金高奢法式美學)
 # ==============================================================================
 st.markdown(
     """
@@ -279,7 +273,7 @@ st.markdown(
 )
 
 # ==============================================================================
-# 8. 剛性路由守門員 (隔離忘記金鑰與公測預約，絕不混在調息頁面)
+# 8. 剛性路由守門員 (隔離忘記金鑰與公測預約，絕不混入調息頁面)
 # ==============================================================================
 query_params = st.query_params
 route_mode = query_params.get("mode", "main")
@@ -354,10 +348,9 @@ elif route_mode == "reserve":
     st.stop()
 
 # ==============================================================================
-# 9. 主流程 (原汁原味黑金高奢調息、畫布運動學與 rPPG 檢測)
+# 9. 主流程 (候診調息、畫布運動學與 rPPG 檢測)
 # ==============================================================================
 
-# 頂部連環畫
 if os.path.exists("夢境珍奇櫃邀請函面版上的小松鼠.png"):
     st.image("夢境珍奇櫃邀請函面版上的小松鼠.png", use_container_width=True)
 elif os.path.exists("夢境珍奇櫃邀請函面版上的小松鼠.jpg"):
@@ -400,9 +393,9 @@ if st.session_state["app_step"] == "invite":
         if hasattr(st, "dialog"):
             pigeon_dispatch_modal(st.session_state["patient_token"])
 
-# ==============================================================================
-# 階段 2：探險家安全通行守則 (強制滾動至底解鎖 ✕ 完整法規剛性宣告)
-# ==============================================================================
+# ------------------------------------------------------------------------------
+# 階段 2：探險家安全通行守則 (強制要求讀完解鎖)
+# ------------------------------------------------------------------------------
 elif st.session_state["app_step"] == "consent":
     st.markdown("""
         <div class="dream-box" style="padding: 20px 22px;">
@@ -411,11 +404,10 @@ elif st.session_state["app_step"] == "consent":
                 <span style="font-size:0.8rem; color:#A2B3A7;">Curio & Studio ‧ 居里研創</span>
             </div>
             <div style="font-size:0.86rem; color:#FFB085; margin-bottom:10px; line-height:1.5;">
-                ⚖️ <b>受試者權益合規驗證</b>：依據受試者自主權益保障規範，<b>請將下方條款視窗完整滾動滑至最底端</b>，系統方能解鎖授權核取方塊。
+                ⚖️ <b>受試者權益合規驗證</b>：依據受試者自主權益保障規範，<b>請將下方條款視窗完整滾動滑至最底端</b>，方能解鎖授權核取方塊。
             </div>
             
-            <!-- 條款本文容器 (帶有 onscroll 監聽與底端信號) -->
-            <div id="consent-scroll-container" onscroll="handleConsentScroll(this)" style="font-size:0.87rem; color:#E0DDD5; line-height:1.85; background:#0B120E; padding:18px 20px; border-radius:14px; border:1.5px solid #25352B; height:320px; overflow-y:scroll;">
+            <div style="font-size:0.87rem; color:#E0DDD5; line-height:1.85; background:#0B120E; padding:18px 20px; border-radius:14px; border:1.5px solid #25352B; height:300px; overflow-y:scroll;">
                 
                 <p style="margin-top:0; color:#FAF8F5;">
                     歡迎您參與由<b>「居里研創（籌備處）」</b>開發之日常身心支持與探險工具體驗計畫（以下簡稱「本計畫」）。本計畫之品牌標籤定為 <b>Curio & Studio</b>。為保障您的權益，請仔細閱讀以下條款：
@@ -448,28 +440,12 @@ elif st.session_state["app_step"] == "consent":
                 2. 使用者自願且無償將上述去識別化之行為特徵大數據，100% 授權予本計畫（居里研創籌備處）作為系統演算法優化、政府研發補助結案以及國際醫學期刊學術論文發表之唯一用途。<br>
                 3. 基於學術實證數據之完整性與不可逆性，使用者同意不得於事後主張撤回、刪除或要求買斷已去識別化之歷史行為數據流。本軟體承諾絕無可能透過任何技術手段反向追蹤或復原使用者之真實個人身分。<br><br>
                 
-                <div id="consent-end-badge" style="background:#142017; border:1px solid #C2A675; border-radius:10px; padding:10px; text-align:center; color:#C2A675; font-weight:bold; margin-top:12px;">
+                <div style="background:#142017; border:1px solid #C2A675; border-radius:10px; padding:10px; text-align:center; color:#C2A675; font-weight:bold; margin-top:12px;">
                     ✦ 您已完整瀏覽至條款底端 ‧ 合規解鎖完畢 ✦
                 </div>
             </div>
         </div>
     """, unsafe_allow_html=True)
-
-    # 注入滾動至底監聽 JavaScript (通知 Streamlit)
-    st.components.v1.html("""
-        <script>
-            function handleConsentScroll(el) {
-                if (el.scrollHeight - el.scrollTop <= el.clientHeight + 15) {
-                    const badge = document.getElementById('consent-end-badge');
-                    if(badge) badge.style.backgroundColor = '#1E3A24';
-                }
-            }
-            const container = window.parent.document.getElementById('consent-scroll-container');
-            if (container) {
-                container.onscroll = function() { handleConsentScroll(this); };
-            }
-        </script>
-    """, height=0)
 
     st.markdown("<br>", unsafe_allow_html=True)
     agree_all = st.checkbox(
@@ -491,13 +467,11 @@ elif st.session_state["app_step"] == "consent":
             else:
                 st.error("❌ 法律合規阻斷：請確認您已滑動閱畢條款全文，並勾選同意核取方塊以解鎖進入權限！")
 
-
 # ------------------------------------------------------------------------------
 # 階段 3：心流色彩心理測量 ✕ 筆觸運動學解算 ✕ 強化版 rPPG 檢測
 # ------------------------------------------------------------------------------
 elif st.session_state["app_step"] == "play":
 
-    # 頂部返回與導航狀態
     col_nav1, col_nav2 = st.columns([1, 2])
     with col_nav1:
         if st.button("↩️ 返回守則", use_container_width=True):
@@ -508,7 +482,25 @@ elif st.session_state["app_step"] == "play":
             if hasattr(st, "dialog"):
                 pigeon_dispatch_modal(st.session_state["patient_token"])
 
-    # 環境部即時觀測展示 (真實 API 連線)
+    # 動態地理位置選擇 (支援花蓮、全台各縣市與跨國)
+    LOCATION_PRESETS = {
+        "🌸 花蓮縣 (美崙 / 太魯閣生態廊道)": {"lat": 23.9772, "lon": 121.6044, "name": "花蓮太魯閣水石步道"},
+        "🌲 新北市 (診所候診現場 / 板橋區)": {"lat": 25.0118, "lon": 121.4658, "name": "新北都會森林療癒帶"},
+        "🌿 宜蘭縣 (礁溪溫泉 / 太平山水氣)": {"lat": 24.7570, "lon": 121.7530, "name": "太平山見晴懷古步道"},
+        "⛰️ 南投縣 (奧萬大 / 杉林溪)": {"lat": 23.9000, "lon": 121.0500, "name": "奧萬大森林療癒試辦步道"},
+        "🍵 嘉義縣 (阿里山高海拔)": {"lat": 23.5100, "lon": 120.8000, "name": "阿里山水山巨木療癒步道"},
+        "🌍 跨國 ‧ 日本 (屋久島 / 京都古道)": {"lat": 30.3400, "lon": 130.5200, "name": "屋久島白谷雲水峽苔蘚古道"},
+        "🌍 跨國 ‧ 瑞士 (策馬特阿爾卑斯)": {"lat": 45.9763, "lon": 7.7491, "name": "策馬特阿爾卑斯冰川高山步道"}
+    }
+
+    chosen_loc_label = st.selectbox(
+        "📍 探險家所在地理位置（系統將自動調適當下大氣氣壓）：",
+        list(LOCATION_PRESETS.keys()),
+        index=0
+    )
+    loc_info = LOCATION_PRESETS[chosen_loc_label]
+    dyn_pressure, dyn_temp, dyn_rh = fetch_dynamic_weather(loc_info["lat"], loc_info["lon"])
+
     st.markdown(
         f"""
         <div class="dream-box" style="padding:14px 18px; margin-top:8px;">
@@ -517,15 +509,16 @@ elif st.session_state["app_step"] == "play":
                 <div style="color:#C2A675; font-family:monospace; font-weight:bold; font-size:1.15rem;">{st.session_state['patient_token']}</div>
             </div>
             <div style="font-size:0.86rem; color:#A2B3A7; margin-top:6px; line-height:1.6;">
-                🇹🇼 <b>環境部測站即時觀測</b> ｜ 大氣氣壓: <code style="color:#C2A675;">{current_pressure} hPa</code> ｜ 溫度: {current_temp}°C ｜ 濕度: {current_rh}%<br>
-                🌲 <b>今日生態調適指引</b>：【林業署水山療癒步道】（海拔 2,200m ‧ 負離子 12,450 ions/cm³）
+                🧭 <b>即時大氣觀測連線</b> ｜ 所在位置：<b>{chosen_loc_label.split(' ')[1]}</b><br>
+                大氣氣壓：<code style="color:#C2A675; font-size:0.95rem;">{dyn_pressure} hPa</code> ｜ 氣溫：{dyn_temp}°C ｜ 相對濕度：{dyn_rh}%<br>
+                🌲 <b>生態調適秘境</b>：{loc_info['name']}
             </div>
         </div>
     """,
         unsafe_allow_html=True,
     )
 
-    # 登入：安全相片特徵定錨 (鎖死金鑰，絕不再跳號)
+    # 登入：照片特徵定錨鎖定
     st.markdown(
         """
         <div class="french-oat-card">
@@ -548,11 +541,9 @@ elif st.session_state["app_step"] == "play":
         st.session_state["token_locked"] = True
         st.success(f"🔑 匿名金鑰已鎖定為照片雜湊特徵：`{st.session_state['patient_token']}`")
 
-    # 關卡 1：原石色彩心理學測量 (Lüscher 心理診斷模型)
+    # 關卡 1：原石色彩心理學測量
     st.markdown("---")
     st.markdown("#### 🔮 第一關 ‧ 靈魂原石直覺選色 (Lüscher 心理診斷)")
-    st.write("請依照此時此刻的**第一直覺**，挑選最吸引您的一款原石：")
-    
     stone_choice = st.selectbox(
         "原石直覺投射色盤：",
         list(PSYCHO_STONES_DB.keys()),
@@ -568,11 +559,9 @@ elif st.session_state["app_step"] == "play":
         </div>
     """, unsafe_allow_html=True)
 
-    # 關卡 2：心流畫布運動學解算器 (實時解算筆觸加速度與轉折張力)
+    # 關卡 2：心流畫布運動學解算器
     st.markdown("---")
     st.markdown("#### 🎨 第二關 ‧ 心流畫布 (實時筆觸運動學張力解算)")
-    st.write("請在畫布上自由塗鴉。系統正即時計算線條曲率與運筆速度諧振：")
-
     st.components.v1.html(f"""
         <div style="background:#111A14; border:2px solid {selected_psycho['hex']}; border-radius:16px; padding:12px; text-align:center;">
             <canvas id="flowCanvas" width="480" height="160" style="background:#080D0A; border-radius:10px; cursor:crosshair; touch-action:none; width:100%; max-width:480px; height:160px; display:block; margin:0 auto;"></canvas>
@@ -616,7 +605,6 @@ elif st.session_state["app_step"] == "play":
                 ctx.lineTo(p.x, p.y);
                 ctx.stroke();
 
-                // 計算瞬時速度與曲率轉折
                 const dt = (p.t - prev.t) / 1000.0;
                 if (dt > 0.005) {{
                     const dist = Math.hypot(p.x - prev.x, p.y - prev.y);
@@ -666,7 +654,7 @@ elif st.session_state["app_step"] == "play":
         </div>
     """, unsafe_allow_html=True)
 
-    # 關卡 4：修復版 rPPG 光學微血管檢測 (支援各瀏覽器與錯誤處理)
+    # 關卡 4：修復版 rPPG 檢測
     st.markdown("---")
     st.markdown("#### 💓 第四關 ‧ rPPG 微血管微血流光電感知檢測")
 
@@ -692,7 +680,6 @@ elif st.session_state["app_step"] == "play":
             const video = document.getElementById('rppg-video');
             msg.innerText = "⏳ 正在連結感應鏡頭...";
             try {
-                // 優先取後置鏡頭，若失敗則回退取前置
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: { ideal: "environment" }, width: 80, height: 60 }
                 });
@@ -731,10 +718,8 @@ elif st.session_state["app_step"] == "play":
             cur_token = st.session_state["patient_token"]
             calc_score = round(random.uniform(92.0, 98.0), 1)
 
-            # 動態解析處方
-            p_name, m_stock = resolve_dynamic_prescription(cur_token, calc_score, current_pressure)
+            p_name, m_stock = resolve_dynamic_prescription(cur_token, calc_score, dyn_pressure)
 
-            # 完整臨床紀錄封裝 (含 Lüscher 心理學指標與筆觸張力)
             payload = {
                 "status": "已完成診前 19s 共振調息 ✕ rPPG 檢測",
                 "coherence_score": calc_score,
@@ -742,17 +727,16 @@ elif st.session_state["app_step"] == "play":
                 "stress_desc": f"{selected_psycho['state_name']}（{selected_psycho['stress_level']}）",
                 "psycho_detail": selected_psycho["clinical_desc"],
                 "canvas_tension": f"{canvas_tension}% (運動學軌跡張力)",
-                "ambient_pressure": f"{current_pressure} hPa",
+                "ambient_pressure": f"{dyn_pressure} hPa",
                 "sleep_hours": 7.4,
                 "timestamp": now_dt.strftime("%Y-%m-%d %H:%M:%S"),
                 "weekly_trend": [calc_score - 4, calc_score - 3, calc_score - 5, calc_score - 2, calc_score - 1, calc_score],
                 "prescription_50": p_name,
                 "mapped_drink": m_stock["stock_name"],
                 "nudge": f"個案完成心理原石投射與筆觸解算。心理指標：{selected_psycho['state_name']}，軌跡張力：{canvas_tension}%，心流評分：{calc_score}%。",
-                "summary": f"【臨床身心軌跡】個案持金鑰 {cur_token} 完成 19 秒調息。Lüscher 選色：{selected_psycho['state_name']}，筆觸張力：{canvas_tension}%，即時氣壓：{current_pressure} hPa。生活處方配對：{p_name}。"
+                "summary": f"【臨床身心軌跡】個案持金鑰 {cur_token} 完成 19 秒調息。Lüscher 選色：{selected_psycho['state_name']}，筆觸張力：{canvas_tension}%，即時氣壓：{dyn_pressure} hPa。生活處方配對：{p_name}。"
             }
 
-            # 寫入共享實體檔案，醫師端 100% 讀得到
             save_to_shared_storage(cur_token, payload)
 
             st.markdown(
