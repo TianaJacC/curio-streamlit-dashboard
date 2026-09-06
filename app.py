@@ -76,31 +76,14 @@ def generate_secure_token(seed_bytes: bytes = None) -> str:
 # ==============================================================================
 # 3. 50 款生活處方資料庫 ✕ 現場 3 款奉茶母體分類映射
 # ==============================================================================
-PRESCRIPTION_CATEGORIES = {
-    0: {
-        "stock_name": "破霧清醒 ‧ 鳳梨薄荷冰焙茶",
-        "stock_desc": (
-            "薄荷腦喚醒前額葉清醒度，焙玄米溫和護胃，適配晨間專注與打敗腦霧。"
-        ),
-    },
-    1: {
-        "stock_name": "朝露果妍 ‧ 晨光葡莓玫瑰鮮果茶",
-        "stock_desc": (
-            "天然白桃果香協同大馬士革玫瑰，疏肝解鬱，撫平日間胸悶浮躁張力。"
-        ),
-    },
-    2: {
-        "stock_name": "暮夜靜謐 ‧ 太妃香草黑櫻桃晚安茶",
-        "stock_desc": (
-            "無咖啡因香草琥珀基底，誘導深層迷走神經共振，平息思慮反芻。"
-        ),
-    },
-}
 
+# ==============================================================================
+# 最新生活處方對照資料庫 (嚴格檢查：單一宣告、字串閉合無換行錯誤)
+# ==============================================================================
 PRESCRIPTION_CATEGORIES = {
     0: {
         "stock_name": "破霧清醒 ‧ 鳳梨薄荷冰焙茶",
-        "stock_desc": "清爽薄荷腦喚醒前額葉，鳳梨果香協同焙煎玄米溫和護胃，抗疲勞消除腦霧。"
+        "stock_desc": "薄荷腦喚醒前額葉，鳳梨果香協同焙煎玄米溫和護胃，抗疲勞消除腦霧。"
     },
     1: {
         "stock_name": "朝露果妍 ‧ 晨光葡莓玫瑰鮮果茶",
@@ -314,9 +297,20 @@ PLAYLIST = [
 # ==============================================================================
 # 5. Bespoke French High-Jewelry & 剛性 CSS
 # ==============================================================================
-st.markdown(
-    """
+st.markdown("""
     <style>
+    /* 1. 隱藏側邊欄頂部的多頁面切換列表 (app, recovery, reserve) */
+    [data-testid="stSidebarNav"] {
+        display: none !important;
+    }
+    
+    /* 2. 既有的診間高奢樣式維持不變 */
+    .stApp {
+        background-color: #FAF8F5;
+        font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif;
+    }
+    </style>
+""", unsafe_allow_html=True)
     @import url('https://fonts.googleapis.com/css2?family=Didot&family=Garamond:ital,wght@0,400;0,600;1,400&display=swap');
 
     .stApp {
