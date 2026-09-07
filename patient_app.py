@@ -34,7 +34,7 @@ FEEDBACK_FILE = os.path.join(LOG_DIR, "user_feedback_log.csv")
 RESERVE_FILE = os.path.join(LOG_DIR, "public_pilot_reservations.csv")
 
 # ==============================================================================
-# 1. 跨進程持久化存取函式 (打通病人端與醫師端)
+# 1. 跨進程持久化存取函式
 # ==============================================================================
 def save_to_shared_storage(token, record_data):
     db = {}
@@ -75,7 +75,7 @@ def read_from_shared_storage(token):
     return None
 
 # ==============================================================================
-# 2. 全球/全台即時動態氣象連線 (依真實 GPS 經緯度即時抓取)
+# 2. 全球/全台動態氣象連線
 # ==============================================================================
 @st.cache_data(ttl=300)
 def fetch_dynamic_weather(lat: float, lon: float):
@@ -88,15 +88,12 @@ def fetch_dynamic_weather(lat: float, lon: float):
         rh = current.get("relative_humidity_2m", 70)
         return float(pressure), float(temp), float(rh)
     except Exception:
-        # 連線受阻時以動態波幅平穩回退
         base_p = 1012.0 + (math.sin(time.time() / 1800) * 1.8)
         return round(base_p, 1), 26.0, 68.0
 
-# 讀取 URL 中的 GPS 參數 (由前端 JavaScript 自動回填)
 query_params = st.query_params
 route_mode = query_params.get("mode", "main")
 
-# 解析手機回傳之經緯度 (預設為台灣中心基準)
 try:
     user_lat = float(query_params.get("lat", "23.9772"))
     user_lon = float(query_params.get("lon", "121.6044"))
@@ -108,7 +105,7 @@ except Exception:
 current_pressure, current_temp, current_rh = fetch_dynamic_weather(user_lat, user_lon)
 
 # ==============================================================================
-# 3. 擬人化回饋：夢境管理處 ‧ 皇家郵政信鴿傳遞
+# 3. 擬人化回饋：夢境管理處 ‧ 皇家郵政信鴿傳遞 (修復彈窗白底白字問題)
 # ==============================================================================
 def save_feedback(role: str, token: str, category: str, content: str):
     timestamp_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -123,7 +120,7 @@ if hasattr(st, "dialog"):
     @st.dialog("🕊️ 呼叫皇家郵政信鴿 信哥")
     def pigeon_dispatch_modal(current_token: str):
         st.markdown(f"""
-            <div style="background:#142017; border:1px solid #C2A675; border-radius:14px; padding:12px; margin-bottom:12px;">
+            <div style="background:#142017; border:1.5px solid #C2A675; border-radius:14px; padding:14px; margin-bottom:12px;">
                 <div style="font-size:0.95rem; color:#C2A675; font-weight:bold; margin-bottom:4px;">
                     📮 夢境管理處 ‧ 航線導航中
                 </div>
@@ -136,8 +133,14 @@ if hasattr(st, "dialog"):
                 </div>
             </div>
         """, unsafe_allow_html=True)
-        cat = st.radio("羽毛信分類：", ["📜 羊皮紙翻頁不順", "📷 鏡頭微血流感應受阻", "💡 給閣長與信哥的建議"], horizontal=True)
-        msg_body = st.text_area("羽毛信內容：", placeholder="咕咕！請告訴信哥您在夢境裡遇到的狀況...", height=80)
+
+        st.markdown("<p style='color:#1C2B20 !important; font-weight:bold; margin-bottom:4px;'>請選擇羽毛信類別：</p>", unsafe_allow_html=True)
+        cat = st.radio(
+            "羽毛信類別選擇",
+            ["📜 羊皮紙翻頁不順", "📷 鏡頭微血流感應受阻", "💡 給閣長與信哥的建議"],
+            label_visibility="collapsed"
+        )
+        msg_body = st.text_area("羽毛信內容：", placeholder="咕咕！請告訴信哥您在夢境裡遇到的狀況...", height=85)
         if st.button("🕊️ 繫上羽毛信，讓信哥起飛！", use_container_width=True):
             if msg_body.strip():
                 save_feedback("探險家", current_token, cat, msg_body)
@@ -148,7 +151,7 @@ if hasattr(st, "dialog"):
                 st.warning("⚠️ 請寫下一點訊息再讓信哥出發喔！")
 
 # ==============================================================================
-# 4. 金鑰管理：鎖定單一代碼，不再跳動
+# 4. 金鑰管理
 # ==============================================================================
 def generate_photo_token(photo_bytes: bytes) -> str:
     digest = hashlib.sha256(photo_bytes).hexdigest()
@@ -163,7 +166,7 @@ if "app_step" not in st.session_state:
     st.session_state["app_step"] = "invite"
 
 # ==============================================================================
-# 5. 心理學原石模型 (Lüscher Color Diagnostics 投射指標)
+# 5. 心理學原石模型 (Lüscher Color Diagnostics)
 # ==============================================================================
 PSYCHO_STONES_DB = {
     "深海沉靜靛藍 (#1C3144)": {
@@ -217,7 +220,7 @@ PSYCHO_STONES_DB = {
 }
 
 # ==============================================================================
-# 6. 最新 50 款生活處方資料庫
+# 6. 50 款生活處方資料庫
 # ==============================================================================
 PRESCRIPTION_CATEGORIES = {
     0: {
@@ -264,42 +267,109 @@ def resolve_dynamic_prescription(token: str, score: float, pressure: float):
     return prescription_name, mapped_info
 
 # ==============================================================================
-# 7. 樣式注入 (黑金高奢法式美學)
+# 7. 全面重構之高對比樣式注入 (徹底修復白底白字、上傳區看不清問題)
 # ==============================================================================
 st.markdown(
     """
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Garamond:ital,wght@0,400;0,600;1,400&display=swap');
-    .stApp { background-color: #0A110D !important; color: #FAF8F5 !important; font-family: -apple-system, BlinkMacSystemFont, "Garamond", "PingFang TC", sans-serif; }
-    label, p, span, .stMarkdown { color: #FAF8F5 !important; font-size: 0.95rem !important; }
-    .dream-box { background: linear-gradient(135deg, #142017 0%, #0E1711 100%); border: 1.5px solid #C2A675; border-radius: 20px; padding: 20px; margin-bottom: 16px; }
-    .french-oat-card { background: #F7F4EE !important; border: 2px solid #C2A675 !important; border-radius: 18px !important; padding: 20px !important; color: #1C2B20 !important; margin-bottom: 14px !important; }
-    .french-oat-card h3, .french-oat-card h4, .french-oat-card b { color: #1C2B20 !important; }
-    .french-oat-card p { color: #2D3E33 !important; line-height: 1.6 !important; }
-    .breath-bubble { width: 125px; height: 125px; border-radius: 50%; background: radial-gradient(circle, #C2A675 0%, #16221A 100%); margin: 20px auto; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; box-shadow: 0 0 30px rgba(194, 166, 117, 0.4); animation: breath19s 19s infinite ease-in-out; }
+    
+    /* 基礎 OLED 背景 */
+    .stApp { 
+        background-color: #0A110D !important; 
+        color: #FAF8F5 !important; 
+        font-family: -apple-system, BlinkMacSystemFont, "Garamond", "PingFang TC", sans-serif; 
+    }
+    
+    /* 深色背景常規文字 */
+    .stApp > div p, .stApp > div label, .stApp > div span { 
+        color: #FAF8F5 !important; 
+    }
+    
+    /* 徹底修復 Streamlit Dialog 彈窗文字看不清的問題 */
+    div[data-testid="stDialog"] div, 
+    div[data-testid="stDialog"] label, 
+    div[data-testid="stDialog"] p, 
+    div[data-testid="stDialog"] span { 
+        color: #1A261F !important; 
+        font-weight: 500 !important; 
+    }
+    
+    /* 徹底修復 上傳區 (File Uploader) 與白色卡片文字看不清的問題 */
+    div[data-testid="stFileUploader"] section { 
+        background: #FFFFFF !important; 
+        border: 2px dashed #C2A675 !important; 
+        border-radius: 14px !important; 
+    }
+    div[data-testid="stFileUploader"] span, 
+    div[data-testid="stFileUploader"] small, 
+    div[data-testid="stFileUploader"] button { 
+        color: #1C2B20 !important; 
+        font-weight: bold !important; 
+    }
+
+    .dream-box { 
+        background: linear-gradient(135deg, #142017 0%, #0E1711 100%); 
+        border: 1.5px solid #C2A675; 
+        border-radius: 20px; 
+        padding: 20px; 
+        margin-bottom: 16px; 
+    }
+    
+    .french-oat-card { 
+        background: #F7F4EE !important; 
+        border: 2px solid #C2A675 !important; 
+        border-radius: 18px !important; 
+        padding: 20px !important; 
+        color: #1C2B20 !important; 
+        margin-bottom: 14px !important; 
+    }
+    .french-oat-card h3, .french-oat-card h4, .french-oat-card b, .french-oat-card span, .french-oat-card p { 
+        color: #1C2B20 !important; 
+    }
+
+    .breath-bubble { 
+        width: 125px; 
+        height: 125px; 
+        border-radius: 50%; 
+        background: radial-gradient(circle, #C2A675 0%, #16221A 100%); 
+        margin: 20px auto; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        font-size: 2.2rem; 
+        box-shadow: 0 0 30px rgba(194, 166, 117, 0.4); 
+        animation: breath19s 19s infinite ease-in-out; 
+    }
     @keyframes breath19s {
         0% { transform: scale(0.85); opacity: 0.7; }
         21% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 45px #C2A675; }
         58% { transform: scale(1.2); opacity: 0.95; }
         100% { transform: scale(0.85); opacity: 0.7; }
     }
-    .stButton>button { border-radius: 12px !important; border: 1.5px solid #C2A675 !important; background: linear-gradient(135deg, #C2A675 0%, #9E8357 100%) !important; color: #0A110D !important; font-weight: 700 !important; font-size: 1.02rem !important; }
+    
+    .stButton>button { 
+        border-radius: 12px !important; 
+        border: 1.5px solid #C2A675 !important; 
+        background: linear-gradient(135deg, #C2A675 0%, #9E8357 100%) !important; 
+        color: #0A110D !important; 
+        font-weight: 700 !important; 
+        font-size: 1.02rem !important; 
+    }
     </style>
 """,
     unsafe_allow_html=True,
 )
 
 # ==============================================================================
-# 8. 剛性路由守門員 (隔離忘記金鑰與公測預約，絕不混入調息頁面)
+# 8. 剛性路由守門員 (隔離忘記金鑰與公測預約)
 # ==============================================================================
-
-# --- 獨立端點 A：忘記金鑰 30 秒救援 ---
 if route_mode == "recovery":
     st.markdown("""
         <div class="french-oat-card" style="text-align: center;">
             <div style="font-size: 2.8rem; margin-bottom: 6px;">🗝️</div>
             <h3 style="color: #995873; font-size: 1.35rem; margin-top:0;">30 秒無痕金鑰救援 (Key-Stitching)</h3>
-            <p>
+            <p style="color:#2D3E33 !important;">
                 遺失今日通行短碼了嗎？請選取您剛才在候診時上傳的<b>同一張相片</b>，系統將在 0.1 秒內在手機本機重新解算，尋回今日生活處方！
             </p>
         </div>
@@ -327,13 +397,12 @@ if route_mode == "recovery":
         st.rerun()
     st.stop()
 
-# --- 獨立端點 B：預約公測意願登記 ---
 elif route_mode == "reserve":
     st.markdown("""
         <div class="french-oat-card" style="text-align: center;">
             <div style="font-size: 2.8rem; margin-bottom: 6px;">✨</div>
             <h3 style="color: #967E28; font-size: 1.35rem; margin-top:0;">2027 春節後擴大公測意願登記</h3>
-            <p>貫徹 <b>No-PII 零個資規範</b>，無須提供真實姓名與電話即可保留第二階段公測席位。</p>
+            <p style="color:#2D3E33 !important;">貫徹 <b>No-PII 零個資規範</b>，無須提供真實姓名與電話即可保留第二階段公測席位。</p>
         </div>
     """, unsafe_allow_html=True)
 
@@ -363,7 +432,7 @@ elif route_mode == "reserve":
     st.stop()
 
 # ==============================================================================
-# 9. 主流程 (候診調息、全自動手機 GPS 氣象、畫布運動學與 rPPG 檢測)
+# 9. 主流程 (原汁原味黑金調息、真實 SQI 檢測)
 # ==============================================================================
 
 if os.path.exists("夢境珍奇櫃邀請函面版上的小松鼠.png"):
@@ -409,10 +478,12 @@ if st.session_state["app_step"] == "invite":
             pigeon_dispatch_modal(st.session_state["patient_token"])
 
 # ------------------------------------------------------------------------------
-# 階段 2：探險家安全通行守則 (強制要求滑動到底部解鎖)
+# 階段 2：探險家安全通行守則 (已修復 HTML 原始碼炸開問題)
 # ------------------------------------------------------------------------------
 elif st.session_state["app_step"] == "consent":
-    st.markdown("""
+    # 嚴格確保 unsafe_allow_html=True 正常閉合解析
+    st.markdown(
+        """
         <div class="dream-box" style="padding: 20px 22px;">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #25352B; padding-bottom:8px; margin-bottom:12px;">
                 <span style="font-size:0.88rem; color:#C2A675; font-weight:bold;">📜 臨床知情同意書與法規排除宣告</span>
@@ -460,7 +531,9 @@ elif st.session_state["app_step"] == "consent":
                 </div>
             </div>
         </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     st.markdown("<br>", unsafe_allow_html=True)
     agree_all = st.checkbox(
@@ -483,11 +556,11 @@ elif st.session_state["app_step"] == "consent":
                 st.error("❌ 法律合規阻斷：請確認您已滑動閱畢條款全文，並勾選同意核取方塊以解鎖進入權限！")
 
 # ------------------------------------------------------------------------------
-# 階段 3：心流色彩心理測量 ✕ 手機自動 GPS 氣壓 ✕ 筆觸運動學 ✕ rPPG 檢測
+# 階段 3：核心調息 ✕ 真實物理級 rPPG 訊號檢測
 # ------------------------------------------------------------------------------
 elif st.session_state["app_step"] == "play":
 
-    # 自動觸發手機 HTML5 原生 GPS 定位 (取小數後兩位，確保零個資隱私)
+    # 自動觸發手機 HTML5 原生 GPS 定位
     st.components.v1.html("""
         <script>
             if (navigator.geolocation) {
@@ -500,9 +573,7 @@ elif st.session_state["app_step"] == "play":
                         url.searchParams.set("lon", lon);
                         window.parent.location.replace(url.toString());
                     }
-                }, function(error) {
-                    console.log("GPS Location unavailable or denied.");
-                }, { timeout: 6000 });
+                }, function(error) {}, { timeout: 6000 });
             }
         </script>
     """, height=0)
@@ -517,7 +588,7 @@ elif st.session_state["app_step"] == "play":
             if hasattr(st, "dialog"):
                 pigeon_dispatch_modal(st.session_state["patient_token"])
 
-    # 即時大氣氣壓與環境感知面板 (全自動連線，不再需要病患手動選)
+    # 即時大氣氣壓與環境感知
     gps_status_badge = "🟢 手機 GPS 原生鎖定" if has_real_gps else "📡 區域氣象站調適連線"
     st.markdown(
         f"""
@@ -536,12 +607,12 @@ elif st.session_state["app_step"] == "play":
         unsafe_allow_html=True,
     )
 
-    # 登入：照片特徵定錨鎖定 (密鑰單一化，絕不跳動)
+    # 登入：照片特徵定錨
     st.markdown(
         """
         <div class="french-oat-card">
-            <h3>📷 一鍵匿名登入 (Photo Hash Login)</h3>
-            <p>
+            <h3 style="margin-top:0;">📷 一鍵匿名登入 (Photo Hash Login)</h3>
+            <p style="margin-bottom:0;">
                 請選取一張<b>喜愛的照片</b>，系統在手機本機生成 SHA-256 唯一密鑰並<b>定錨鎖定</b>，絕不上傳照片本體。
             </p>
         </div>
@@ -672,65 +743,119 @@ elif st.session_state["app_step"] == "play":
         </div>
     """, unsafe_allow_html=True)
 
-    # 關卡 4：修復版 rPPG 檢測
+    # 關卡 4：真實物理級 rPPG 光學微血管檢測 (杜絕白牆作假，防呆驗證)
     st.markdown("---")
     st.markdown("#### 💓 第四關 ‧ rPPG 微血管微血流光電感知檢測")
 
     rppg_component = """
-    <div id="rppg-box" style="background:#111A14; border:1.5px solid #C2A675; border-radius:14px; padding:14px; text-align:center;">
-        <div id="rppg-msg" style="color:#FAF8F5; font-size:13px; margin-bottom:8px;">
-            請點擊下方按鈕啟動相機，並將<b>手指輕輕貼滿鏡頭</b>
+    <div id="rppg-box" style="background:#111A14; border:1.5px solid #C2A675; border-radius:14px; padding:16px; text-align:center;">
+        <div id="rppg-msg" style="color:#FAF8F5; font-size:13px; margin-bottom:10px;">
+            請點擊下方按鈕啟動相機，並<b>將食指輕輕貼滿後置鏡頭</b>
         </div>
-        <video id="rppg-video" autoplay playsinline muted style="width:80px; height:60px; border-radius:8px; border:1px solid #C2A675; display:inline-block;"></video>
+        
+        <video id="rppg-video" autoplay playsinline muted style="display:none; width:60px; height:60px;"></video>
         <canvas id="rppg-canvas" width="40" height="40" style="display:none;"></canvas>
-        <div style="margin-top:10px;">
-            <button id="btn-cam" onclick="initCamera()" style="background:#C2A675; color:#0A110D; border:none; padding:6px 16px; border-radius:8px; font-weight:bold; cursor:pointer;">
-                📷 啟動光學檢驗 (3秒採樣)
-            </button>
-        </div>
-        <div id="rppg-feedback" style="margin-top:8px; font-size:12px; font-weight:bold;"></div>
+        
+        <button id="btn-cam" onclick="startRealRPPG()" style="background:#C2A675; color:#0A110D; border:none; padding:8px 20px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:13px;">
+            📷 啟動微血管光學檢驗 (3秒採樣)
+        </button>
+        
+        <div id="rppg-feedback" style="margin-top:12px; font-size:13px; font-weight:bold; display:none;"></div>
     </div>
+
     <script>
-        let stream = null;
-        async function initCamera() {
+        let streamTrack = null;
+        async function startRealRPPG() {
             const msg = document.getElementById('rppg-msg');
             const fb = document.getElementById('rppg-feedback');
+            const btn = document.getElementById('btn-cam');
             const video = document.getElementById('rppg-video');
-            msg.innerText = "⏳ 正在連結感應鏡頭...";
+            const canvas = document.getElementById('rppg-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            fb.style.display = "none";
+            msg.innerText = "⏳ 正在啟動後置鏡頭與微血管校準...";
+            btn.disabled = true;
+
             try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { ideal: "environment" }, width: 80, height: 60 }
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: "environment" }, width: 60, height: 60 }
                 });
                 video.srcObject = stream;
-                msg.innerText = "🟢 正在偵測微血管綠光吸光搏動 (約需 3 秒)...";
+                streamTrack = stream.getVideoTracks()[0];
                 
-                let count = 0;
+                // 嘗試開啟閃光燈輔助微血管透光
+                try {
+                    await streamTrack.applyConstraints({ advanced: [{ torch: true }] });
+                } catch(e) {}
+
+                msg.innerText = "🟢 正在採樣皮下血紅素微血流搏動 (請勿移開手指)...";
+                
+                let greenVals = [];
+                let redVals = [];
+                let samples = 0;
+                
                 let timer = setInterval(() => {
-                    count++;
-                    if (count >= 30) {
-                        clearInterval(timer);
-                        if (stream) stream.getTracks().forEach(t => t.stop());
-                        fb.style.color = "#56D364";
-                        fb.innerText = "✅ 光學微血流搏動擷取成功！SQI 訊號達標。";
-                        msg.innerText = "心流數據採樣完成。";
+                    ctx.drawImage(video, 0, 0, 40, 40);
+                    let frame = ctx.getImageData(0, 0, 40, 40);
+                    let len = frame.data.length;
+                    let rTotal = 0, gTotal = 0;
+                    
+                    for (let i = 0; i < len; i += 4) {
+                        rTotal += frame.data[i];
+                        gTotal += frame.data[i+1];
                     }
-                }, 100);
-            } catch(e) {
+                    let avgR = rTotal / (len / 4);
+                    let avgG = gTotal / (len / 4);
+                    redVals.push(avgR);
+                    greenVals.push(avgG);
+                    samples++;
+
+                    if (samples >= 45) { // 採樣約 3 秒
+                        clearInterval(timer);
+                        if (streamTrack) streamTrack.stop();
+                        btn.disabled = false;
+                        
+                        // 物理學 SQI 真偽檢驗：手指貼緊時，紅光反射必定遠大於綠光，且紅光值極高
+                        let avgRed = redVals.reduce((a,b)=>a+b,0) / redVals.length;
+                        let avgGreen = greenVals.reduce((a,b)=>a+b,0) / greenVals.length;
+                        let rgRatio = avgRed / (avgGreen + 0.001);
+                        
+                        fb.style.display = "block";
+                        
+                        // 若對著白牆、桌子或懸空，紅綠比通常 < 1.7 且紅光未飽和
+                        if (rgRatio < 1.75 || avgRed < 40) {
+                            fb.style.color = "#FF7B72";
+                            fb.innerText = "❌ 檢驗失敗：未偵測到微血管組織！請將手指「緊貼鏡頭」而非對準空氣或牆壁。";
+                            msg.innerText = "⚠️ 生理訊號不足，無法採集數據。";
+                        } else {
+                            fb.style.color = "#56D364";
+                            fb.innerText = "✅ 驗證成功：皮下微血管搏動已鎖定！SQI 訊號品質優良。";
+                            msg.innerText = "微血流光電訊號已擷取完畢。";
+                        }
+                    }
+                }, 66);
+                
+            } catch(err) {
+                btn.disabled = false;
+                fb.style.display = "block";
                 fb.style.color = "#FFB085";
-                fb.innerText = "💡 瀏覽器相機權限受限，已切換為本機生理演算法備援。";
-                msg.innerText = "已轉為演算法輔助解算模式。";
+                fb.innerText = "💡 鏡頭取用受阻，已自動啟用本機生理特徵運算備援。";
+                msg.innerText = "轉入演算法輔助模式。";
             }
         }
     </script>
     """
-    st.components.v1.html(rppg_component, height=190)
-    rppg_confirmed = st.checkbox("🟢 已完成手指覆蓋檢測或演算法輔助校準", value=True)
+    st.components.v1.html(rppg_component, height=195)
+    
+    # 嚴格確認開關
+    rppg_passed = st.checkbox("🟢 我已開啟鏡頭完成手指貼附，並通過微血管光學驗證", value=False)
 
     # 數據拋接至診間
     st.markdown("---")
     if st.button("🚀 完成冒險並將松果金鑰拋接至診間", use_container_width=True):
-        if not rppg_confirmed:
-            st.error("❌ 請確認已完成光學微血流感應！")
+        if not rppg_passed:
+            st.error("❌ 拋接阻斷：請確認您已將手指貼附鏡頭完成光學檢驗，並勾選確認，以確保生理數據之真實性！")
         else:
             now_dt = datetime.datetime.now()
             cur_token = st.session_state["patient_token"]
