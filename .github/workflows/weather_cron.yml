@@ -3,7 +3,7 @@ name: Daily Weather Silent Nudge
 on:
   schedule:
     # 每天 UTC 12:30 執行 (等於台灣時間晚上 20:30)
-    - cron: '30 12 * * *'
+    - cron: '0 13 * * *'
   workflow_dispatch: # 允許在 GitHub 介面上手動點按測試執行
 
 jobs:
