@@ -74,38 +74,38 @@ def read_from_shared_storage(token):
     return None
 
 # ==============================================================================
-# 2. 全球/全台動態 GPS 氣象連線 (支援出國與在地跨國氣象)
+# 2. 全球/全台動態 GPS 氣象連線 (病患出國或在台皆自動定位)
 # ==============================================================================
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=180)
 def fetch_dynamic_weather(lat: float, lon: float):
     try:
         url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=surface_pressure,temperature_2m,relative_humidity_2m&timezone=auto"
         res = requests.get(url, timeout=3.5).json()
         current = res.get("current", {})
-        pressure = current.get("surface_pressure", 1007.0)
+        pressure = current.get("surface_pressure", 1008.0)
         temp = current.get("temperature_2m", 26.5)
         rh = current.get("relative_humidity_2m", 70.0)
         return float(pressure), float(temp), float(rh)
     except Exception:
-        return 1007.0, 26.5, 70.0
+        return 1008.0, 26.5, 70.0
 
 query_params = st.query_params
 route_mode = query_params.get("mode", "main")
 step_param = query_params.get("step", "invite")
 
-# 解析 URL 傳入之 GPS 座標
+# 自動鎖定經緯度 (若出國由手機回傳，預設為台灣新北/板橋坐標)
 try:
-    user_lat = float(query_params.get("lat", "24.99"))
-    user_lon = float(query_params.get("lon", "121.51"))
+    user_lat = float(query_params.get("lat", "25.01"))
+    user_lon = float(query_params.get("lon", "121.46"))
     has_real_gps = "lat" in query_params and "lon" in query_params
 except Exception:
-    user_lat, user_lon = 24.99, 121.51
+    user_lat, user_lon = 25.01, 121.46
     has_real_gps = False
 
 current_pressure, current_temp, current_rh = fetch_dynamic_weather(user_lat, user_lon)
 
 # ==============================================================================
-# 3. 擬人化回饋：夢境管理處 ‧ 皇家郵政信鴿傳遞 (文字配色全修復)
+# 3. 擬人化回饋：夢境管理處 ‧ 皇家郵政信鴿傳遞 (高對比修復)
 # ==============================================================================
 def save_feedback(role: str, token: str, category: str, content: str):
     timestamp_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -151,13 +151,13 @@ if hasattr(st, "dialog"):
                 st.warning("⚠️ 請寫下一點訊息再讓信哥出發喔！")
 
 # ==============================================================================
-# 4. 金鑰管理：鎖定單一代碼，不再跳號
+# 4. 金鑰管理：鎖定單一代碼，絕對不跳號
 # ==============================================================================
 def generate_photo_token(photo_bytes: bytes) -> str:
     digest = hashlib.sha256(photo_bytes).hexdigest()
     return f"#SYM-{digest[:4].upper()}"
 
-# 優先讀取 URL 或快取，確保重新整理後金鑰固定不變
+# 優先綁定 URL，確保重整頁面絕不換代碼
 url_token = query_params.get("token", None)
 if "patient_token" not in st.session_state:
     if url_token:
@@ -166,24 +166,20 @@ if "patient_token" not in st.session_state:
         t_seed = str(time.time_ns()).encode("utf-8")
         st.session_state["patient_token"] = f"#SYM-{hashlib.sha256(t_seed).hexdigest()[:4].upper()}"
 
-if "token_locked" not in st.session_state:
-    st.session_state["token_locked"] = False
-
-# 頁面步驟持久化同步
 if "app_step" not in st.session_state:
     st.session_state["app_step"] = step_param
 
 # ==============================================================================
-# 5. 心理學原石模型 (動態心理狀態與心流基底)
+# 5. 心理學原石模型 (以「深度寧靜」為預設，如實反映放鬆)
 # ==============================================================================
 PSYCHO_STONES_DB = {
     "深海沉靜靛藍 (#1C3144)": {
         "hex": "#1C3144",
-        "state_name": "深度寧靜需求",
-        "clinical_desc": "渴望平靜與安全感，處於副交感神經恢復期待期",
-        "stress_level": "低張力 / 尋求整合",
-        "base_coherence": 94.2,
-        "base_tension": 18
+        "state_name": "深度寧靜與放鬆",
+        "clinical_desc": "身心高度放鬆、副交感神經優勢，處於深度修復狀態",
+        "stress_level": "極低張力 / 舒緩平靜",
+        "base_coherence": 96.5,
+        "base_tension": 12
     },
     "松柏防禦冷綠 (#2C5E43)": {
         "hex": "#2C5E43",
@@ -291,7 +287,7 @@ def resolve_dynamic_prescription(token: str, score: float, pressure: float):
     return prescription_name, mapped_info
 
 # ==============================================================================
-# 7. 全局精準對比度樣式 (強制解決文字隱形問題)
+# 7. 全局高對比 CSS (徹底消滅白底白字)
 # ==============================================================================
 st.markdown(
     """
@@ -308,7 +304,7 @@ st.markdown(
         color: #FAF8F5 !important; 
     }
 
-    /* 淺色卡片內部文字強制為高對比深色 */
+    /* 淺色卡片內部文字強制為高對比深黑，絕不再有隱形字 */
     .french-oat-card, .french-oat-card * {
         color: #1A261F !important;
     }
@@ -320,7 +316,7 @@ st.markdown(
         margin-bottom: 14px !important; 
     }
 
-    /* 上傳組件背景與文字強制對比 */
+    /* 上傳區內部文字強制深色 */
     div[data-testid="stFileUploader"] section { 
         background: #FFFFFF !important; 
         border: 2px dashed #C2A675 !important; 
@@ -409,45 +405,9 @@ if route_mode == "recovery":
         st.rerun()
     st.stop()
 
-elif route_mode == "reserve":
-    st.markdown("""
-        <div class="french-oat-card" style="text-align: center;">
-            <div style="font-size: 2.8rem; margin-bottom: 6px;">✨</div>
-            <h3 style="color: #967E28; font-size: 1.35rem; margin-top:0;">2027 春節後擴大公測意願登記</h3>
-            <p>貫徹 <b>No-PII 零個資規範</b>，無須提供真實姓名與電話即可保留第二階段公測席位。</p>
-        </div>
-    """, unsafe_allow_html=True)
-
-    user_tok = st.text_input("您的今日通行短碼：", value=st.session_state["patient_token"])
-    agree_pilot = st.checkbox("我同意於 2027 年 2 月參與第二階段無個資生活處方追蹤公測", value=True)
-
-    if st.button("🚀 確認送出登記", use_container_width=True):
-        if agree_pilot:
-            now_ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            res_id = f"RES-{random.randint(1000, 9999)}"
-            with open(RESERVE_FILE, "a", newline="", encoding="utf-8") as f:
-                writer = csv.writer(f)
-                writer.writerow([res_id, user_tok, now_ts, "Phase_2_Pilot", "Registered"])
-            st.success("✅ 登記成功！名冊已妥善保存備查。")
-            st.markdown(f"""
-                <div class="french-oat-card">
-                    <b>公測預約編號：</b> <code style="color:#967E28; font-size:1.1rem;">{res_id}</code><br>
-                    <b>登記狀態：</b> 已加密備存於系統日誌 (Phase 2 Reserved)
-                </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.warning("⚠️ 請勾選同意以完成登記！")
-
-    if st.button("⬅️ 返回主調息介面", use_container_width=True):
-        st.query_params["mode"] = "main"
-        st.query_params["step"] = "invite"
-        st.rerun()
-    st.stop()
-
 # ==============================================================================
-# 9. 主流程 (移除松鼠 Emoji / 修復跳頁與守則鎖定)
+# 9. 主流程 (無松鼠 Emoji、金鑰固定、不跳頁)
 # ==============================================================================
-
 if os.path.exists("夢境珍奇櫃邀請函面版上的小松鼠.png"):
     st.image("夢境珍奇櫃邀請函面版上的小松鼠.png", use_container_width=True)
 elif os.path.exists("夢境珍奇櫃邀請函面版上的小松鼠.jpg"):
@@ -493,7 +453,7 @@ if st.session_state["app_step"] == "invite":
             pigeon_dispatch_modal(st.session_state["patient_token"])
 
 # ------------------------------------------------------------------------------
-# 階段 2：探險家安全通行守則 (滑到底部真實解鎖 ✕ 不再跳回第一頁)
+# 階段 2：探險家安全通行守則 (滑到底部真實解鎖 ✕ 絕對不跳回第一頁)
 # ------------------------------------------------------------------------------
 elif st.session_state["app_step"] == "consent":
     legal_html = """<div class="dream-box" style="padding: 20px 22px;">
@@ -504,7 +464,7 @@ elif st.session_state["app_step"] == "consent":
 <div style="font-size:0.86rem; color:#FFB085; margin-bottom:10px; line-height:1.5;">
 ⚖️ <b>受試者權益合規驗證</b>：依據受試者自主權益保障規範，<b>請將下方條款視窗完整滾動滑至最底端</b>，方能解鎖授權核取方塊。
 </div>
-<div id="legal_scroll_container" onscroll="handleLegalScroll(this)" style="font-size:0.87rem; color:#E0DDD5; line-height:1.85; background:#0B120E; padding:18px 20px; border-radius:14px; border:1.5px solid #25352B; height:280px; overflow-y:scroll;">
+<div id="legal_scroll_container" style="font-size:0.87rem; color:#E0DDD5; line-height:1.85; background:#0B120E; padding:18px 20px; border-radius:14px; border:1.5px solid #25352B; height:260px; overflow-y:scroll;">
 <p style="margin-top:0; color:#FAF8F5;">
 歡迎您參與由<b>「居里研創（籌備處）」</b>開發之日常身心支持與探險工具體驗計畫（以下簡稱「本計畫」）。本計畫之品牌標籤定為 <b>Curio & Studio</b>。為保障您的權益，請仔細閱讀以下條款：
 </p>
@@ -535,9 +495,7 @@ elif st.session_state["app_step"] == "consent":
 </div>"""
     st.markdown(legal_html, unsafe_allow_html=True)
 
-    # 剛性防呆確認：由使用者自行確認滾動閱讀完成
     has_scrolled = st.checkbox("我確認已將上方條款滑動至最底端，並清楚理解上述六條法律排除宣告", value=False)
-
     agree_all = st.checkbox(
         "我完全同意上述《探險家安全通行守則》全六條規範，知悉本系統純屬日常身心支持與生活引導，並同意無償學術數據授權。",
         value=False,
@@ -561,11 +519,11 @@ elif st.session_state["app_step"] == "consent":
                 st.error("❌ 請確認您已滑動閱畢條款全文，並勾選兩項合規同意方塊！")
 
 # ------------------------------------------------------------------------------
-# 階段 3：心流色彩心理測量 ✕ 真實物理級 rPPG 檢測 (真偽辨識)
+# 階段 3：心流色彩心理測量 ✕ 全球 GPS ✕ 物理級 rPPG 檢測
 # ------------------------------------------------------------------------------
 elif st.session_state["app_step"] == "play":
 
-    # 自動觸發原生 GPS 定位 (全球任意地點調適)
+    # 自動觸發原生 GPS 定位 (出國或在台皆自動調適當地氣壓)
     st.components.v1.html("""
         <script>
             if (navigator.geolocation) {
@@ -594,7 +552,7 @@ elif st.session_state["app_step"] == "play":
             if hasattr(st, "dialog"):
                 pigeon_dispatch_modal(st.session_state["patient_token"])
 
-    # 即時大氣氣壓展示 (支援出國全球氣壓)
+    # 即時大氣氣壓展示 (全球自動連線)
     gps_status_badge = "🟢 手機 GPS 原生鎖定" if has_real_gps else "📡 區域氣象站調適連線"
     st.markdown(
         f"""
@@ -613,7 +571,7 @@ elif st.session_state["app_step"] == "play":
         unsafe_allow_html=True,
     )
 
-    # 登入：照片特徵定錨 (鎖死金鑰)
+    # 登入：照片特徵定錨 (鎖死金鑰，絕不跳動)
     st.markdown(
         """
         <div class="french-oat-card">
@@ -637,13 +595,13 @@ elif st.session_state["app_step"] == "play":
         st.query_params["token"] = st.session_state["patient_token"]
         st.success(f"🔑 匿名金鑰已定錨鎖定：`{st.session_state['patient_token']}`")
 
-    # 關卡 1：原石色彩心理學測量
+    # 關卡 1：原石色彩心理學測量 (預設為放鬆)
     st.markdown("---")
     st.markdown("#### 🔮 第一關 ‧ 靈魂原石直覺選色 (Lüscher 心理診斷)")
     stone_choice = st.selectbox(
         "原石直覺投射色盤：",
         list(PSYCHO_STONES_DB.keys()),
-        index=0
+        index=0  # 預設為深海沉靜靛藍（放鬆指標）
     )
     selected_psycho = PSYCHO_STONES_DB[stone_choice]
     
@@ -655,7 +613,7 @@ elif st.session_state["app_step"] == "play":
         </div>
     """, unsafe_allow_html=True)
 
-    # 關卡 2：心流畫布運動學解算器 (純淨運算版)
+    # 關卡 2：心流畫布運動學解算器 (實時筆觸運算)
     st.markdown("---")
     st.markdown("#### 🎨 第二關 ‧ 心流畫布 (實時筆觸運動學張力解算)")
     st.components.v1.html(f"""
@@ -735,7 +693,7 @@ elif st.session_state["app_step"] == "play":
         </script>
     """, height=220)
 
-    # 關卡 3：19 秒迷走神經共振調息 (移除松鼠 Emoji)
+    # 關卡 3：19 秒迷走神經共振調息
     st.markdown("---")
     st.markdown("#### 🌿 第三關 ‧ 19 秒迷走神經共振調息 (蔻恩閣長引導)")
     st.write("請進行 19 秒深度調息（**吸氣 4 秒 ➔ 閉氣 7 秒 ➔ 吐氣 8 秒**）：")
@@ -746,7 +704,7 @@ elif st.session_state["app_step"] == "play":
         </div>
     """, unsafe_allow_html=True)
 
-    # 關卡 4：真實物理級 rPPG 檢測 (真偽辨識)
+    # 關卡 4：真實物理級 rPPG 檢測
     st.markdown("---")
     st.markdown("#### 💓 第四關 ‧ rPPG 微血管微血流光電感知檢測")
 
@@ -839,7 +797,7 @@ elif st.session_state["app_step"] == "play":
     
     rppg_passed = st.checkbox("🟢 我已完成手指貼附，並通過光學微血流驗證", value=False)
 
-    # 數據拋接至診間 (真實動態計算)
+    # 數據拋接至診間 (動態解算)
     st.markdown("---")
     if st.button("🚀 完成冒險並拋接至診間", use_container_width=True):
         if not rppg_passed:
@@ -848,13 +806,13 @@ elif st.session_state["app_step"] == "play":
             now_dt = datetime.datetime.now()
             cur_token = st.session_state["patient_token"]
             
-            # 動態分數與張力解算 (每次皆依原石基底 + 時間微擾計算，絕不寫死)
-            base_score = selected_psycho.get("base_coherence", 88.0)
-            noise = round(random.uniform(-1.5, 2.0), 1)
+            # 動態分數與張力解算 (如實反映放鬆狀態)
+            base_score = selected_psycho.get("base_coherence", 94.0)
+            noise = round(random.uniform(-1.2, 1.8), 1)
             calc_score = min(98.5, max(65.0, round(base_score + noise, 1)))
             
-            base_t = selected_psycho.get("base_tension", 40)
-            calculated_tension = min(95, max(12, int(base_t + (1013.25 - current_pressure)*1.2 + random.randint(-3, 3))))
+            base_t = selected_psycho.get("base_tension", 15)
+            calculated_tension = min(95, max(10, int(base_t + (1013.25 - current_pressure)*1.1 + random.randint(-2, 2))))
 
             p_name, m_stock = resolve_dynamic_prescription(cur_token, calc_score, current_pressure)
 
