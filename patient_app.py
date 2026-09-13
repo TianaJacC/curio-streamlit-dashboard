@@ -29,8 +29,13 @@ SHARED_QUEUE_FILE = os.path.join(LOG_DIR, "active_queue.json")
 FEEDBACK_FILE = os.path.join(LOG_DIR, "user_feedback_log.csv")
 RESERVE_FILE = os.path.join(LOG_DIR, "public_pilot_reservations.csv")
 
+# 讀取 URL 參數
+query_params = st.query_params
+route_mode = query_params.get("mode", "main")
+token_param = query_params.get("token", None)
+
 # ==============================================================================
-# 1. 跨進程持久化存取函式
+# 1. 跨進程持久化存取
 # ==============================================================================
 def save_to_shared_storage(token, record_data):
     db = {}
@@ -71,7 +76,7 @@ def read_from_shared_storage(token):
     return None
 
 # ==============================================================================
-# 2. 全球動態 GPS 氣象 (病患出國或在全台皆自動抓取當地真實氣壓)
+# 2. 全球動態 GPS 與氣象串接 (支援出國與在地定位)
 # ==============================================================================
 @st.cache_data(ttl=180)
 def fetch_global_weather(lat: float, lon: float):
@@ -86,10 +91,6 @@ def fetch_global_weather(lat: float, lon: float):
     except Exception:
         return 1012.5, 25.6, 89.0
 
-query_params = st.query_params
-route_mode = query_params.get("mode", "main")
-step_param = query_params.get("step", "invite")
-
 try:
     user_lat = float(query_params.get("lat", "25.01"))
     user_lon = float(query_params.get("lon", "121.46"))
@@ -101,7 +102,78 @@ except Exception:
 current_pressure, current_temp, current_rh = fetch_global_weather(user_lat, user_lon)
 
 # ==============================================================================
-# 3. 擬人化回饋：夢境管理處 ‧ 皇家郵政信哥 (高對比修復)
+# 3. 剛性金鑰錨定 (手機端鎖定不跳號)
+# ==============================================================================
+if "patient_token" not in st.session_state:
+    if token_param:
+        st.session_state["patient_token"] = token_param
+    else:
+        st.session_state["patient_token"] = "#SYM-CFBD"
+
+if "app_step" not in st.session_state:
+    st.session_state["app_step"] = query_params.get("step", "invite")
+
+# ==============================================================================
+# 4. 深度對比度 CSS（徹底殺死白底白字、強制深色可讀）
+# ==============================================================================
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Garamond:ital,wght@0,400;0,600;1,400&display=swap');
+    
+    .stApp { 
+        background-color: #0A110D !important; 
+        font-family: -apple-system, BlinkMacSystemFont, "Garamond", "PingFang TC", sans-serif; 
+    }
+    
+    /* 深底強制象牙白 */
+    .stApp p, .stApp label, .stApp span, .stMarkdown { 
+        color: #FAF8F5 !important; 
+    }
+
+    /* 淺色卡片內部文字一律強制深黑色 */
+    .dark-text-card, .dark-text-card * {
+        color: #121915 !important;
+    }
+
+    /* 解決 File Uploader 內部說明文字（200MB per file 等）看不清楚的問題 */
+    div[data-testid="stFileUploader"] {
+        background-color: #FFFFFF !important;
+        border: 2px dashed #C2A675 !important;
+        border-radius: 16px !important;
+        padding: 12px !important;
+    }
+    div[data-testid="stFileUploader"] * {
+        color: #121915 !important;
+        font-weight: 600 !important;
+    }
+    div[data-testid="stFileUploader"] button {
+        background: #F4F0E8 !important;
+        color: #121915 !important;
+        border: 1px solid #C2A675 !important;
+    }
+
+    /* Dialog 彈窗深色文字保證 */
+    div[data-testid="stDialog"] div, 
+    div[data-testid="stDialog"] label, 
+    div[data-testid="stDialog"] p, 
+    div[data-testid="stDialog"] span { 
+        color: #121915 !important; 
+        font-weight: 600 !important; 
+    }
+
+    .stButton>button { 
+        border-radius: 12px !important; 
+        border: 1.5px solid #E6CA95 !important; 
+        background: linear-gradient(135deg, #E6CA95 0%, #C2A675 100%) !important; 
+        color: #0A110D !important; 
+        font-weight: 700 !important; 
+        font-size: 1.02rem !important; 
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# ==============================================================================
+# 5. 擬人化回饋彈窗 (文字高對比保證)
 # ==============================================================================
 def save_feedback(role: str, token: str, category: str, content: str):
     timestamp_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -147,28 +219,11 @@ if hasattr(st, "dialog"):
                 st.warning("⚠️ 請寫下一點訊息再讓信哥出發喔！")
 
 # ==============================================================================
-# 4. 金鑰管理：鎖定單一代碼，絕對不跳號
-# ==============================================================================
-def generate_photo_token(photo_bytes: bytes) -> str:
-    digest = hashlib.sha256(photo_bytes).hexdigest()
-    return f"#SYM-{digest[:4].upper()}"
-
-url_token = query_params.get("token", None)
-if "patient_token" not in st.session_state:
-    if url_token:
-        st.session_state["patient_token"] = url_token
-    else:
-        st.session_state["patient_token"] = "#SYM-CFBD"
-
-if "app_step" not in st.session_state:
-    st.session_state["app_step"] = step_param
-
-# ==============================================================================
-# 5. 路由守門員 (忘記金鑰與預約公測)
+# 6. 路由守門員 A：忘記金鑰救援 (剛性攔截，不再載入邀請函！)
 # ==============================================================================
 if route_mode == "recovery":
     st.markdown("""
-        <div style="background:#F7F4EE; border:2px solid #C2A675; border-radius:18px; padding:22px; text-align:center; margin-bottom:16px;">
+        <div class="dark-text-card" style="background:#F7F4EE; border:2px solid #C2A675; border-radius:18px; padding:22px; text-align:center; margin-bottom:16px;">
             <div style="font-size:2.8rem; margin-bottom:6px;">🗝️</div>
             <h3 style="color:#995873 !important; font-size:1.35rem; margin-top:0; font-weight:bold;">30 秒無痕金鑰救援 (Key-Stitching)</h3>
             <p style="color:#121915 !important; font-size:0.95rem; line-height:1.6;">
@@ -195,14 +250,18 @@ if route_mode == "recovery":
             st.info(f"代碼 `{recovered_tok}` 已解算。請直接出示此代碼至現場候診區領取調飲！")
 
     if st.button("⬅️ 返回主調息介面", use_container_width=True):
+        st.query_params.clear()
         st.query_params["mode"] = "main"
         st.query_params["step"] = "invite"
         st.rerun()
     st.stop()
 
+# ==============================================================================
+# 7. 路由守門員 B：預約公測意願登記 (剛性攔截，不再載入邀請函！)
+# ==============================================================================
 elif route_mode == "reserve":
     st.markdown("""
-        <div style="background:#F7F4EE; border:2px solid #C2A675; border-radius:18px; padding:22px; text-align:center; margin-bottom:16px;">
+        <div class="dark-text-card" style="background:#F7F4EE; border:2px solid #C2A675; border-radius:18px; padding:22px; text-align:center; margin-bottom:16px;">
             <div style="font-size:2.8rem; margin-bottom:6px;">✨</div>
             <h3 style="color:#967E28 !important; font-size:1.35rem; margin-top:0; font-weight:bold;">2027 春節後擴大公測意願登記</h3>
             <p style="color:#121915 !important; font-size:0.95rem; line-height:1.6;">貫徹 <b>No-PII 零個資規範</b>，無須提供真實姓名與電話即可保留第二階段公測席位。</p>
@@ -230,13 +289,14 @@ elif route_mode == "reserve":
             st.warning("⚠️ 請勾選同意以完成登記！")
 
     if st.button("⬅️ 返回主調息介面", use_container_width=True):
+        st.query_params.clear()
         st.query_params["mode"] = "main"
         st.query_params["step"] = "invite"
         st.rerun()
     st.stop()
 
 # ==============================================================================
-# 6. 心理學原石與處方庫 (深度放鬆為優先)
+# 8. 心理學原石與處方庫
 # ==============================================================================
 PSYCHO_STONES_DB = {
     "深海沉靜靛藍 (#1C3144) - [深度寧靜與放鬆]": {
@@ -332,39 +392,15 @@ PRESCRIPTION_50_POOL = [
     (2, "歸元神農・甘草小麥紅棗安神湯")
 ]
 
-# ==============================================================================
-# 7. 全局純白與純金樣式 (徹底殺死暗黑色調與字體隱形)
-# ==============================================================================
-st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Garamond:ital,wght@0,400;0,600;1,400&display=swap');
-    
-    .stApp { 
-        background-color: #0A110D !important; 
-        font-family: -apple-system, BlinkMacSystemFont, "Garamond", "PingFang TC", sans-serif; 
-    }
-    
-    /* 所有文字一律強制象牙白，絕不允許半透明與暗黑 */
-    .stApp p, .stApp label, .stApp span, .stMarkdown { 
-        color: #FAF8F5 !important; 
-    }
-
-    .stButton>button { 
-        border-radius: 12px !important; 
-        border: 1.5px solid #E6CA95 !important; 
-        background: linear-gradient(135deg, #E6CA95 0%, #C2A675 100%) !important; 
-        color: #0A110D !important; 
-        font-weight: 700 !important; 
-        font-size: 1.02rem !important; 
-    }
-    </style>
-""", unsafe_allow_html=True)
-
 if os.path.exists("夢境珍奇櫃邀請函面版上的小松鼠.png"):
     st.image("夢境珍奇櫃邀請函面版上的小松鼠.png", use_container_width=True)
 
+# ==============================================================================
+# 9. 主調息流程
+# ==============================================================================
+
 # ------------------------------------------------------------------------------
-# 階段 1：入閣邀請函 (高對比修復)
+# 階段 1：入閣邀請函
 # ------------------------------------------------------------------------------
 if st.session_state["app_step"] == "invite":
     st.markdown(f"""
@@ -400,7 +436,7 @@ if st.session_state["app_step"] == "invite":
             pigeon_dispatch_modal(st.session_state["patient_token"])
 
 # ------------------------------------------------------------------------------
-# 階段 2：探險家安全通行守則 (滑到底部真實解鎖 ✕ 絕對不跳回第一頁)
+# 階段 2：探險家安全通行守則 (滑到底部真實解鎖 ✕ 不再跳回第一頁)
 # ------------------------------------------------------------------------------
 elif st.session_state["app_step"] == "consent":
     st.components.v1.html("""
@@ -449,11 +485,11 @@ elif st.session_state["app_step"] == "consent":
                 st.error("❌ 請勾選上方完成滑動之同意方塊！")
 
 # ------------------------------------------------------------------------------
-# 階段 3：心流色彩心理測量 ✕ 全球 GPS ✕ 筆觸運動學 (常駐頂部按鈕)
+# 階段 3：心流色彩心理測量 ✕ 筆觸運動學 ✕ rPPG (信哥常駐頂部)
 # ------------------------------------------------------------------------------
 elif st.session_state["app_step"] == "play":
 
-    # 常駐頂部導航列 (信哥永遠在上方待命！)
+    # 頂部常駐工具列：信哥按鈕永遠在上方待命！
     col_nav1, col_nav2 = st.columns([1, 2])
     with col_nav1:
         if st.button("↩️ 返回守則", use_container_width=True):
@@ -465,7 +501,7 @@ elif st.session_state["app_step"] == "play":
             if hasattr(st, "dialog"):
                 pigeon_dispatch_modal(st.session_state["patient_token"])
 
-    # 全球 GPS 原生定位連線
+    # 全球 GPS 即時連線
     st.components.v1.html("""
         <script>
             if (navigator.geolocation) {
@@ -498,11 +534,11 @@ elif st.session_state["app_step"] == "play":
         </div>
     """, unsafe_allow_html=True)
 
-    # 登入：照片特徵定錨 (純白底純黑字，高對比)
+    # 登入：照片特徵定錨 (白底黑字，高對比)
     st.markdown("""
-        <div style="background:#FFFFFF; border:2px solid #E6CA95; border-radius:18px; padding:22px; margin-bottom:16px;">
-            <h3 style="margin-top:0; color:#0D1610 !important; font-size:1.2rem; font-weight:bold;">📷 一鍵匿名登入 (Photo Hash Login)</h3>
-            <p style="margin-bottom:0; color:#0D1610 !important; font-size:0.95rem; line-height:1.6;">
+        <div class="dark-text-card" style="background:#FFFFFF; border:2px solid #E6CA95; border-radius:18px; padding:22px; margin-bottom:16px;">
+            <h3 style="margin-top:0; color:#121915 !important; font-size:1.2rem; font-weight:bold;">📷 一鍵匿名登入 (Photo Hash Login)</h3>
+            <p style="margin-bottom:0; color:#121915 !important; font-size:0.95rem; line-height:1.6;">
                 請選取一張<b>喜愛的照片</b>，系統在手機本機生成 SHA-256 唯一密鑰並<b>定錨鎖定</b>，絕不上傳照片本體。
             </p>
         </div>
@@ -530,7 +566,7 @@ elif st.session_state["app_step"] == "play":
         </div>
     """, unsafe_allow_html=True)
 
-    # 關卡 2：心流畫布運動學解算器
+    # 關卡 2：心流畫布運動學解算器 (動態筆觸張力條回歸)
     st.markdown("---")
     st.markdown("#### 🎨 第二關 ‧ 心流畫布 (實時筆觸運動學張力解算)")
     st.components.v1.html(f"""
@@ -610,6 +646,7 @@ elif st.session_state["app_step"] == "play":
         </script>
     """, height=220)
 
+    # 動態筆觸張力條
     canvas_tension = st.slider("筆觸張力神經諧振指數（經軌跡演算法即時估算）：", 10, 95, selected_psycho["base_tension"])
 
     # 關卡 3：19 秒迷走神經共振調息
@@ -749,7 +786,6 @@ elif st.session_state["app_step"] == "play":
 
             save_to_shared_storage(cur_token, payload)
 
-            # 極致對比：純黑底背景，文字強制純白（#FAF8F5）與高亮金（#E6CA95）
             st.markdown(f"""
                 <div style="background:#142017; border:2px solid #E6CA95; border-radius:22px; padding:24px; text-align:center; margin-top:16px;">
                     <h3 style="color:#E6CA95 !important; font-family:Garamond, serif; margin:0 0 10px 0; font-size:1.35rem; font-weight:bold;">✨ 探險印記已封存安全送達診間 ✨</h3>
