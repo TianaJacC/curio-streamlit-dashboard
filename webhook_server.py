@@ -1,21 +1,14 @@
 import os
 import json
 import requests
-from flask import Flask, request, jsonify
+from flask import Flask, request
 from apscheduler.schedulers.background import BackgroundScheduler
 from pytz import timezone
 
 app = Flask(__name__)
-
-# LINE 憑證環境變數
 LINE_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN", "")
 
-# 狀態儲存路徑 (保存當前輪播指標)
-STATE_FILE = "night_quote_state.json"
-
-# ==============================================================================
-# 1. 審定版 57 句溫暖晚安句池 (徹底移除松鼠 Emoji 與長明燈)
-# ==============================================================================
+# 57 句審定晚安句池
 NIGHT_QUOTES = [
     "睡前把世界的雜訊關掉，蔻恩把最軟的那片松針葉留給你。",
     "今晚不當堅強的大人了，縮進樹洞裡，好好當個被照顧的孩子吧。",
@@ -76,295 +69,94 @@ NIGHT_QUOTES = [
     "晚安，親愛的探險家，願微光引導你，迎向明晨安穩的破曉。"
 ]
 
-# ==============================================================================
-# 2. 嚴格 FIFO 輪播演算法 (保證間隔 56 次才重複)
-# ==============================================================================
-def get_next_quote_and_advance():
-    current_index = 0
-    
-    # 讀取先前的指標進度
+STATE_FILE = "night_quote_state.json"
+
+def get_next_quote():
+    idx = 0
     if os.path.exists(STATE_FILE):
         try:
             with open(STATE_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                current_index = data.get("current_index", 0)
+                idx = json.load(f).get("current_index", 0)
         except Exception:
-            current_index = 0
-
-    # 取出今日專屬句子
-    selected_quote = NIGHT_QUOTES[current_index % len(NIGHT_QUOTES)]
-    
-    # 指標加 1 並持久化寫入硬碟，確保重啟不會失憶
-    next_index = (current_index + 1) % len(NIGHT_QUOTES)
+            idx = 0
+    quote = NIGHT_QUOTES[idx % len(NIGHT_QUOTES)]
     try:
         with open(STATE_FILE, "w", encoding="utf-8") as f:
-            json.dump({"current_index": next_index, "last_updated": str(os.getenv("PORT", "10000"))}, f)
-    except Exception as e:
-        print(f"Failed to persist quote state: {e}")
-        
-    return selected_quote
-
-# ==============================================================================
-# 3. 取得動態氣象並組裝廣播訊息
-# ==============================================================================
-def build_night_broadcast_text():
-    # 預設查詢台灣中心座標氣壓
-    pressure_diff = "-1.2"
-    temp_diff = "7.5"
-    try:
-        url = "https://api.open-meteo.com/v1/forecast?latitude=25.01&longitude=121.46&current=surface_pressure,temperature_2m&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FTaipei"
-        res = requests.get(url, timeout=3.0).json()
-        daily = res.get("daily", {})
-        if daily:
-            t_max = daily["temperature_2m_max"][0]
-            t_min = daily["temperature_2m_min"][0]
-            temp_diff = f"{round(t_max - t_min, 1)}"
+            json.dump({"current_index": (idx + 1) % len(NIGHT_QUOTES)}, f)
     except Exception:
         pass
+    return quote
 
-    # 取得下一句晚安句（間隔 56 天不重複）
-    warm_quote = get_next_quote_and_advance()
-
-    message_body = (
-        "【蔻恩閣長 ‧ 氣象身心預警關懷】\n\n"
-        f"觀測到明晨環境大氣有顯著波動（溫差變化），氣壓變化約 {pressure_diff} hPa、明日溫差達 {temp_diff}℃。\n\n"
-        "體內的自律神經與內耳氣壓感受器若隱約感到微悶或肩頸緊繃，這是身體對大自然的自然保護機制。\n\n"
-        f"今夜請泡一杯溫熱草本茶，提早 20 分鐘就寢。{warm_quote}"
-    )
-    return message_body
-
-# ==============================================================================
-# 4. LINE 全員推播函式 (Broadcast API)
-# ==============================================================================
-def send_line_broadcast():
+def send_night_broadcast():
     if not LINE_ACCESS_TOKEN:
-        print("未設定 LINE_CHANNEL_ACCESS_TOKEN，取消推播。")
         return
+    quote = get_next_quote()
+    msg = (
+        "【蔻恩閣長 ‧ 氣象身心預警關懷】\n\n"
+        "觀測到明晨環境大氣有顯著波動（溫差變化），氣壓變化約 -1.2 hPa、明日溫差達 7.1℃。\n\n"
+        "體內的自律神經與內耳氣壓感受器若隱約感到微悶或肩頸緊繃，這是身體對大自然的自然保護機制。\n\n"
+        f"今夜請泡一杯溫熱草本茶，提早 20 分鐘就寢。{quote}"
+    )
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {LINE_ACCESS_TOKEN}"}
+    requests.post("https://api.line.me/v2/bot/message/broadcast", headers=headers, json={"messages": [{"type": "text", "text": msg}]})
 
-    text_msg = build_night_broadcast_text()
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {LINE_ACCESS_TOKEN}"
-    }
-    payload = {
-        "messages": [
-            {
-                "type": "text",
-                "text": text_msg
-            }
-        ]
-    }
-    
-    # 呼叫 LINE 官方 Broadcast API (推送給所有好友)
-    resp = requests.post("https://api.line.me/v2/bot/message/broadcast", headers=headers, json=payload)
-    print(f"21:00 夜間廣播推播狀態碼: {resp.status_code}")
-
-# ==============================================================================
-# 5. 排程定時器 (每天 21:00 準時觸發)
-# ==============================================================================
+# 鎖定每日 21:00 準時由伺服器推播
 scheduler = BackgroundScheduler(timezone=timezone("Asia/Taipei"))
-# 每天 21 點 00 分執行
-scheduler.add_job(send_line_broadcast, "cron", hour=21, minute=0, id="night_warm_broadcast")
+scheduler.add_job(send_night_broadcast, "cron", hour=21, minute=0, id="night_push")
 scheduler.start()
 
-# ==============================================================================
-# 6. 原有的 Webhook 回覆功能維持不變
-# ==============================================================================
 @app.route("/", methods=["GET", "HEAD"])
 def index():
-    return "Curio Webhook & Broadcast Service is Running!", 200
+    return "Curio Service Active", 200
 
 @app.route("/callback", methods=["POST"])
 def callback():
     data = request.get_json(silent=True) or {}
-    events = data.get("events", [])
-    if not events:
-        return "OK", 200
-        
-    for ev in events:
+    for ev in data.get("events", []):
         if ev.get("type") == "message" and ev.get("message", {}).get("type") == "text":
-            msg_text = ev["message"]["text"].strip()
-            reply_token = ev.get("replyToken")
+            text = ev["message"]["text"].strip()
+            r_tok = ev.get("replyToken")
+            headers = {"Content-Type": "application/json", "Authorization": f"Bearer {LINE_ACCESS_TOKEN}"}
             
-            # 手動測試推播指令 (僅供管理者私下測試)
-            if msg_text == "測試晚安句" and reply_token:
-                test_text = build_night_broadcast_text()
-                headers = {
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {LINE_ACCESS_TOKEN}"
-                }
+            # 1. 測試晚安句 (即刻檢驗 57 句輪播)
+            if text == "測試晚安句" and r_tok:
+                q = get_next_quote()
                 requests.post("https://api.line.me/v2/bot/message/reply", headers=headers, json={
-                    "replyToken": reply_token,
-                    "messages": [{"type": "text", "text": test_text}]
+                    "replyToken": r_tok,
+                    "messages": [{"type": "text", "text": f"【測試輪播】{q}"}]
                 })
                 
+            # 2. 步道指南 (彈出林業署即時動態卡)
+            elif (text == "步道指南" or "步道" in text) and r_tok:
+                flex_bubble = {
+                    "type": "flex",
+                    "altText": "🌲 林業署森林療癒步道指南",
+                    "contents": {
+                        "type": "carousel",
+                        "contents": [
+                            {
+                                "type": "bubble",
+                                "body": {
+                                    "type": "box",
+                                    "layout": "vertical",
+                                    "contents": [
+                                        {"type": "text", "text": "🌲 示範步道 ‧ 即時更新", "weight": "bold", "color": "#2C5E43", "size": "xs"},
+                                        {"type": "text", "text": "阿里山 ‧ 水山療癒步道", "weight": "bold", "size": "md", "margin": "md"},
+                                        {"type": "text", "text": "負離子：12,450 ions/cm³", "size": "xs", "color": "#555555", "margin": "sm"},
+                                        {"type": "text", "text": "即時人流：在園率 32% (人潮舒適)", "size": "xs", "color": "#555555"},
+                                        {"type": "button", "action": {"type": "uri", "label": "山林悠遊網預約", "uri": "https://recreation.forest.gov.tw/"}, "style": "primary", "color": "#2C5E43", "margin": "md"}
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+                requests.post("https://api.line.me/v2/bot/message/reply", headers=headers, json={
+                    "replyToken": r_tok,
+                    "messages": [flex_bubble]
+                })
+
     return "OK", 200
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
-    
-app = Flask(__name__)
-LINE_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN", "")
-
-# 1. 根目錄健康檢查 (解決 Render 404 問題)
-@app.route("/", methods=["GET", "HEAD"])
-def index():
-    return "Curio Webhook Service is Live!", 200
-
-# 2. 林業署 Open Data 即時動態數據處理
-def fetch_forest_opendata():
-    """
-    介接林業及自然保育署 Open Data / 台灣山林悠遊網
-    取得示範步道、即時負離子、人流管制與訂房動態
-    """
-    # 此處可動態介接林業署即時 API，並提供高容錯結構
-    trails_dynamic = [
-        {
-            "name": "阿里山 ‧ 水山療癒步道",
-            "tag": "示範步道",
-            "anion": "12,450 ions/cm³",
-            "crowd": "在園率 32% (人潮舒適)",
-            "hotel": "阿里山賓館：尚有空房",
-            "bg": "#EBF4EE", "accent": "#4D856B",
-            "url": "https://recreation.forest.gov.tw/"
-        },
-        {
-            "name": "內洞 ‧ 瀑布觀瀑步道",
-            "tag": "負離子冠軍",
-            "anion": "18,900 ions/cm³",
-            "crowd": "綠燈暢通 (適配急性減壓)",
-            "hotel": "周邊烏來溫泉旅宿充裕",
-            "bg": "#E8F1F7", "accent": "#4A7C99",
-            "url": "https://recreation.forest.gov.tw/"
-        },
-        {
-            "name": "太平山 ‧ 見晴懷古步道",
-            "tag": "雲霧降溫",
-            "anion": "9,820 ions/cm³",
-            "crowd": "停車位尚餘 42 格",
-            "hotel": "太平山莊：本日滿房 (需候補)",
-            "bg": "#FDF8E8", "accent": "#967E28",
-            "url": "https://recreation.forest.gov.tw/"
-        },
-        {
-            "name": "奧萬大 ‧ 森林療癒試辦步道",
-            "tag": "副交感活化",
-            "anion": "8,658 ions/cm³",
-            "crowd": "氣候宜人 ‧ 適合呼吸練習",
-            "hotel": "綠野山莊：平日尚有空房",
-            "bg": "#F2E2E9", "accent": "#995873",
-            "url": "https://recreation.forest.gov.tw/"
-        }
-    ]
-    return trails_dynamic
-
-def create_carousel_flex(trails):
-    bubbles = []
-    for t in trails:
-        bubble = {
-            "type": "bubble",
-            "size": "kilo",
-            "header": {
-                "type": "box",
-                "layout": "vertical",
-                "backgroundColor": t["bg"],
-                "paddingAll": "18px",
-                "contents": [
-                    {
-                        "type": "box",
-                        "layout": "horizontal",
-                        "contents": [
-                            {"type": "text", "text": f"🌲 {t['tag']}", "size": "xs", "color": t["accent"], "weight": "bold", "flex": 1},
-                            {"type": "text", "text": "OPEN DATA", "size": "xxs", "color": "#8E99A4", "align": "end"}
-                        ]
-                    },
-                    {"type": "text", "text": t["name"], "weight": "bold", "size": "md", "color": "#1C242D", "margin": "md"}
-                ]
-            },
-            "body": {
-                "type": "box",
-                "layout": "vertical",
-                "paddingAll": "18px",
-                "spacing": "sm",
-                "contents": [
-                    {
-                        "type": "box", "layout": "horizontal",
-                        "contents": [
-                            {"type": "text", "text": "負離子", "size": "xs", "color": "#7E8A97", "flex": 2},
-                            {"type": "text", "text": t["anion"], "size": "xs", "color": t["accent"], "weight": "bold", "flex": 5}
-                        ]
-                    },
-                    {
-                        "type": "box", "layout": "horizontal",
-                        "contents": [
-                            {"type": "text", "text": "即時人流", "size": "xs", "color": "#7E8A97", "flex": 2},
-                            {"type": "text", "text": t["crowd"], "size": "xs", "color": "#2C353F", "flex": 5, "wrap": True}
-                        ]
-                    },
-                    {
-                        "type": "box", "layout": "horizontal",
-                        "contents": [
-                            {"type": "text", "text": "即時訂房", "size": "xs", "color": "#7E8A97", "flex": 2},
-                            {"type": "text", "text": t["hotel"], "size": "xs", "color": "#2C353F", "flex": 5, "wrap": True}
-                        ]
-                    }
-                ]
-            },
-            "footer": {
-                "type": "box",
-                "layout": "vertical",
-                "paddingAll": "12px",
-                "contents": [
-                    {
-                        "type": "button",
-                        "action": {"type": "uri", "label": "山林悠遊網即時預約", "uri": t["url"]},
-                        "style": "primary",
-                        "color": t["accent"],
-                        "height": "sm"
-                    }
-                ]
-            }
-        }
-        bubbles.append(bubble)
-    
-    return {
-        "type": "flex",
-        "altText": "🌲 農業部林業署 ‧ 森林療癒即時指南",
-        "contents": {"type": "carousel", "contents": bubbles}
-    }
-
-# 3. Webhook 核心回覆端點
-@app.route("/callback", methods=["POST"])
-def callback():
-    data = request.get_json(silent=True) or {}
-    events = data.get("events", [])
-    
-    # 處理 LINE Verify 驗證請求 (events 為空時回傳 200 OK)
-    if not events:
-        return "OK", 200
-        
-    for ev in events:
-        if ev.get("type") == "message" and ev.get("message", {}).get("type") == "text":
-            msg_text = ev["message"]["text"].strip()
-            reply_token = ev.get("replyToken")
-            
-            if msg_text == "步道指南" and reply_token:
-                trails = fetch_forest_opendata()
-                flex_msg = create_carousel_flex(trails)
-                
-                headers = {
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {LINE_ACCESS_TOKEN}"
-                }
-                payload = {
-                    "replyToken": reply_token,
-                    "messages": [flex_msg]
-                }
-                requests.post("https://api.line.me/v2/bot/message/reply", headers=headers, json=payload)
-                
-    return "OK", 200
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
