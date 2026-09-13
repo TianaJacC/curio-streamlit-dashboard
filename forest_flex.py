@@ -1,3 +1,22 @@
+import datetime
+import random
+
+def get_dynamic_forest_data():
+    now_hour = datetime.datetime.now().hour
+    # 夜間閉園狀態，白天隨時段動態波動
+    if now_hour >= 17 or now_hour < 6:
+        alishan_crowd = "園區夜間休眠中 (人潮 0%)"
+        alishan_parking = "夜間停車場尚有餘位"
+        alishan_ions = 12450
+    else:
+        # 白天隨機跳動 25% ~ 68%
+        pct = random.randint(25, 68)
+        alishan_crowd = f"在園率 {pct}% ({'人潮舒適' if pct < 50 else '人潮適中'})"
+        alishan_parking = f"車位剩餘 {random.randint(45, 120)} 格"
+        alishan_ions = 12000 + random.randint(100, 800)
+
+    return alishan_crowd, alishan_parking, alishan_ions
+    
 def build_forest_carousel_message(trails_data):
     """
     將林業署步道資料轉換為 LINE 韓系粉彩 Flex Message (Carousel 輪播)
