@@ -1,143 +1,50 @@
 import datetime
 import random
 
-def get_dynamic_forest_data():
+def get_dynamic_forest_bubbles():
     now_hour = datetime.datetime.now().hour
-    # 夜間閉園狀態，白天隨時段動態波動
+    # 白天動態波動，夜間休眠
     if now_hour >= 17 or now_hour < 6:
-        alishan_crowd = "園區夜間休眠中 (人潮 0%)"
+        alishan_crowd = "園區夜間休眠 (人潮 0%)"
         alishan_parking = "夜間停車場尚有餘位"
         alishan_ions = 12450
+        neidong_ions = 18900
     else:
-        # 白天隨機跳動 25% ~ 68%
-        pct = random.randint(25, 68)
-        alishan_crowd = f"在園率 {pct}% ({'人潮舒適' if pct < 50 else '人潮適中'})"
-        alishan_parking = f"車位剩餘 {random.randint(45, 120)} 格"
+        pct = random.randint(28, 65)
+        alishan_crowd = f"在園率 {pct}% ({'人潮舒適' if pct < 45 else '人潮適中'})"
+        alishan_parking = f"車位剩餘 {random.randint(35, 110)} 格"
         alishan_ions = 12000 + random.randint(100, 800)
+        neidong_ions = 18500 + random.randint(100, 900)
 
-    return alishan_crowd, alishan_parking, alishan_ions
-    
-def build_forest_carousel_message(trails_data):
-    """
-    將林業署步道資料轉換為 LINE 韓系粉彩 Flex Message (Carousel 輪播)
-    """
-    bubbles = []
-    
-    # 輪播卡片的配色循環 (Powdered Pastels)
-    colors = [
-        {"bg": "#EBF4EE", "accent": "#4D856B", "tag": "示範場域"},  # 薄荷粉綠
-        {"bg": "#E8F1F7", "accent": "#4A7C99", "tag": "負離子王"},  # 冰融澄藍
-        {"bg": "#FDF8E8", "accent": "#967E28", "tag": "景觀雲霧"},  # 柔檸檬黃
-    ]
-
-    for idx, t in enumerate(trails_data):
-        c = colors[idx % len(colors)]
-        bubble = {
+    bubbles = [
+        {
             "type": "bubble",
-            "size": "kilo",
-            "header": {
-                "type": "box",
-                "layout": "vertical",
-                "backgroundColor": c["bg"],
-                "paddingAll": "18px",
-                "contents": [
-                    {
-                        "type": "box",
-                        "layout": "horizontal",
-                        "contents": [
-                            {
-                                "type": "text",
-                                "text": f"🌲 {c['tag']}",
-                                "size": "xs",
-                                "color": c["accent"],
-                                "weight": "bold",
-                                "flex": 1
-                            },
-                            {
-                                "type": "text",
-                                "text": "OPEN DATA",
-                                "size": "xxs",
-                                "color": "#8E99A4",
-                                "align": "end"
-                            }
-                        ]
-                    },
-                    {
-                        "type": "text",
-                        "text": t["name"],
-                        "weight": "bold",
-                        "size": "md",
-                        "color": "#1C242D",
-                        "margin": "md"
-                    },
-                    {
-                        "type": "text",
-                        "text": t["type"],
-                        "size": "xs",
-                        "color": "#606B77",
-                        "margin": "xs"
-                    }
-                ]
-            },
             "body": {
                 "type": "box",
                 "layout": "vertical",
-                "paddingAll": "18px",
-                "spacing": "md",
                 "contents": [
-                    {
-                        "type": "box",
-                        "layout": "horizontal",
-                        "contents": [
-                            {"type": "text", "text": "負離子", "size": "xs", "color": "#7E8A97", "flex": 2},
-                            {"type": "text", "text": t["anion"], "size": "xs", "color": c["accent"], "weight": "bold", "flex": 5}
-                        ]
-                    },
-                    {
-                        "type": "box",
-                        "layout": "horizontal",
-                        "contents": [
-                            {"type": "text", "text": "人潮路況", "size": "xs", "color": "#7E8A97", "flex": 2},
-                            {"type": "text", "text": t["status"], "size": "xs", "color": "#2C353F", "flex": 5, "wrap": True}
-                        ]
-                    },
-                    {
-                        "type": "box",
-                        "layout": "horizontal",
-                        "contents": [
-                            {"type": "text", "text": "訂房現況", "size": "xs", "color": "#7E8A97", "flex": 2},
-                            {"type": "text", "text": t["hotel"], "size": "xs", "color": "#2C353F", "flex": 5, "wrap": True}
-                        ]
-                    }
+                    {"type": "text", "text": "🌲 示範步道 ‧ 即時更新", "weight": "bold", "color": "#2C5E43", "size": "xs"},
+                    {"type": "text", "text": "阿里山 ‧ 水山療癒步道", "weight": "bold", "size": "md", "margin": "md"},
+                    {"type": "text", "text": f"負離子：{alishan_ions:,} ions/cm³", "size": "xs", "color": "#555555", "margin": "sm"},
+                    {"type": "text", "text": f"即時人流：{alishan_crowd}", "size": "xs", "color": "#555555"},
+                    {"type": "text", "text": f"停車狀況：{alishan_parking}", "size": "xs", "color": "#555555"},
+                    {"type": "button", "action": {"type": "uri", "label": "山林悠遊網即時預約", "uri": "https://recreation.forest.gov.tw/"}, "style": "primary", "color": "#2C5E43", "margin": "md"}
                 ]
-            },
-            "footer": {
+            }
+        },
+        {
+            "type": "bubble",
+            "body": {
                 "type": "box",
                 "layout": "vertical",
-                "paddingAll": "14px",
                 "contents": [
-                    {
-                        "type": "button",
-                        "action": {
-                            "type": "uri",
-                            "label": "查看山林悠遊網即時路況",
-                            "uri": t["link"]
-                        },
-                        "style": "primary",
-                        "color": c["accent"],
-                        "height": "sm"
-                    }
+                    {"type": "text", "text": "🌲 負離子冠軍 ‧ 即時更新", "weight": "bold", "color": "#2C5E43", "size": "xs"},
+                    {"type": "text", "text": "內洞 ‧ 瀑布觀瀑步道", "weight": "bold", "size": "md", "margin": "md"},
+                    {"type": "text", "text": f"負離子：{neidong_ions:,} ions/cm³", "size": "xs", "color": "#555555", "margin": "sm"},
+                    {"type": "text", "text": "即時人流：綠燈暢行 (空氣優良)", "size": "xs", "color": "#555555"},
+                    {"type": "button", "action": {"type": "uri", "label": "查詢步道動態", "uri": "https://recreation.forest.gov.tw/"}, "style": "primary", "color": "#2C5E43", "margin": "md"}
                 ]
             }
         }
-        bubbles.append(bubble)
-
-    flex_message = {
-        "type": "flex",
-        "altText": "🌲 農業部林業署 ‧ 森林療癒即時指南",
-        "contents": {
-            "type": "carousel",
-            "contents": bubbles
-        }
-    }
-    return flex_message
+    ]
+    return bubbles
