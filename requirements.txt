@@ -1,6 +1,4 @@
-streamlit
-pandas
+flask
 requests
 apscheduler
 pytz
-flask
