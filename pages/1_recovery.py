@@ -1,65 +1,64 @@
 import streamlit as st
-import hashlib, hmac, os, time
+import hashlib
+import json
+import os
 
-st.set_page_config(
-    page_title="夢境珍奇櫃 ‧ 金鑰救援",
-    page_icon="🗝️",
-    layout="centered",
-    initial_sidebar_state="collapsed"
-)
+st.set_page_config(page_title="金鑰救援 ‧ 夢境珍奇櫃", page_icon="🗝️", layout="centered")
 
-# 樣式注入 (韓系奶油馬卡龍風)
 st.markdown("""
     <style>
-    .stApp { background-color: #F4F3EF !important; color: #1E232A !important; font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif; }
-    .pastel-card { background: #F2E2E9; border: 2px solid #995873; border-radius: 24px; padding: 24px; text-align: center; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(153,88,115,0.08); }
-    .result-card { background: #FFFFFF; border: 1.5px solid #E2DCD2; border-radius: 20px; padding: 20px; text-align: left; margin-top: 16px; }
+    .stApp { background-color: #0A110D !important; font-family: -apple-system, sans-serif; }
+    p, label, span, h2, h3 { color: #FFFFFF !important; }
+    div[data-testid="stFileUploader"] {
+        background-color: #FFFFFF !important;
+        border: 2px dashed #FCBF05 !important;
+        border-radius: 16px !important;
+        padding: 16px !important;
+    }
+    div[data-testid="stFileUploader"] * { color: #000000 !important; font-weight: bold !important; }
+    .stButton>button { 
+        background: linear-gradient(135deg, #FCBF05 0%, #C2A675 100%) !important; 
+        color: #000000 !important; 
+        font-weight: 900 !important; 
+        border-radius: 12px !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-def generate_secure_token(seed_bytes: bytes) -> str:
-    time_entropy = str(time.time_ns()).encode('utf-8')
-    digest = hmac.new(time_entropy, seed_bytes, hashlib.sha256).hexdigest()
-    return f"#SYM-{digest[:4].upper()}"
-
-@st.cache_resource
-def get_global_database():
-    return {}
-global_db = get_global_database()
-
 st.markdown("""
-    <div class="pastel-card">
-        <div style="font-size:2.8rem; margin-bottom:8px;">🗝️</div>
-        <h2 style="color:#995873; margin:0 0 10px 0;">30 秒無痕金鑰救援</h2>
-        <div style="font-size:0.92rem; line-height:1.7; color:#4A3B32;">
-            遺失今日看診金鑰了嗎？<br>
-            請選取您剛才在候診時使用的<b>同一張照片</b>，系統將在 0.1 秒內在手機本機重新解算 SHA-256 特徵，無痕尋回今日調息紀錄！
-        </div>
+    <div style="background:#142017; border:2px solid #FCBF05; border-radius:18px; padding:22px; text-align:center; margin-bottom:16px;">
+        <div style="font-size:2.6rem; margin-bottom:6px;">🗝️</div>
+        <h3 style="color:#FCBF05 !important; font-size:1.3rem; margin-top:0; font-weight:bold;">30 秒無痕金鑰救援 (Key-Stitching)</h3>
+        <p style="color:#FFFFFF !important; font-size:0.92rem; line-height:1.6;">
+            遺失今日通行短碼了嗎？請選取您剛才在候診時上傳的<b>同一張相片</b>，系統將在手機本機重新解算特徵，尋回今日生活處方！
+        </p>
     </div>
 """, unsafe_allow_html=True)
 
-rescue_pic = st.file_uploader("請點擊選取原照片 (JPG / PNG)", type=["jpg", "png", "jpeg"], key="recovery_uploader")
+SHARED_DB_FILE = os.path.join("system_logs", "active_sessions.json")
 
-if rescue_pic:
-    rec_token = generate_secure_token(rescue_pic.getvalue())
-    st.success(f"🔑 本機特徵比對完成！重組代碼：`{rec_token}`")
-    
-    if rec_token in global_db:
-        record = global_db[rec_token]
+def read_token(token):
+    if os.path.exists(SHARED_DB_FILE):
+        try:
+            with open(SHARED_DB_FILE, "r", encoding="utf-8") as f:
+                return json.load(f).get(token)
+        except Exception:
+            pass
+    return None
+
+rescue_file = st.file_uploader("選取剛才使用的相片 (JPG / PNG)", type=["jpg", "png", "jpeg"], key="rec_up")
+if rescue_file:
+    recovered_tok = f"#SYM-{hashlib.sha256(rescue_file.getvalue()).hexdigest()[:4].upper()}"
+    st.success(f"🔑 比對完成！您的通行代碼：`{recovered_tok}`")
+    saved = read_token(recovered_tok)
+    if saved:
         st.markdown(f"""
-            <div class="result-card">
-                <h4 style="color:#995873; margin-top:0;">✨ 今日身心紀錄已尋回</h4>
-                🍃 <b>調飲處方</b>：{record.get('prescription_50', '朝露果妍・玫瑰舒顏茶')}<br>
-                🍵 <b>候診區對應草本植萃調飲處方</b>：<b style="color:#995873;">{record.get('mapped_drink', '朝露果妍・玫瑰舒顏茶')}</b><br>
-                💓 <b>心流平穩分數</b>：{record.get('coherence_score', 92.5)}%<br>
-                🕒 <b>拋接時間</b>：{record.get('timestamp', '今日')}
+            <div style="background:#0B120E; border:1.5px solid #FCBF05; border-radius:14px; padding:16px; color:#FFFFFF !important; line-height:1.8;">
+                🍃 <b>生活處方：</b> <span style="color:#FCBF05 !important;">{saved.get('prescription_50')}</span><br>
+                🍵 <b>現場備有調飲：</b> <span style="color:#FFB085 !important; font-weight:bold;">{saved.get('mapped_drink')}</span><br>
+                💓 <b>心流一致性：</b> {saved.get('coherence_score')}%<br>
+                🕒 <b>拋接時間：</b> {saved.get('timestamp')}
             </div>
         """, unsafe_allow_html=True)
     else:
-        st.markdown(f"""
-            <div class="result-card">
-                <h4 style="color:#1E232A; margin-top:0;">✨ 通行金鑰已產出</h4>
-                您的專屬就診金鑰為：<code style="font-size:1.15rem; color:#995873;">{rec_token}</code><br><br>
-                喝一杯草本植萃調飲，並向郭醫師出示此短碼解鎖問診！
-            </div>
-        """, unsafe_allow_html=True)
+        st.info(f"代碼 `{recovered_tok}` 已解算。請出示此代碼至現場候診區領取調飲！")
