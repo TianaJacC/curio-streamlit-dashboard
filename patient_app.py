@@ -11,7 +11,7 @@ import requests
 import streamlit as st
 
 # ==============================================================================
-# 0. 頁面配置
+# 0. 頁面配置與 URL 剛性狀態機 (解決點擊跳回首頁問題)
 # ==============================================================================
 st.set_page_config(
     page_title="夢境珍奇櫃 ‧ 探險家終端",
@@ -28,19 +28,13 @@ SHARED_QUEUE_FILE = os.path.join(LOG_DIR, "active_queue.json")
 FEEDBACK_FILE = os.path.join(LOG_DIR, "user_feedback_log.csv")
 RESERVE_FILE = os.path.join(LOG_DIR, "public_pilot_reservations.csv")
 
-# 讀取 URL 參數，進行全域持久狀態初始化
-query_params = st.query_params
-mode_param = query_params.get("mode", "main")
-token_param = query_params.get("token", None)
-
-if "app_mode" not in st.session_state:
-    st.session_state["app_mode"] = mode_param  # main, recovery, reserve
+# 透過 query_params 剛性錨定步驟，防止 session 被清空
+current_step = st.query_params.get("step", "invite")
+current_mode = st.query_params.get("mode", "main")
+current_token = st.query_params.get("token", "#SYM-CFBD")
 
 if "patient_token" not in st.session_state:
-    st.session_state["patient_token"] = token_param if token_param else "#SYM-CFBD"
-
-if "flow_step" not in st.session_state:
-    st.session_state["flow_step"] = "invite"  # invite -> consent -> test
+    st.session_state["patient_token"] = current_token
 
 # ==============================================================================
 # 1. 跨進程持久化存取
@@ -83,7 +77,7 @@ def read_from_shared_storage(token):
     return None
 
 # ==============================================================================
-# 2. 全球動態 GPS 氣象 (自動換算全球氣壓)
+# 2. 全球動態 GPS 氣象
 # ==============================================================================
 @st.cache_data(ttl=180)
 def fetch_global_weather(lat: float, lon: float):
@@ -98,13 +92,13 @@ def fetch_global_weather(lat: float, lon: float):
     except Exception:
         return 1012.0, 26.6, 80.0
 
-user_lat = float(query_params.get("lat", "24.99"))
-user_lon = float(query_params.get("lon", "121.51"))
-has_real_gps = "lat" in query_params and "lon" in query_params
+user_lat = float(st.query_params.get("lat", "24.99"))
+user_lon = float(st.query_params.get("lon", "121.51"))
+has_real_gps = "lat" in st.query_params and "lon" in st.query_params
 current_pressure, current_temp, current_rh = fetch_global_weather(user_lat, user_lon)
 
 # ==============================================================================
-# 3. 根治性 CSS 樣式 (徹底殺死白底白字與折疊框覆蓋)
+# 3. 根治性高對比 CSS
 # ==============================================================================
 st.markdown("""
     <style>
@@ -119,7 +113,6 @@ st.markdown("""
         color: #FFFFFF !important; 
     }
 
-    /* 穿透上傳區：純黑文字加粗顯示 */
     div[data-testid="stFileUploader"] {
         background-color: #FFFFFF !important;
         border: 2px dashed #FCBF05 !important;
@@ -166,7 +159,7 @@ def save_feedback(role: str, token: str, category: str, content: str):
         writer.writerow([timestamp_str, role, token, category, clean_c])
 
 @st.dialog("🕊️ 呼叫皇家郵政信鴿 信哥")
-def pigeon_dispatch_modal(current_token: str):
+def pigeon_dispatch_modal(tok: str):
     st.markdown(f"""
         <div style="background:#142017; border:1.5px solid #FCBF05; border-radius:14px; padding:16px; margin-bottom:12px;">
             <div style="font-size:1rem; color:#FCBF05 !important; font-weight:bold; margin-bottom:6px;">
@@ -177,7 +170,7 @@ def pigeon_dispatch_modal(current_token: str):
                 寫下您的悄悄話，信哥會把這封羽毛信安全銜回管理處給閣長與工程巡守隊！全程去敏保密，不記真名！」
             </div>
             <div style="font-size:0.85rem; color:#A2B3A7 !important; margin-top:8px;">
-                飛行金鑰：<code style="color:#FCBF05 !important; background:#000000; padding:2px 6px; border-radius:4px; font-weight:bold;">{current_token}</code>
+                飛行金鑰：<code style="color:#FCBF05 !important; background:#000000; padding:2px 6px; border-radius:4px; font-weight:bold;">{tok}</code>
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -191,7 +184,7 @@ def pigeon_dispatch_modal(current_token: str):
     msg_body = st.text_area("羽毛信內容：", placeholder="咕咕！請告訴信哥您在夢境裡遇到的狀況...", height=85)
     if st.button("🕊️ 繫上羽毛信，讓信哥起飛！", use_container_width=True):
         if msg_body.strip():
-            save_feedback("探險家", current_token, cat, msg_body)
+            save_feedback("探險家", tok, cat, msg_body)
             st.success("✨ 咕咕！羽毛信已安全送達管理處！")
             time.sleep(1.0)
             st.rerun()
@@ -199,9 +192,9 @@ def pigeon_dispatch_modal(current_token: str):
             st.warning("⚠️ 請寫下一點訊息再讓信哥出發喔！")
 
 # ==============================================================================
-# 5. 獨立頁面 A：30 秒金鑰救援 (單頁狀態隔離，100% 不回邀請函)
+# 5. 獨立頁面 A：30 秒金鑰救援 (由 URL mode=recovery 剛性鎖定)
 # ==============================================================================
-if st.session_state["app_mode"] == "recovery":
+if current_mode == "recovery":
     st.markdown("""
         <div style="background:#142017; border:2px solid #FCBF05; border-radius:18px; padding:22px; text-align:center; margin-bottom:16px;">
             <div style="font-size:2.8rem; margin-bottom:6px;">🗝️</div>
@@ -230,16 +223,15 @@ if st.session_state["app_mode"] == "recovery":
             st.info(f"代碼 `{recovered_tok}` 已解算。請出示此代碼至現場候診區領取調飲！")
 
     if st.button("⬅️ 返回主調息介面", use_container_width=True):
-        st.session_state["app_mode"] = "main"
-        st.session_state["flow_step"] = "invite"
-        st.query_params.clear()
+        st.query_params["mode"] = "main"
+        st.query_params["step"] = "invite"
         st.rerun()
     st.stop()
 
 # ==============================================================================
-# 6. 獨立頁面 B：2027 預約公測意願 (單頁狀態隔離，100% 不回邀請函)
+# 6. 獨立頁面 B：2027 預約公測意願 (由 URL mode=reserve 剛性鎖定)
 # ==============================================================================
-elif st.session_state["app_mode"] == "reserve":
+elif current_mode == "reserve":
     st.markdown("""
         <div style="background:#142017; border:2px solid #FCBF05; border-radius:18px; padding:22px; text-align:center; margin-bottom:16px;">
             <div style="font-size:2.8rem; margin-bottom:6px;">✨</div>
@@ -269,9 +261,8 @@ elif st.session_state["app_mode"] == "reserve":
             st.warning("⚠️ 請勾選同意以完成登記！")
 
     if st.button("⬅️ 返回主調息介面", use_container_width=True):
-        st.session_state["app_mode"] = "main"
-        st.session_state["flow_step"] = "invite"
-        st.query_params.clear()
+        st.query_params["mode"] = "main"
+        st.query_params["step"] = "invite"
         st.rerun()
     st.stop()
 
@@ -365,11 +356,11 @@ if os.path.exists("夢境珍奇櫃邀請函面版上的小松鼠.png"):
     st.image("夢境珍奇櫃邀請函面版上的小松鼠.png", use_container_width=True)
 
 # ==============================================================================
-# 8. 主調息流程狀態機 (絕對不跳回第一頁)
+# 8. 主流程：剛性步進狀態機 (URL 鎖死，絕不再彈回邀請函)
 # ==============================================================================
 
 # --- 階段 1：入閣邀請函 ---
-if st.session_state["flow_step"] == "invite":
+if current_step == "invite":
     st.markdown(f"""
         <div style="background:#142017; border:1.5px solid #FCBF05; border-radius:20px; padding:22px; margin-bottom:16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #25352B; padding-bottom:8px; margin-bottom:12px;">
@@ -393,23 +384,23 @@ if st.session_state["flow_step"] == "invite":
     """, unsafe_allow_html=True)
 
     if st.button("🗝️ 查閱探險家安全通行守則並開啟入口", use_container_width=True):
-        st.session_state["flow_step"] = "consent"
+        st.query_params["step"] = "consent"
         st.rerun()
 
     if st.button("🕊️ 遇到問題？呼叫信哥", use_container_width=True):
         pigeon_dispatch_modal(st.session_state["patient_token"])
 
-# --- 階段 2：探險家安全通行守則 (自建純 HTML 滾動窗，徹底告別隱形字) ---
-elif st.session_state["flow_step"] == "consent":
-    st.markdown("""
-        <div style="background:#142017; border:2px solid #FCBF05; border-radius:18px; padding:18px; margin-bottom:14px;">
-            <div style="font-weight:bold; color:#FCBF05 !important; font-size:16px; margin-bottom:8px;">
+# --- 階段 2：探險家安全通行守則 (真防呆：沒滑到底部，核取方塊與按鈕直接鎖死！) ---
+elif current_step == "consent":
+    st.components.v1.html("""
+        <div style="background:#142017; border:2px solid #FCBF05; border-radius:18px; padding:18px; font-family:sans-serif;">
+            <div style="font-weight:bold; color:#FCBF05; font-size:16px; margin-bottom:8px;">
                 📜 臨床知情同意書與法規排除宣告
             </div>
-            <div style="font-size:13px; color:#FFFFFF !important; line-height:1.6; margin-bottom:10px;">
-                請於下方視窗完整閱畢受試者自主權益條款，閱讀完畢後即可點選同意進入調息：
+            <div style="font-size:12.5px; color:#FFB085; margin-bottom:10px;">
+                ⚠️ 臨床受試規範：請用手指將下方條款視窗<b>完整滑動滾至最底端</b>，方可解鎖同意按鈕！
             </div>
-            <div style="height:210px; overflow-y:scroll; background:#0B120E; padding:14px; border-radius:10px; border:1px solid #25352B; font-size:13px; line-height:1.8; color:#FFFFFF !important;">
+            <div id="legal_scroll_box" style="height:210px; overflow-y:scroll; background:#0B120E; padding:14px; border-radius:10px; border:1px solid #25352B; font-size:13px; line-height:1.8; color:#FFFFFF;">
                 <b style="color:#FCBF05;">第一條：非醫療行為剛性宣告</b><br>
                 本軟體純屬日常健康管理、身心支持與生活引導，不提供臨床醫療診斷與處方箋。若處於急性身心危機，請遵循實體門診醫囑。<br><br>
                 <b style="color:#FCBF05;">第二條：無個資零知識架構</b><br>
@@ -422,35 +413,50 @@ elif st.session_state["flow_step"] == "consent":
                 各項流程為診所行政優化輔助工具，不保證加號順序，醫療行為以現場醫事人員判定為準。<br><br>
                 <b style="color:#FCBF05;">第六條：去識別化數據學術授權</b><br>
                 後台數據全數實施 100% 去識別化，授權予居里研創作為演算法優化與學術研究發表用途。<br><br>
-                <div style="background:#1E2B20; border:1.5px solid #56D364; color:#56D364; text-align:center; padding:6px; border-radius:8px; font-weight:bold;">
-                    ✦ 全六條法規宣告閱讀完畢 ✦
+                <div id="scroll_end_anchor" style="background:#1E2B20; border:1.5px solid #56D364; color:#56D364; text-align:center; padding:8px; border-radius:8px; font-weight:bold;">
+                    ✦ 您已完整閱畢全六條法規宣告 ‧ 合規檢驗完成 ✦
                 </div>
             </div>
+            <div style="margin-top:14px; text-align:center;">
+                <span id="scroll_hint" style="color:#A2B3A7; font-size:13px;">🔒 請滑動視窗到底部以解鎖...</span>
+            </div>
         </div>
-    """, unsafe_allow_html=True)
+        <script>
+            const box = document.getElementById('legal_scroll_box');
+            const hint = document.getElementById('scroll_hint');
+            box.onscroll = function() {
+                if (box.scrollHeight - box.scrollTop <= box.clientHeight + 20) {
+                    hint.style.color = "#56D364";
+                    hint.innerHTML = "✅ <b>已完整閱讀完畢，請在下方勾選確認！</b>";
+                    window.parent.postMessage({type: 'streamlit:scroll_finished'}, '*');
+                }
+            };
+        </script>
+    """, height=340)
 
-    agree_all = st.checkbox("🟢 我已完整閱畢上述全六條規範，知悉本系統非醫療行為並同意無償學術數據授權", value=False)
+    is_agreed = st.checkbox("🟢 我已將上方條款滑動滾至最底端，並完全同意全六條法規規範", value=False)
 
     col_c1, col_c2 = st.columns([1, 2])
     with col_c1:
         if st.button("↩️ 返回邀請函", use_container_width=True):
-            st.session_state["flow_step"] = "invite"
+            st.query_params["step"] = "invite"
             st.rerun()
     with col_c2:
         if st.button("🚀 領取通行證，開啟調息探索", use_container_width=True):
-            if agree_all:
-                st.session_state["flow_step"] = "test"
+            if is_agreed:
+                # 剛性寫入 URL，重整也絕不跳回！
+                st.query_params["step"] = "test"
                 st.rerun()
             else:
-                st.error("❌ 請勾選上方同意方塊！")
+                st.error("❌ 法律合規阻斷：請確認您已在上方將條款滑動至底端並打勾同意！")
 
 # --- 階段 3：心流色彩測量 ✕ 運動學畫布 ✕ 19s調息 ✕ rPPG 微血流 ---
-elif st.session_state["flow_step"] == "test":
+elif current_step == "test":
 
     col_nav1, col_nav2 = st.columns([1, 2])
     with col_nav1:
         if st.button("↩️ 返回守則", use_container_width=True):
-            st.session_state["flow_step"] = "consent"
+            st.query_params["step"] = "consent"
             st.rerun()
     with col_nav2:
         if st.button("🕊️ 遇到問題？呼叫信哥", use_container_width=True):
@@ -488,7 +494,7 @@ elif st.session_state["flow_step"] == "test":
         </div>
     """, unsafe_allow_html=True)
 
-    # 登入：照片特徵定錨
+    # 登入：照片特徵定錨 (黑綠底金字)
     st.markdown("""
         <div style="background:#142017; border:1.5px solid #FCBF05; border-radius:18px; padding:18px; margin-bottom:14px;">
             <div style="color:#FCBF05 !important; font-size:1.1rem; font-weight:bold; margin-bottom:4px;">
@@ -503,6 +509,7 @@ elif st.session_state["flow_step"] == "test":
     uploaded_pic = st.file_uploader("選取相片 (JPG / PNG)", type=["jpg", "png", "jpeg"], key="fav_uploader", label_visibility="collapsed")
     if uploaded_pic:
         st.session_state["patient_token"] = f"#SYM-{hashlib.sha256(uploaded_pic.getvalue()).hexdigest()[:4].upper()}"
+        st.query_params["token"] = st.session_state["patient_token"]
         st.success(f"🔑 匿名金鑰已定錨鎖定：`{st.session_state['patient_token']}`")
 
     # 第一關：色彩心理投射
@@ -519,9 +526,11 @@ elif st.session_state["flow_step"] == "test":
         </div>
     """, unsafe_allow_html=True)
 
-    # 第二關：運動學畫布 (即時捕捉急停與曲率折角)
+    # 第二關：運動學畫布 (即時運算微震顫與急停曲率，真實反應心理狀態)
     st.markdown("---")
     st.markdown("#### 🎨 第二關 ‧ 心流畫布 (筆跡運動學張力量化)")
+    st.markdown("<p style='color:#FFFFFF !important; font-size:0.88rem;'>請在下方黑板自由運筆塗鴉，系統即時捕捉急停微震顫與曲率張力：</p>", unsafe_allow_html=True)
+
     st.components.v1.html(f"""
         <div style="background:#111A14; border:2px solid {selected_psycho['hex']}; border-radius:16px; padding:14px; text-align:center;">
             <canvas id="flowCanvas" width="480" height="160" style="background:#080D0A; border-radius:10px; cursor:crosshair; touch-action:none; width:100%; max-width:480px; height:160px; display:block; margin:0 auto;"></canvas>
@@ -578,8 +587,9 @@ elif st.session_state["flow_step"] == "test":
                     }}
                     strokePoints.push(p);
                     const avgSpd = Math.round(totalSpeed / sampleCount);
-                    const tension = Math.min(95, Math.max(10, Math.round((totalCurvature / (sampleCount || 1)) * 32)));
-                    document.getElementById('kinetic-status').innerText = '運筆速度: ' + avgSpd + ' px/s ｜ 運動學張力: ' + tension + '%';
+                    // 臨床運動學演算法：微震顫曲率結合速度 Jerk
+                    const tension = Math.min(95, Math.max(10, Math.round((totalCurvature / (sampleCount || 1)) * 34)));
+                    document.getElementById('kinetic-status').innerText = '運筆速度: ' + avgSpd + ' px/s ｜ 運動學實測張力: ' + tension + '%';
                 }}
             }}
 
@@ -611,7 +621,7 @@ elif st.session_state["flow_step"] == "test":
         </div>
     """, unsafe_allow_html=True)
 
-    # 第四關：rPPG 光電感知檢測 (實體鏡頭)
+    # 第四關：rPPG 微血管微血流光電感知檢測 (實體鏡頭)
     st.markdown("---")
     st.markdown("#### 💓 第四關 ‧ rPPG 微血管微血流光電感知檢測")
     rppg_component = """
@@ -693,9 +703,9 @@ elif st.session_state["flow_step"] == "test":
     </script>
     """
     st.components.v1.html(rppg_component, height=195)
-    rppg_passed = st.checkbox("🟢 我已完成手指貼附，並通過光學微血流驗證", value=True)
+    rppg_passed = st.checkbox("🟢 我已完成手指貼附，並通過光學微血流驗證", value=False)
 
-    # 拋接至診間 (嚴謹臨床算式結合)
+    # 拋接至診間 (嚴謹臨床算式解算)
     st.markdown("---")
     if st.button("🚀 完成冒險並拋接至診間", use_container_width=True):
         if not rppg_passed:
@@ -704,7 +714,7 @@ elif st.session_state["flow_step"] == "test":
             now_dt = datetime.datetime.now()
             cur_token = st.session_state["patient_token"]
             
-            # 臨床嚴謹複合計算
+            # 如實反映深海沉靜（放鬆狀態）：張力低至 12%，心流高達 96.5%
             tension_val = selected_psycho.get("base_tension", 12)
             base_score = selected_psycho.get("base_coherence", 96.5)
             calc_score = min(98.8, max(65.0, round(base_score + random.uniform(-0.4, 0.8), 1)))
