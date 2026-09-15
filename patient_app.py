@@ -398,7 +398,7 @@ elif st.session_state["current_step"] == "consent":
             <div style="font-weight:bold; color:#FCBF05; font-size:16px; margin-bottom:8px;">
                 📜 臨床知情同意書與法規排除宣告
             </div>
-            <div style="font-size:12.5px; color:#FFB085; margin-bottom:10px;">
+            <div style="font-size:12.5px; color:#FFB085; margin-bottom:20px;">
                 ⚠️ <b>剛性受試者規範</b>：請用手指將下方條款視窗<b>完整滑動滾至最底端</b>，方可解鎖授權確認！
             </div>
             <div id="legal_scroll_box" style="height:220px; overflow-y:scroll; background:#0B120E; padding:14px; border-radius:10px; border:1.5px solid #25352B; font-size:13px; line-height:1.85; color:#FFFFFF;">
