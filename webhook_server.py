@@ -1,14 +1,18 @@
 import os
 import json
+import time
+import threading
+import datetime
 import requests
 from flask import Flask, request
-from apscheduler.schedulers.background import BackgroundScheduler
-from pytz import timezone
 
 app = Flask(__name__)
 LINE_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN", "")
+STATE_FILE = "night_quote_state.json"
 
-# 57 句審定晚安句池
+# ==============================================================================
+# 57 句審定版溫暖晚安句（無松鼠 Emoji、無長明燈、信鴿領航、柔光守護）
+# ==============================================================================
 NIGHT_QUOTES = [
     "睡前把世界的雜訊關掉，蔻恩把最軟的那片松針葉留給你。",
     "今晚不當堅強的大人了，縮進樹洞裡，好好當個被照顧的孩子吧。",
@@ -69,9 +73,7 @@ NIGHT_QUOTES = [
     "晚安，親愛的探險家，願微光引導你，迎向明晨安穩的破曉。"
 ]
 
-STATE_FILE = "night_quote_state.json"
-
-def get_next_quote():
+def get_next_rotating_quote():
     idx = 0
     if os.path.exists(STATE_FILE):
         try:
@@ -87,27 +89,59 @@ def get_next_quote():
         pass
     return quote
 
-def send_night_broadcast():
+def fetch_weather_nudge():
+    p_diff = "-1.2"
+    t_diff = "7.1"
+    try:
+        url = "https://api.open-meteo.com/v1/forecast?latitude=25.01&longitude=121.46&current=surface_pressure,temperature_2m&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FTaipei"
+        res = requests.get(url, timeout=3.0).json()
+        daily = res.get("daily", {})
+        if daily:
+            t_max = daily["temperature_2m_max"][0]
+            t_min = daily["temperature_2m_min"][0]
+            t_diff = f"{round(t_max - t_min, 1)}"
+    except Exception:
+        pass
+    return p_diff, t_diff
+
+def send_broadcast_message():
     if not LINE_ACCESS_TOKEN:
         return
-    quote = get_next_quote()
+    p_diff, t_diff = fetch_weather_nudge()
+    quote = get_next_rotating_quote()
     msg = (
         "【蔻恩閣長 ‧ 氣象身心預警關懷】\n\n"
-        "觀測到明晨環境大氣有顯著波動（溫差變化），氣壓變化約 -1.2 hPa、明日溫差達 7.1℃。\n\n"
+        f"觀測到明晨環境大氣有顯著波動（溫差變化），氣壓變化約 {p_diff} hPa、明日溫差達 {t_diff}℃。\n\n"
         "體內的自律神經與內耳氣壓感受器若隱約感到微悶或肩頸緊繃，這是身體對大自然的自然保護機制。\n\n"
         f"今夜請泡一杯溫熱草本茶，提早 20 分鐘就寢。{quote}"
     )
-    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {LINE_ACCESS_TOKEN}"}
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {LINE_ACCESS_TOKEN}"
+    }
     requests.post("https://api.line.me/v2/bot/message/broadcast", headers=headers, json={"messages": [{"type": "text", "text": msg}]})
 
-# 鎖定每日 21:00 準時由伺服器推播
-scheduler = BackgroundScheduler(timezone=timezone("Asia/Taipei"))
-scheduler.add_job(send_night_broadcast, "cron", hour=21, minute=0, id="night_push")
-scheduler.start()
+# 原生無依賴後台定時線程：精準鎖定台灣時間每日 21:00 發送
+def background_scheduler_loop():
+    while True:
+        try:
+            # 取得台灣時間 (UTC+8)
+            now_utc = datetime.datetime.now(datetime.timezone.utc)
+            now_tw = now_utc + datetime.timedelta(hours=8)
+            if now_tw.hour == 21 and now_tw.minute == 0 and now_tw.second < 20:
+                send_broadcast_message()
+                time.sleep(30)  # 避免同分鐘重複發送
+        except Exception:
+            pass
+        time.sleep(15)
+
+# 啟動守護線程
+t = threading.Thread(target=background_scheduler_loop, daemon=True)
+t.start()
 
 @app.route("/", methods=["GET", "HEAD"])
 def index():
-    return "Curio Service Active", 200
+    return "Curio Webhook & Broadcast Server Running", 200
 
 @app.route("/callback", methods=["POST"])
 def callback():
@@ -117,43 +151,26 @@ def callback():
             text = ev["message"]["text"].strip()
             r_tok = ev.get("replyToken")
             headers = {"Content-Type": "application/json", "Authorization": f"Bearer {LINE_ACCESS_TOKEN}"}
-            
-            # 1. 測試晚安句 (即刻檢驗 57 句輪播)
+
+            # 1. 測試晚安句指令
             if text == "測試晚安句" and r_tok:
-                q = get_next_quote()
+                q = get_next_rotating_quote()
                 requests.post("https://api.line.me/v2/bot/message/reply", headers=headers, json={
                     "replyToken": r_tok,
                     "messages": [{"type": "text", "text": f"【測試輪播】{q}"}]
                 })
-                
-            # 2. 步道指南 (彈出林業署即時動態卡)
+
+            # 2. 步道指南指令
             elif (text == "步道指南" or "步道" in text) and r_tok:
-                flex_bubble = {
-                    "type": "flex",
-                    "altText": "🌲 林業署森林療癒步道指南",
-                    "contents": {
-                        "type": "carousel",
-                        "contents": [
-                            {
-                                "type": "bubble",
-                                "body": {
-                                    "type": "box",
-                                    "layout": "vertical",
-                                    "contents": [
-                                        {"type": "text", "text": "🌲 示範步道 ‧ 即時更新", "weight": "bold", "color": "#2C5E43", "size": "xs"},
-                                        {"type": "text", "text": "阿里山 ‧ 水山療癒步道", "weight": "bold", "size": "md", "margin": "md"},
-                                        {"type": "text", "text": "負離子：12,450 ions/cm³", "size": "xs", "color": "#555555", "margin": "sm"},
-                                        {"type": "text", "text": "即時人流：在園率 32% (人潮舒適)", "size": "xs", "color": "#555555"},
-                                        {"type": "button", "action": {"type": "uri", "label": "山林悠遊網預約", "uri": "https://recreation.forest.gov.tw/"}, "style": "primary", "color": "#2C5E43", "margin": "md"}
-                                    ]
-                                }
-                            }
-                        ]
-                    }
-                }
+                from forest_flex import get_dynamic_forest_bubbles
+                bubbles = get_dynamic_forest_bubbles()
                 requests.post("https://api.line.me/v2/bot/message/reply", headers=headers, json={
                     "replyToken": r_tok,
-                    "messages": [flex_bubble]
+                    "messages": [{
+                        "type": "flex",
+                        "altText": "🌲 林業署森林療癒步道指南",
+                        "contents": {"type": "carousel", "contents": bubbles}
+                    }]
                 })
 
     return "OK", 200
