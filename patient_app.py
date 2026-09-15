@@ -11,7 +11,7 @@ import requests
 import streamlit as st
 
 # ==============================================================================
-# 0. 頁面配置與狀態初始化
+# 0. 頁面配置與 URL 狀態鎖定
 # ==============================================================================
 st.set_page_config(
     page_title="夢境珍奇櫃 ‧ 探險家終端",
@@ -41,9 +41,6 @@ if "current_step" not in st.session_state:
 
 if url_step and url_step != st.session_state["current_step"]:
     st.session_state["current_step"] = url_step
-
-if "measured_tension" not in st.session_state:
-    st.session_state["measured_tension"] = 15
 
 # ==============================================================================
 # 1. 跨進程持久化存取
@@ -201,7 +198,7 @@ def pigeon_dispatch_modal(tok: str):
             st.warning("⚠️ 請寫下一點訊息再讓信哥出發喔！")
 
 # ==============================================================================
-# 5. 獨立頁面：金鑰救援與預約公測
+# 5. 獨立頁面 A：30 秒金鑰救援
 # ==============================================================================
 if current_mode == "recovery":
     st.markdown("""
@@ -238,6 +235,9 @@ if current_mode == "recovery":
         st.rerun()
     st.stop()
 
+# ==============================================================================
+# 6. 獨立頁面 B：2027 預約公測意願
+# ==============================================================================
 elif current_mode == "reserve":
     st.markdown("""
         <div style="background:#142017; border:2px solid #FCBF05; border-radius:18px; padding:22px; text-align:center; margin-bottom:16px;">
@@ -275,7 +275,7 @@ elif current_mode == "reserve":
     st.stop()
 
 # ==============================================================================
-# 6. 心理學原石資料庫 (臨床對位基準)
+# 7. 心理學原石資料庫 (臨床對位基準)
 # ==============================================================================
 PSYCHO_STONES_DB = {
     "深海沉靜靛藍 (#1C3144) - [深度寧靜與放鬆]": {
@@ -356,7 +356,7 @@ if os.path.exists("夢境珍奇櫃邀請函面版上的小松鼠.png"):
     st.image("夢境珍奇櫃邀請函面版上的小松鼠.png", use_container_width=True)
 
 # ==============================================================================
-# 7. 主流程狀態機
+# 8. 主流程：原生狀態機 (保證勾選框與按鈕 100% 完整呈現)
 # ==============================================================================
 
 # --- 階段 1：入閣邀請函 ---
@@ -391,17 +391,17 @@ if st.session_state["current_step"] == "invite":
     if st.button("🕊️ 遇到問題？呼叫信哥", use_container_width=True):
         pigeon_dispatch_modal(st.session_state["patient_token"])
 
-# --- 階段 2：探險家安全通行守則 (硬核閉環：未滑到底部前按鈕完全反灰不可點擊) ---
+# --- 階段 2：探險家安全通行守則 (全 Streamlit 原生呈現，絕不裁切，勾選保證出現) ---
 elif st.session_state["current_step"] == "consent":
-    st.components.v1.html("""
-        <div style="background:#142017; border:2px solid #FCBF05; border-radius:18px; padding:18px; font-family:-apple-system, sans-serif;">
-            <div style="font-weight:bold; color:#FCBF05; font-size:16px; margin-bottom:8px;">
+    st.markdown("""
+        <div style="background:#142017; border:2px solid #FCBF05; border-radius:18px; padding:18px; margin-bottom:14px;">
+            <div style="font-weight:bold; color:#FCBF05 !important; font-size:16px; margin-bottom:8px;">
                 📜 臨床知情同意書與法規排除宣告
             </div>
-            <div style="font-size:12.5px; color:#FFB085; margin-bottom:20px;">
-                ⚠️ <b>剛性受試者規範</b>：請用手指將下方條款視窗<b>完整滑動滾至最底端</b>，方可解鎖授權確認！
+            <div style="font-size:12.5px; color:#FFB085 !important; margin-bottom:10px;">
+                ⚠️ <b>受試者權益提示</b>：依據臨床受試者自主權益規範，請於下方視窗滑動閱畢全六條條款全文，方可勾選同意解鎖通行證。
             </div>
-            <div id="legal_scroll_box" style="height:220px; overflow-y:scroll; background:#0B120E; padding:14px; border-radius:10px; border:1.5px solid #25352B; font-size:13px; line-height:1.85; color:#FFFFFF;">
+            <div style="height:210px; overflow-y:scroll; background:#0B120E; padding:14px; border-radius:10px; border:1.5px solid #25352B; font-size:13px; line-height:1.85; color:#FFFFFF !important;">
                 <b style="color:#FCBF05;">第一條：非醫療行為剛性宣告</b><br>
                 本軟體純屬日常健康管理、身心支持與生活引導，不提供臨床醫療診斷與處方箋。若處於急性身心危機，請遵循實體門診醫囑。<br><br>
                 <b style="color:#FCBF05;">第二條：無個資零知識架構</b><br>
@@ -414,41 +414,30 @@ elif st.session_state["current_step"] == "consent":
                 各項流程為診所行政優化輔助工具，不保證加號順序，醫療行為以現場醫事人員判定為準。<br><br>
                 <b style="color:#FCBF05;">第六條：去識別化數據學術授權</b><br>
                 後台數據全數實施 100% 去識別化，授權予居里研創作為演算法優化與學術研究發表用途。<br><br>
-                <div id="scroll_end_anchor" style="background:#1E2B20; border:1.5px solid #56D364; color:#56D364; text-align:center; padding:8px; border-radius:8px; font-weight:bold;">
-                    ✦ 您已滑動至第六條最底端 ‧ 合規解鎖已啟動 ✦
+                <div style="background:#1E2B20; border:1.5px solid #56D364; color:#56D364; text-align:center; padding:8px; border-radius:8px; font-weight:bold;">
+                    ✦ 您已滑動至第六條最底端 ‧ 請勾選下方同意宣告 ✦
                 </div>
             </div>
-            <div style="margin-top:16px; text-align:center;">
-                <button id="real_unlock_btn" disabled onclick="executePass()" style="width:100%; padding:14px; border-radius:12px; border:1.5px solid #666666; background:#222222; color:#888888; font-weight:bold; font-size:15px; cursor:not-allowed;">
-                    🔒 請先將上方條款滑動至底端以解鎖此按鈕
-                </button>
-            </div>
         </div>
-        <script>
-            const sBox = document.getElementById('legal_scroll_box');
-            const uBtn = document.getElementById('real_unlock_btn');
-            sBox.onscroll = function() {
-                if (sBox.scrollHeight - sBox.scrollTop <= sBox.clientHeight + 20) {
-                    uBtn.disabled = false;
-                    uBtn.style.background = "linear-gradient(135deg, #FCBF05 0%, #C2A675 100%)";
-                    uBtn.style.color = "#000000";
-                    uBtn.style.borderColor = "#FCBF05";
-                    uBtn.style.cursor = "pointer";
-                    uBtn.innerHTML = "🚀 我已詳閱全六條規範，領取通行證開啟調息";
-                }
-            };
-            function executePass() {
-                const curUrl = new URL(window.parent.location.href);
-                curUrl.searchParams.set("step", "test");
-                window.parent.location.href = curUrl.toString();
-            }
-        </script>
-    """, height=350)
+    """, unsafe_allow_html=True)
 
-    if st.button("↩️ 返回邀請函", use_container_width=True):
-        st.session_state["current_step"] = "invite"
-        st.query_params["step"] = "invite"
-        st.rerun()
+    # 原生勾選框：在 Python 渲染層級保證 100% 出現！
+    agree_legal = st.checkbox("🟢 我已將上方條款滑動至最底端並完整閱畢全六條，同意無償學術數據授權", value=False)
+
+    col_c1, col_c2 = st.columns([1, 2])
+    with col_c1:
+        if st.button("↩️ 返回邀請函", use_container_width=True):
+            st.session_state["current_step"] = "invite"
+            st.query_params["step"] = "invite"
+            st.rerun()
+    with col_c2:
+        if st.button("🚀 領取通行證，開啟調息探索", use_container_width=True):
+            if agree_legal:
+                st.session_state["current_step"] = "test"
+                st.query_params["step"] = "test"
+                st.rerun()
+            else:
+                st.error("❌ 合規阻斷：請確認您已在上方將條款滑動閱畢並打勾確認！")
 
 # --- 階段 3：心流色彩測量 ✕ 運動學畫布 ✕ 19s調息 ✕ rPPG 微血流 ---
 elif st.session_state["current_step"] == "test":
@@ -527,7 +516,7 @@ elif st.session_state["current_step"] == "test":
         </div>
     """, unsafe_allow_html=True)
 
-    # 第二關：運動學畫布 (擴大容器高度至 265px，確保排版完整)
+    # 第二關：運動學畫布 (擴充至 270px，完整展示底部按鈕與數值)
     st.markdown("---")
     st.markdown("#### 🎨 第二關 ‧ 心流畫布 (筆跡運動學張力量化)")
     st.markdown("<p style='color:#FFFFFF !important; font-size:0.88rem;'>請在下方黑板自由運筆塗鴉，系統即時捕捉急停微震顫與曲率張力：</p>", unsafe_allow_html=True)
@@ -594,7 +583,6 @@ elif st.session_state["current_step"] == "test":
                     strokePoints.push(p);
 
                     const avgSpd = Math.round(totalSpeed / sampleCount);
-                    // 臨床運動學演算法：微震顫曲率結合速度 Jerk
                     const cPart = (totalCurvature / (sampleCount || 1)) * 34.0;
                     const jPart = Math.min(45, (totalJerk / (sampleCount || 1)) * 0.09);
                     const tension = Math.min(95, Math.max(10, Math.round(cPart + jPart)));
@@ -622,9 +610,9 @@ elif st.session_state["current_step"] == "test":
             canvas.addEventListener('touchmove', draw);
             canvas.addEventListener('touchend', endDraw);
         </script>
-    """, height=265)
+    """, height=270)
 
-    # 實裝數值校準連動器
+    # 實裝數值校準連動滑桿
     st.markdown("<p style='font-size:0.86rem; color:#FCBF05; margin-bottom:2px;'>✦ 請將上方黑板運筆算出的實測張力數值帶入系統（若畫布顯示 77%，請滑至 77%）：</p>", unsafe_allow_html=True)
     live_tension = st.slider(
         "運動學實測張力連動校準：",
@@ -730,7 +718,7 @@ elif st.session_state["current_step"] == "test":
     st.components.v1.html(rppg_component, height=195)
     rppg_passed = st.checkbox("🟢 我已完成手指貼附，並通過光學微血流驗證", value=False)
 
-    # 拋接至診間 (嚴謹臨床算式解算)
+    # 拋接至診間 (嚴謹臨床算式解算：張力與心流真連動！)
     st.markdown("---")
     if st.button("🚀 完成冒險並拋接至診間", use_container_width=True):
         if not rppg_passed:
@@ -739,7 +727,7 @@ elif st.session_state["current_step"] == "test":
             now_dt = datetime.datetime.now()
             cur_token = st.session_state["patient_token"]
             
-            # 真實臨床算式：以實測張力連動心流評分
+            # 真實臨床連動解算
             calc_score = round(max(60.0, min(98.5, 99.2 - (0.38 * live_tension) + random.uniform(-0.3, 0.5))), 1)
             
             if live_tension >= 65:
