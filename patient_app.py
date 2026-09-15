@@ -29,6 +29,7 @@ SHARED_QUEUE_FILE = os.path.join(LOG_DIR, "active_queue.json")
 FEEDBACK_FILE = os.path.join(LOG_DIR, "user_feedback_log.csv")
 RESERVE_FILE = os.path.join(LOG_DIR, "public_pilot_reservations.csv")
 
+# 讀取 URL 路由
 query_params = st.query_params
 route_mode = query_params.get("mode", "main")
 step_param = query_params.get("step", "invite")
@@ -39,9 +40,6 @@ if "patient_token" not in st.session_state:
         st.session_state["patient_token"] = url_token
     else:
         st.session_state["patient_token"] = "#SYM-CFBD"
-
-if "app_step" not in st.session_state:
-    st.session_state["app_step"] = step_param
 
 # ==============================================================================
 # 1. 跨進程持久化資料庫存取
@@ -85,33 +83,7 @@ def read_from_shared_storage(token):
     return None
 
 # ==============================================================================
-# 2. 全球動態 GPS 氣象 (自動無感定位)
-# ==============================================================================
-@st.cache_data(ttl=180)
-def fetch_global_weather(lat: float, lon: float):
-    try:
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=surface_pressure,temperature_2m,relative_humidity_2m&timezone=auto"
-        res = requests.get(url, timeout=3.5).json()
-        current = res.get("current", {})
-        pressure = current.get("surface_pressure", 1012.0)
-        temp = current.get("temperature_2m", 26.6)
-        rh = current.get("relative_humidity_2m", 80.0)
-        return float(pressure), float(temp), float(rh)
-    except Exception:
-        return 1012.0, 26.6, 80.0
-
-try:
-    user_lat = float(query_params.get("lat", "24.99"))
-    user_lon = float(query_params.get("lon", "121.51"))
-    has_real_gps = "lat" in query_params and "lon" in query_params
-except Exception:
-    user_lat, user_lon = 24.99, 121.51
-    has_real_gps = False
-
-current_pressure, current_temp, current_rh = fetch_global_weather(user_lat, user_lon)
-
-# ==============================================================================
-# 3. 根治性 CSS 穿透注入 (強制解決 200MB 與 Expander 隱形字)
+# 2. 全局高對比 CSS 注入
 # ==============================================================================
 st.markdown("""
     <style>
@@ -126,14 +98,10 @@ st.markdown("""
         color: #FFFFFF !important; 
     }
 
-    /* 穿透覆蓋 Expander 標題：強制亮金黃與深底 */
     div[data-testid="stExpander"] {
         background-color: #142017 !important;
         border: 2px solid #FCBF05 !important;
         border-radius: 14px !important;
-    }
-    div[data-testid="stExpander"] details summary {
-        background-color: #142017 !important;
     }
     div[data-testid="stExpander"] details summary span,
     div[data-testid="stExpander"] details summary p,
@@ -146,7 +114,6 @@ st.markdown("""
         fill: #FCBF05 !important;
     }
 
-    /* 穿透覆蓋 File Uploader：200MB per file 與說明文字強制純黑加粗 */
     div[data-testid="stFileUploader"] {
         background-color: #FFFFFF !important;
         border: 2px dashed #FCBF05 !important;
@@ -174,7 +141,6 @@ st.markdown("""
         border: none !important;
     }
 
-    /* 按鈕樣式 */
     .stButton>button { 
         border-radius: 12px !important; 
         border: 1.5px solid #FCBF05 !important; 
@@ -187,53 +153,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 4. 信哥回饋彈窗 (全域定義，寫入合法 CSV)
-# ==============================================================================
-def save_feedback(role: str, token: str, category: str, content: str):
-    timestamp_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    file_exists = os.path.exists(FEEDBACK_FILE)
-    with open(FEEDBACK_FILE, "a", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
-        if not file_exists:
-            writer.writerow(["Timestamp", "Role", "Token", "Category", "Content"])
-        clean_content = content.replace("\n", " ").replace("\r", " ").strip()
-        writer.writerow([timestamp_str, role, token, category, clean_content])
-
-@st.dialog("🕊️ 呼叫皇家郵政信鴿 信哥")
-def pigeon_dispatch_modal(current_token: str):
-    st.markdown(f"""
-        <div style="background:#142017; border:1.5px solid #FCBF05; border-radius:14px; padding:16px; margin-bottom:12px;">
-            <div style="font-size:1rem; color:#FCBF05 !important; font-weight:bold; margin-bottom:6px;">
-                📮 夢境管理處 ‧ 航線導航中
-            </div>
-            <div style="font-size:0.92rem; color:#FFFFFF !important; line-height:1.7;">
-                「咕咕！探險路上遇到狀況了嗎？<br>
-                寫下您的悄悄話，信哥會把這封羽毛信安全銜回管理處給閣長與工程巡守隊！全程去敏保密，不記真名！」
-            </div>
-            <div style="font-size:0.85rem; color:#A2B3A7 !important; margin-top:8px;">
-                飛行金鑰：<code style="color:#FCBF05 !important; background:#000000; padding:2px 6px; border-radius:4px; font-weight:bold;">{current_token}</code>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("<p style='color:#FFFFFF !important; font-weight:bold; margin-bottom:4px;'>請選擇羽毛信類別：</p>", unsafe_allow_html=True)
-    cat = st.radio(
-        "羽毛信類別選擇",
-        ["📜 羊皮紙翻頁不順", "📷 鏡頭微血流感應受阻", "💡 給閣長與信哥的建議"],
-        label_visibility="collapsed"
-    )
-    msg_body = st.text_area("羽毛信內容：", placeholder="咕咕！請告訴信哥您在夢境裡遇到的狀況...", height=85)
-    if st.button("🕊️ 繫上羽毛信，讓信哥起飛！", use_container_width=True):
-        if msg_body.strip():
-            save_feedback("探險家", current_token, cat, msg_body)
-            st.success("✨ 咕咕！羽毛信已安全送達管理處！")
-            time.sleep(1.0)
-            st.rerun()
-        else:
-            st.warning("⚠️ 請寫下一點訊息再讓信哥出發喔！")
-
-# ==============================================================================
-# 5. 路由守門員 (忘記金鑰與預約公測)
+# 3. 剛性路由守門員（在任何 UI 生成前強制截流，絕不載入邀請函！）
 # ==============================================================================
 if route_mode == "recovery":
     st.markdown("""
@@ -305,6 +225,78 @@ elif route_mode == "reserve":
         st.query_params["step"] = "invite"
         st.rerun()
     st.stop()
+
+# ==============================================================================
+# 4. 全球動態 GPS 氣象
+# ==============================================================================
+@st.cache_data(ttl=180)
+def fetch_global_weather(lat: float, lon: float):
+    try:
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=surface_pressure,temperature_2m,relative_humidity_2m&timezone=auto"
+        res = requests.get(url, timeout=3.5).json()
+        current = res.get("current", {})
+        pressure = current.get("surface_pressure", 1012.0)
+        temp = current.get("temperature_2m", 26.6)
+        rh = current.get("relative_humidity_2m", 80.0)
+        return float(pressure), float(temp), float(rh)
+    except Exception:
+        return 1012.0, 26.6, 80.0
+
+try:
+    user_lat = float(query_params.get("lat", "24.99"))
+    user_lon = float(query_params.get("lon", "121.51"))
+    has_real_gps = "lat" in query_params and "lon" in query_params
+except Exception:
+    user_lat, user_lon = 24.99, 121.51
+    has_real_gps = False
+
+current_pressure, current_temp, current_rh = fetch_global_weather(user_lat, user_lon)
+
+# ==============================================================================
+# 5. 信哥回饋彈窗
+# ==============================================================================
+def save_feedback(role: str, token: str, category: str, content: str):
+    timestamp_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    file_exists = os.path.exists(FEEDBACK_FILE)
+    with open(FEEDBACK_FILE, "a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
+        if not file_exists:
+            writer.writerow(["Timestamp", "Role", "Token", "Category", "Content"])
+        clean_content = content.replace("\n", " ").replace("\r", " ").strip()
+        writer.writerow([timestamp_str, role, token, category, clean_content])
+
+@st.dialog("🕊️ 呼叫皇家郵政信鴿 信哥")
+def pigeon_dispatch_modal(current_token: str):
+    st.markdown(f"""
+        <div style="background:#142017; border:1.5px solid #FCBF05; border-radius:14px; padding:16px; margin-bottom:12px;">
+            <div style="font-size:1rem; color:#FCBF05 !important; font-weight:bold; margin-bottom:6px;">
+                📮 夢境管理處 ‧ 航線導航中
+            </div>
+            <div style="font-size:0.92rem; color:#FFFFFF !important; line-height:1.7;">
+                「咕咕！探險路上遇到狀況了嗎？<br>
+                寫下您的悄悄話，信哥會把這封羽毛信安全銜回管理處給閣長與工程巡守隊！全程去敏保密，不記真名！」
+            </div>
+            <div style="font-size:0.85rem; color:#A2B3A7 !important; margin-top:8px;">
+                飛行金鑰：<code style="color:#FCBF05 !important; background:#000000; padding:2px 6px; border-radius:4px; font-weight:bold;">{current_token}</code>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<p style='color:#FFFFFF !important; font-weight:bold; margin-bottom:4px;'>請選擇羽毛信類別：</p>", unsafe_allow_html=True)
+    cat = st.radio(
+        "羽毛信類別選擇",
+        ["📜 羊皮紙翻頁不順", "📷 鏡頭微血流感應受阻", "💡 給閣長與信哥的建議"],
+        label_visibility="collapsed"
+    )
+    msg_body = st.text_area("羽毛信內容：", placeholder="咕咕！請告訴信哥您在夢境裡遇到的狀況...", height=85)
+    if st.button("🕊️ 繫上羽毛信，讓信哥起飛！", use_container_width=True):
+        if msg_body.strip():
+            save_feedback("探險家", current_token, cat, msg_body)
+            st.success("✨ 咕咕！羽毛信已安全送達管理處！")
+            time.sleep(1.0)
+            st.rerun()
+        else:
+            st.warning("⚠️ 請寫下一點訊息再讓信哥出發喔！")
 
 # ==============================================================================
 # 6. 心理學原石資料庫
@@ -398,6 +390,8 @@ if os.path.exists("夢境珍奇櫃邀請函面版上的小松鼠.png"):
 # ==============================================================================
 # 7. 主流程
 # ==============================================================================
+if "app_step" not in st.session_state:
+    st.session_state["app_step"] = step_param
 
 # --- 階段 1：入閣邀請函 ---
 if st.session_state["app_step"] == "invite":
@@ -490,7 +484,6 @@ elif st.session_state["app_step"] == "consent":
 # --- 階段 3：心流色彩心理測量 ✕ 運動學畫布 ✕ 19s調息 ✕ rPPG ---
 elif st.session_state["app_step"] == "play":
 
-    # 頂部常駐導航工具列
     col_nav1, col_nav2 = st.columns([1, 2])
     with col_nav1:
         if st.button("↩️ 返回守則", use_container_width=True):
@@ -501,7 +494,6 @@ elif st.session_state["app_step"] == "play":
         if st.button("🕊️ 遇到問題？呼叫信哥", use_container_width=True):
             pigeon_dispatch_modal(st.session_state["patient_token"])
 
-    # 全球 GPS 原生自動連線
     st.components.v1.html("""
         <script>
             if (navigator.geolocation) {
@@ -534,7 +526,7 @@ elif st.session_state["app_step"] == "play":
         </div>
     """, unsafe_allow_html=True)
 
-    # 登入：照片特徵定錨 (黑綠底金字，無多餘空框)
+    # 登入：照片特徵定錨 (黑綠底金字)
     st.markdown("""
         <div style="background:#142017; border:1.5px solid #FCBF05; border-radius:18px; padding:18px; margin-bottom:14px;">
             <div style="color:#FCBF05 !important; font-size:1.1rem; font-weight:bold; margin-bottom:4px;">
@@ -546,7 +538,7 @@ elif st.session_state["app_step"] == "play":
         </div>
     """, unsafe_allow_html=True)
 
-    uploaded_pic = st.file_uploader("點擊選取喜愛的相片 (JPG / PNG)", type=["jpg", "png", "jpeg"], key="fav_uploader")
+    uploaded_pic = st.file_uploader("選取相片 (JPG / PNG)", type=["jpg", "png", "jpeg"], key="fav_uploader", label_visibility="collapsed")
     if uploaded_pic:
         st.session_state["patient_token"] = f"#SYM-{hashlib.sha256(uploaded_pic.getvalue()).hexdigest()[:4].upper()}"
         st.query_params["token"] = st.session_state["patient_token"]
@@ -568,7 +560,7 @@ elif st.session_state["app_step"] == "play":
         </div>
     """, unsafe_allow_html=True)
 
-    # 關卡 2：心流畫布 (即時筆跡運動學張力量化)
+    # 關卡 2：心流畫布 (筆跡運動學張力量化)
     st.markdown("---")
     st.markdown("#### 🎨 第二關 ‧ 心流畫布 (筆跡運動學張力量化)")
     st.markdown("<p style='color:#FFFFFF !important; font-size:0.88rem;'>請在下方黑板自由運筆塗鴉，系統即時捕捉急停微震顫與曲率張力：</p>", unsafe_allow_html=True)
