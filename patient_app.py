@@ -29,13 +29,13 @@ SHARED_QUEUE_FILE = os.path.join(LOG_DIR, "active_queue.json")
 FEEDBACK_FILE = os.path.join(LOG_DIR, "user_feedback_log.csv")
 RESERVE_FILE = os.path.join(LOG_DIR, "public_pilot_reservations.csv")
 
-# 讀取 URL 路由
+# 讀取 URL 路由參數
 query_params = st.query_params
 route_mode = query_params.get("mode", "main")
 step_param = query_params.get("step", "invite")
 url_token = query_params.get("token", None)
 
-# 剛性鎖定 Token
+# 剛性金鑰鎖定 (確保同裝置不跳號)
 if "patient_token" not in st.session_state:
     if url_token:
         st.session_state["patient_token"] = url_token
@@ -46,7 +46,7 @@ if "app_step" not in st.session_state:
     st.session_state["app_step"] = step_param
 
 # ==============================================================================
-# 1. 跨進程資料庫存取
+# 1. 跨進程持久化資料庫存取
 # ==============================================================================
 def save_to_shared_storage(token, record_data):
     db = {}
@@ -87,7 +87,7 @@ def read_from_shared_storage(token):
     return None
 
 # ==============================================================================
-# 2. 全球動態 GPS 氣象 (原生無感自動獲取)
+# 2. 全球動態 GPS 氣象 (自動換算全球任意地點氣壓)
 # ==============================================================================
 @st.cache_data(ttl=180)
 def fetch_global_weather(lat: float, lon: float):
@@ -103,17 +103,17 @@ def fetch_global_weather(lat: float, lon: float):
         return 1012.5, 25.6, 89.0
 
 try:
-    user_lat = float(query_params.get("lat", "25.01"))
-    user_lon = float(query_params.get("lon", "121.46"))
+    user_lat = float(query_params.get("lat", "24.99"))
+    user_lon = float(query_params.get("lon", "121.51"))
     has_real_gps = "lat" in query_params and "lon" in query_params
 except Exception:
-    user_lat, user_lon = 25.01, 121.46
+    user_lat, user_lon = 24.99, 121.51
     has_real_gps = False
 
 current_pressure, current_temp, current_rh = fetch_global_weather(user_lat, user_lon)
 
 # ==============================================================================
-# 3. 剛性高對比樣式注入
+# 3. 剛性高對比樣式注入 (解決文字看不清與折疊框變白問題)
 # ==============================================================================
 st.markdown("""
     <style>
@@ -126,6 +126,17 @@ st.markdown("""
     
     .stApp p, .stApp label, .stApp span, .stMarkdown { 
         color: #FFFFFF !important; 
+    }
+
+    /* 強制修改折疊框 (Expander) 標頭文字為清晰白字 */
+    div[data-testid="stExpander"] details summary span {
+        color: #FFFFFF !important;
+        font-weight: bold !important;
+    }
+    div[data-testid="stExpander"] {
+        background-color: #142017 !important;
+        border: 1.5px solid #F5D061 !important;
+        border-radius: 14px !important;
     }
 
     /* 徹底修正 File Uploader 內部文字深色顯示 */
@@ -166,7 +177,52 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 4. 路由守門員 A：忘記金鑰救援
+# 4. 全域信哥回饋彈窗 (不包條件式，直接全域定義，徹底根治 NameError)
+# ==============================================================================
+def save_feedback(role: str, token: str, category: str, content: str):
+    timestamp_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    file_exists = os.path.exists(FEEDBACK_FILE)
+    with open(FEEDBACK_FILE, "a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            writer.writerow(["Timestamp", "Role", "Token", "Category", "Content"])
+        writer.writerow([timestamp_str, role, token, category, content.strip()])
+
+@st.dialog("🕊️ 呼叫皇家郵政信鴿 信哥")
+def pigeon_dispatch_modal(current_token: str):
+    st.markdown(f"""
+        <div style="background:#142017; border:1.5px solid #F5D061; border-radius:14px; padding:16px; margin-bottom:12px;">
+            <div style="font-size:0.95rem; color:#F5D061 !important; font-weight:bold; margin-bottom:6px;">
+                📮 夢境管理處 ‧ 航線導航中
+            </div>
+            <div style="font-size:0.9rem; color:#FFFFFF !important; line-height:1.7;">
+                「咕咕！探險路上遇到狀況了嗎？<br>
+                寫下您的悄悄話，信哥會把這封羽毛信安全銜回管理處給閣長與工程巡守隊！全程去敏保密，不記真名！」
+            </div>
+            <div style="font-size:0.82rem; color:#A2B3A7 !important; margin-top:8px;">
+                飛行金鑰：<code style="color:#F5D061 !important; background:#0B120E; padding:2px 6px; border-radius:4px;">{current_token}</code>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<p style='color:#0D1610 !important; font-weight:bold; margin-bottom:4px;'>請選擇羽毛信類別：</p>", unsafe_allow_html=True)
+    cat = st.radio(
+        "羽毛信類別選擇",
+        ["📜 羊皮紙翻頁不順", "📷 鏡頭微血流感應受阻", "💡 給閣長與信哥的建議"],
+        label_visibility="collapsed"
+    )
+    msg_body = st.text_area("羽毛信內容：", placeholder="咕咕！請告訴信哥您在夢境裡遇到的狀況...", height=85)
+    if st.button("🕊️ 繫上羽毛信，讓信哥起飛！", use_container_width=True):
+        if msg_body.strip():
+            save_feedback("探險家", current_token, cat, msg_body)
+            st.success("✨ 咕咕！羽毛信已安全送達管理處！")
+            time.sleep(1.0)
+            st.rerun()
+        else:
+            st.warning("⚠️ 請寫下一點訊息再讓信哥出發喔！")
+
+# ==============================================================================
+# 5. 路由守門員 (忘記金鑰與預約公測，剛性呈現不跳頁)
 # ==============================================================================
 if route_mode == "recovery":
     st.markdown("""
@@ -203,9 +259,6 @@ if route_mode == "recovery":
         st.rerun()
     st.stop()
 
-# ==============================================================================
-# 5. 路由守門員 B：預約公測意願登記
-# ==============================================================================
 elif route_mode == "reserve":
     st.markdown("""
         <div style="background:#FFFFFF; border:2px solid #C2A675; border-radius:18px; padding:22px; text-align:center; margin-bottom:16px;">
@@ -243,7 +296,7 @@ elif route_mode == "reserve":
     st.stop()
 
 # ==============================================================================
-# 6. 心理學原石與奉茶資料庫
+# 6. 心理學原石與 3 款現場調飲
 # ==============================================================================
 PSYCHO_STONES_DB = {
     "深海沉靜靛藍 (#1C3144) - [深度寧靜與放鬆]": {
@@ -252,8 +305,8 @@ PSYCHO_STONES_DB = {
         "clinical_desc": "身心高度放鬆、副交感神經優勢，處於深度修復與平穩狀態",
         "stress_level": "極低張力 / 舒緩平靜",
         "base_coherence": 96.5,
-        "base_tension": 12,
-        "drink_rec": 0
+        "drink_name": "破霧清醒 ‧ 鳳梨薄荷冰焙茶",
+        "drink_desc": "薄荷腦喚醒前額葉，鳳梨果香協同焙煎玄米溫和護胃，抗疲勞消除腦霧。"
     },
     "日光破曉明黃 (#D4A338) - [渴望解脫與釋放]": {
         "hex": "#D4A338",
@@ -261,8 +314,8 @@ PSYCHO_STONES_DB = {
         "clinical_desc": "渴望突破限制、尋求轉機，伴隨輕度焦躁與注意力飄移",
         "stress_level": "中度張力 / 尋求解離",
         "base_coherence": 87.8,
-        "base_tension": 42,
-        "drink_rec": 1
+        "drink_name": "朝露果妍 ‧ 晨光葡莓玫瑰鮮果茶",
+        "drink_desc": "大馬士革玫瑰協同鮮萃葡莓果香，疏肝解鬱，撫平日間胸悶浮躁張力。"
     },
     "松柏防禦冷綠 (#2C5E43) - [心理防禦與堅持]": {
         "hex": "#2C5E43",
@@ -270,8 +323,8 @@ PSYCHO_STONES_DB = {
         "clinical_desc": "防備心強、意志緊繃，試圖掌控現況，抗拒外部干擾",
         "stress_level": "中高張力 / 僵直壓抑",
         "base_coherence": 86.4,
-        "base_tension": 55,
-        "drink_rec": 1
+        "drink_name": "朝露果妍 ‧ 晨光葡莓玫瑰鮮果茶",
+        "drink_desc": "大馬士革玫瑰協同鮮萃葡莓果香，疏肝解鬱，撫平日間胸悶浮躁張力。"
     },
     "赤陶激動朱紅 (#9E3D31) - [交感急性亢奮]": {
         "hex": "#9E3D31",
@@ -279,8 +332,8 @@ PSYCHO_STONES_DB = {
         "clinical_desc": "強烈情緒張力、易激惹或急性衝動，交感神經過度驅動",
         "stress_level": "高張力 / 急性應激",
         "base_coherence": 77.8,
-        "base_tension": 78,
-        "drink_rec": 2
+        "drink_name": "暮夜靜謐 ‧ 太妃香草黑櫻桃晚安茶",
+        "drink_desc": "無咖啡因南非國寶基底，黑櫻桃果韻與太妃香草誘導迷走神經深度修復。"
     },
     "迷霧丁香柔紫 (#6C5B7B) - [情緒敏感與退縮]": {
         "hex": "#6C5B7B",
@@ -288,8 +341,8 @@ PSYCHO_STONES_DB = {
         "clinical_desc": "高度敏感脆弱，傾向避開直接衝突，尋求情感慰藉",
         "stress_level": "輕中度 / 敏感退縮",
         "base_coherence": 91.0,
-        "base_tension": 30,
-        "drink_rec": 1
+        "drink_name": "朝露果妍 ‧ 晨光葡莓玫瑰鮮果茶",
+        "drink_desc": "大馬士革玫瑰協同鮮萃葡莓果香，疏肝解鬱，撫平日間胸悶浮躁張力。"
     },
     "煙燻雪松暗褐 (#4A3B32) - [身體耗竭與求償]": {
         "hex": "#4A3B32",
@@ -297,8 +350,8 @@ PSYCHO_STONES_DB = {
         "clinical_desc": "慢性身心疲憊，極度需要物理休息與身體舒適感",
         "stress_level": "慢性消耗 / 能量赤字",
         "base_coherence": 83.4,
-        "base_tension": 68,
-        "drink_rec": 0
+        "drink_name": "破霧清醒 ‧ 鳳梨薄荷冰焙茶",
+        "drink_desc": "薄荷腦喚醒前額葉，鳳梨果香協同焙煎玄米溫和護胃，抗疲勞消除腦霧。"
     },
     "虛空玄武岩黑 (#121915) - [全盤抵觸與封閉]": {
         "hex": "#121915",
@@ -306,8 +359,8 @@ PSYCHO_STONES_DB = {
         "clinical_desc": "對目前處境抗拒，心理防線全面拉起，處於臨界警戒",
         "stress_level": "高警戒 / 封閉阻絕",
         "base_coherence": 73.5,
-        "base_tension": 85,
-        "drink_rec": 2
+        "drink_name": "暮夜靜謐 ‧ 太妃香草黑櫻桃晚安茶",
+        "drink_desc": "無咖啡因南非國寶基底，黑櫻桃果韻與太妃香草誘導迷走神經深度修復。"
     },
     "晨霧燕麥銀灰 (#8E9792) - [情感隔離與觀望]": {
         "hex": "#8E9792",
@@ -315,29 +368,8 @@ PSYCHO_STONES_DB = {
         "clinical_desc": "不願捲入情感波動，將自我抽離以保護內心不受傷",
         "stress_level": "麻木防禦 / 情感鈍化",
         "base_coherence": 85.0,
-        "base_tension": 38,
-        "drink_rec": 1
-    }
-}
-
-PRESCRIPTION_CATEGORIES = {
-    0: {
-        "stock_name": "破霧清醒 ‧ 鳳梨薄荷冰焙茶",
-        "stock_desc": "天然薄荷腦喚醒前額葉，鳳梨果香協同低溫烘焙玄米溫和護胃，抗疲勞消除腦霧。",
-        "suitable_for": "頭腦昏沉、晨間開機緩慢、注意力分散者",
-        "sensory": "薄荷涼感 ✕ 玄米焦香 ✕ 鳳梨果韻"
-    },
-    1: {
-        "stock_name": "朝露果妍 ‧ 晨光葡莓玫瑰鮮果茶",
-        "stock_desc": "大馬士革玫瑰協同鮮萃葡莓果香，疏肝解鬱，撫平日間胸悶浮躁張力。",
-        "suitable_for": "情緒緊繃、胸悶易怒、人際社交焦慮者",
-        "sensory": "初綻玫瑰香 ✕ 葡莓酸甜 ✕ 回甘果韻"
-    },
-    2: {
-        "stock_name": "暮夜靜謐 ‧ 太妃香草黑櫻桃晚安茶",
-        "stock_desc": "無咖啡因南非國寶基底，黑櫻桃果韻與太妃香草誘導迷走神經深度修復。",
-        "suitable_for": "夜間思緒反芻、交感神經過度興奮、入睡困難者",
-        "sensory": "溫潤琥珀香 ✕ 黑櫻桃沉靜 ✕ 香草溫暖"
+        "drink_name": "朝露果妍 ‧ 晨光葡莓玫瑰鮮果茶",
+        "drink_desc": "大馬士革玫瑰協同鮮萃葡莓果香，疏肝解鬱，撫平日間胸悶浮躁張力。"
     }
 }
 
@@ -379,10 +411,9 @@ if st.session_state["app_step"] == "invite":
         st.rerun()
 
     if st.button("🕊️ 遇到問題？呼叫信哥", use_container_width=True):
-        if hasattr(st, "dialog"):
-            pigeon_dispatch_modal(st.session_state["patient_token"])
+        pigeon_dispatch_modal(st.session_state["patient_token"])
 
-# --- 階段 2：探險家安全通行守則 (強制展開閱讀完畢後解鎖) ---
+# --- 階段 2：探險家安全通行守則 ---
 elif st.session_state["app_step"] == "consent":
     st.markdown("""
         <div style="background:#142017; border:1.5px solid #F5D061; border-radius:18px; padding:18px; margin-bottom:14px;">
@@ -437,10 +468,10 @@ elif st.session_state["app_step"] == "consent":
             else:
                 st.error("❌ 請確認您已勾選上述兩項閱讀與同意方塊！")
 
-# --- 階段 3：心流色彩心理測量 ✕ 運動學畫布 ✕ 3款奉茶品鑑 ✕ rPPG ---
+# --- 階段 3：心流色彩心理測量 ✕ 運動學畫布 ✕ 19s調息 ✕ rPPG (移除品鑑卡) ---
 elif st.session_state["app_step"] == "play":
 
-    # 頂部常駐工具列
+    # 頂部常駐導航工具列
     col_nav1, col_nav2 = st.columns([1, 2])
     with col_nav1:
         if st.button("↩️ 返回守則", use_container_width=True):
@@ -449,8 +480,7 @@ elif st.session_state["app_step"] == "play":
             st.rerun()
     with col_nav2:
         if st.button("🕊️ 遇到問題？呼叫信哥", use_container_width=True):
-            if hasattr(st, "dialog"):
-                pigeon_dispatch_modal(st.session_state["patient_token"])
+            pigeon_dispatch_modal(st.session_state["patient_token"])
 
     # 全球 GPS 原生自動連線
     st.components.v1.html("""
@@ -485,7 +515,7 @@ elif st.session_state["app_step"] == "play":
         </div>
     """, unsafe_allow_html=True)
 
-    # 登入：照片特徵定錨 (白底黑字，高對比)
+    # 登入：照片特徵定錨 (白底黑字)
     st.markdown("""
         <div style="background:#FFFFFF; border:2px solid #F5D061; border-radius:18px; padding:22px; margin-bottom:16px;">
             <h3 style="margin-top:0; color:#0D1610 !important; font-size:1.2rem; font-weight:bold;">📷 一鍵匿名登入 (Photo Hash Login)</h3>
@@ -517,17 +547,17 @@ elif st.session_state["app_step"] == "play":
         </div>
     """, unsafe_allow_html=True)
 
-    # 關卡 2：心流畫布 (保留運動學分析，即時雙向連動張力指數)
+    # 關卡 2：心流畫布 (即時筆跡運算，無多餘奉茶品鑑卡，純淨呈現)
     st.markdown("---")
     st.markdown("#### 🎨 第二關 ‧ 心流畫布 (筆跡運動學張力量化)")
-    st.markdown("<p style='color:#FFFFFF !important; font-size:0.88rem;'>請在下方畫布自由運筆塗鴉，系統即時解算轉折張力與筆劃速度：</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#FFFFFF !important; font-size:0.88rem;'>請在下方黑板自由運筆塗鴉，系統即時捕捉急停微震顫與曲率張力：</p>", unsafe_allow_html=True)
 
     st.components.v1.html(f"""
-        <div style="background:#111A14; border:2px solid {selected_psycho['hex']}; border-radius:16px; padding:12px; text-align:center;">
+        <div style="background:#111A14; border:2px solid {selected_psycho['hex']}; border-radius:16px; padding:14px; text-align:center;">
             <canvas id="flowCanvas" width="480" height="160" style="background:#080D0A; border-radius:10px; cursor:crosshair; touch-action:none; width:100%; max-width:480px; height:160px; display:block; margin:0 auto;"></canvas>
-            <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center; max-width:480px; margin-left:auto; margin-right:auto;">
-                <span id="kinetic-status" style="color:#FAF8F5; font-size:13px; font-weight:bold;">等待運筆中...</span>
-                <button onclick="clearCanvas()" style="background:#25352B; color:#FAF8F5; border:1px solid #F5D061; padding:4px 12px; border-radius:8px; font-size:12px; cursor:pointer;">🗑️ 清空重畫</button>
+            <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center; max-width:480px; margin-left:auto; margin-right:auto;">
+                <span id="kinetic-status" style="color:#FAF8F5; font-size:13px; font-weight:bold;">運筆就緒：等待畫筆繪製...</span>
+                <button onclick="clearCanvas()" style="background:#25352B; color:#FAF8F5; border:1.5px solid #F5D061; padding:5px 14px; border-radius:8px; font-size:12px; cursor:pointer; font-weight:bold;">🗑️ 清空重畫</button>
             </div>
         </div>
         <script>
@@ -579,7 +609,7 @@ elif st.session_state["app_step"] == "play":
                     strokePoints.push(p);
                     const avgSpd = Math.round(totalSpeed / sampleCount);
                     const tension = Math.min(95, Math.max(10, Math.round((totalCurvature / (sampleCount || 1)) * 32)));
-                    document.getElementById('kinetic-status').innerText = '運筆均速: ' + avgSpd + ' px/s ｜ 運動學張力: ' + tension + '%';
+                    document.getElementById('kinetic-status').innerText = '運筆速度: ' + avgSpd + ' px/s ｜ 運動學張力: ' + tension + '%';
                 }}
             }}
 
@@ -598,31 +628,6 @@ elif st.session_state["app_step"] == "play":
             canvas.addEventListener('touchend', endDraw);
         </script>
     """, height=220)
-
-    # 現場 3 款奉茶調飲深度品鑑卡
-    st.markdown("##### 🍵 現場 3 款奉茶調飲深度品鑑 (綠色處方配對)")
-    rec_drink_id = selected_psycho.get("drink_rec", 0)
-
-    for d_id, d_info in PRESCRIPTION_CATEGORIES.items():
-        is_rec = (d_id == rec_drink_id)
-        border_col = "#56D364" if is_rec else "#25352B"
-        badge = "✨ 依據心理原石指標，為您首選推薦此款調飲！" if is_rec else ""
-        st.markdown(f"""
-            <div style="background:#142017; border:2px solid {border_col}; border-radius:14px; padding:16px; margin-bottom:12px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <b style="color:#F5D061; font-size:1.05rem;">{d_info['stock_name']}</b>
-                    <span style="color:#56D364; font-size:0.82rem; font-weight:bold;">{'【系統推薦】' if is_rec else ''}</span>
-                </div>
-                <div style="font-size:0.88rem; color:#FFFFFF; margin-top:6px; line-height:1.6;">
-                    {d_info['stock_desc']}
-                </div>
-                <div style="font-size:0.82rem; color:#A2B3A7; margin-top:6px;">
-                    🎯 <b>適用對象</b>：{d_info['suitable_for']}<br>
-                    👃 <b>風味感官</b>：{d_info['sensory']}
-                </div>
-                <div style="color:#56D364; font-size:0.82rem; font-weight:bold; margin-top:4px;">{badge}</div>
-            </div>
-        """, unsafe_allow_html=True)
 
     # 關卡 3：19 秒迷走神經共振調息
     st.markdown("---")
@@ -722,7 +727,7 @@ elif st.session_state["app_step"] == "play":
     st.components.v1.html(rppg_component, height=195)
     rppg_passed = st.checkbox("🟢 我已完成手指貼附，並通過光學微血流驗證", value=False)
 
-    # 數據拋接至診間 (極致高對比度卡片)
+    # 數據拋接至診間
     st.markdown("---")
     if st.button("🚀 完成冒險並拋接至診間", use_container_width=True):
         if not rppg_passed:
@@ -735,8 +740,9 @@ elif st.session_state["app_step"] == "play":
             base_score = selected_psycho.get("base_coherence", 96.5)
             noise = round(random.uniform(-0.5, 1.2), 1)
             calc_score = min(98.8, max(65.0, round(base_score + noise, 1)))
-            tension_val = selected_psycho.get("base_tension", 12)
-            matched_drink = PRESCRIPTION_CATEGORIES[rec_drink_id]["stock_name"]
+            tension_val = 12 if "放鬆" in selected_psycho["state_name"] else 45
+
+            matched_drink = selected_psycho["drink_name"]
 
             payload = {
                 "status": "已完成診前 19s 共振調息 ✕ rPPG 檢測",
@@ -770,7 +776,7 @@ elif st.session_state["app_step"] == "play":
                     <div style="background:#0B120E; border:1.5px dashed #F5D061; border-radius:12px; padding:14px; text-align:left; margin:14px auto 10px auto; max-width:440px;">
                         <div style="color:#F5D061 !important; font-weight:bold; font-size:0.92rem;">🍵 現場候診區備有調飲：</div>
                         <div style="font-size:1.05rem; font-weight:bold; color:#FFFFFF !important; margin:3px 0;">{matched_drink}</div>
-                        <div style="font-size:0.86rem; color:#A2B3A7 !important; line-height:1.6;">{PRESCRIPTION_CATEGORIES[rec_drink_id]['stock_desc']}</div>
+                        <div style="font-size:0.86rem; color:#A2B3A7 !important; line-height:1.6;">{selected_psycho['drink_desc']}</div>
                     </div>
                     <div style="font-size:0.86rem; color:#A2B3A7 !important; margin-top:12px;">
                         🕊️ 信哥已將您的去敏心流印記送達郭醫師診間電腦。看診時出示此短碼即可解鎖完整評估！
