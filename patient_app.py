@@ -43,7 +43,6 @@ if "current_step" not in st.session_state:
 if url_step and url_step != st.session_state["current_step"]:
     st.session_state["current_step"] = url_step
 
-# 若 URL 帶有自動量化張力，即刻鎖定進 session_state
 if "measured_tension" not in st.session_state:
     st.session_state["measured_tension"] = int(param_tension) if param_tension else 18
 elif param_tension:
@@ -173,7 +172,7 @@ def save_feedback(role: str, token: str, category: str, content: str):
 
 @st.dialog("🕊️ 呼叫皇家郵政信鴿 信哥")
 def pigeon_dispatch_modal(tok: str):
-    st.markdown(f"""
+    st.markdown("""
         <div style="background:#142017; border:1.5px solid #FCBF05; border-radius:14px; padding:16px; margin-bottom:12px;">
             <div style="font-size:1rem; color:#FCBF05 !important; font-weight:bold; margin-bottom:6px;">
                 📮 夢境管理處 ‧ 航線導航中
@@ -181,9 +180,6 @@ def pigeon_dispatch_modal(tok: str):
             <div style="font-size:0.92rem; color:#FFFFFF !important; line-height:1.7;">
                 「咕咕！探險路上遇到狀況了嗎？<br>
                 寫下您的悄悄話，信哥會把這封羽毛信安全銜回管理處給閣長與工程巡守隊！全程去敏保密，不記真名！」
-            </div>
-            <div style="font-size:0.85rem; color:#A2B3A7 !important; margin-top:8px;">
-                飛行金鑰：<code style="color:#FCBF05 !important; background:#000000; padding:2px 6px; border-radius:4px; font-weight:bold;">{tok}</code>
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -321,10 +317,9 @@ if st.session_state["current_step"] == "invite":
     if st.button("🕊️ 遇到問題？呼叫信哥", use_container_width=True):
         pigeon_dispatch_modal(st.session_state["patient_token"])
 
-# --- 階段 2：探險家安全通行守則 (真防呆：條款與按鈕內嵌於同一個 HTML 閉環中) ---
+# --- 階段 2：探險家安全通行守則 (純字串，無 f-string 解析衝突，滾動到底部解鎖) ---
 elif st.session_state["current_step"] == "consent":
-    # 徹底取消外層 checkbox，全部由內嵌 JS 控管，沒滑到底部按鈕物理 disabled
-    st.components.v1.html(f"""
+    st.components.v1.html("""
         <div style="background:#142017; border:2px solid #FCBF05; border-radius:18px; padding:18px; font-family:-apple-system, sans-serif; box-sizing:border-box;">
             <div style="font-weight:bold; color:#FCBF05; font-size:16px; margin-bottom:8px;">
                 📜 臨床知情同意書與法規排除宣告
@@ -369,7 +364,6 @@ elif st.session_state["current_step"] == "consent":
                 }
             };
             function handleDirectPass() {
-                // 原生改寫父層 query_params，徹底解決跨域跳轉失敗問題
                 const pUrl = new URL(window.parent.location.href);
                 pUrl.searchParams.set("step", "test");
                 window.parent.location.replace(pUrl.toString());
@@ -459,13 +453,14 @@ elif st.session_state["current_step"] == "test":
         </div>
     """, unsafe_allow_html=True)
 
-    # 第二關：運動學大畫布 (加大至 340px 高度，寬度自適應，並具備自動回傳機制)
+    # 第二關：運動學大畫布 (字串模板純化，防止語法錯誤)
     st.markdown("---")
     st.markdown("#### 🎨 第二關 ‧ 心流畫布 (筆跡運動學張力量化)")
     st.markdown("<p style='color:#FFFFFF !important; font-size:0.88rem;'>請在下方大黑板自由運筆塗鴉，系統即時捕捉急停微震顫與曲率張力：</p>", unsafe_allow_html=True)
 
-    st.components.v1.html(f"""
-        <div style="background:#111A14; border:2px solid {selected_psycho['hex']}; border-radius:16px; padding:12px; text-align:center; box-sizing:border-box;">
+    canvas_theme_color = selected_psycho["hex"]
+    st.components.v1.html("""
+        <div style="background:#111A14; border:2px solid """ + canvas_theme_color + """; border-radius:16px; padding:12px; text-align:center; box-sizing:border-box;">
             <canvas id="flowCanvas" width="500" height="240" style="background:#080D0A; border-radius:12px; cursor:crosshair; touch-action:none; width:100%; height:240px; display:block; margin:0 auto;"></canvas>
             <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center; width:100%;">
                 <span id="kinetic-status" style="color:#FCBF05; font-size:13px; font-weight:bold;">運筆就緒：請在黑板上隨意繪畫...</span>
@@ -479,29 +474,29 @@ elif st.session_state["current_step"] == "test":
             let totalSpeed = 0, totalCurvature = 0, sampleCount = 0;
             let lastV = 0, totalJerk = 0;
 
-            ctx.strokeStyle = "{selected_psycho['hex']}";
+            ctx.strokeStyle = '""" + canvas_theme_color + """';
             ctx.lineWidth = 3.8;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            function getPos(e) {{
+            function getPos(e) {
                 const rect = canvas.getBoundingClientRect();
                 const scaleX = canvas.width / rect.width;
                 const scaleY = canvas.height / rect.height;
                 const clientX = e.clientX || (e.touches && e.touches[0].clientX);
                 const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-                return {{ x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY, t: Date.now() }};
-            }}
+                return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY, t: Date.now() };
+            }
 
-            function startDraw(e) {{
+            function startDraw(e) {
                 drawing = true;
                 const p = getPos(e);
                 strokePoints = [p];
                 ctx.beginPath();
                 ctx.moveTo(p.x, p.y);
-            }}
+            }
 
-            function draw(e) {{
+            function draw(e) {
                 if (!drawing) return;
                 const p = getPos(e);
                 const prev = strokePoints[strokePoints.length - 1];
@@ -509,24 +504,23 @@ elif st.session_state["current_step"] == "test":
                 ctx.stroke();
 
                 const dt = (p.t - prev.t) / 1000.0;
-                if (dt > 0.005) {{
+                if (dt > 0.005) {
                     const dist = Math.hypot(p.x - prev.x, p.y - prev.y);
                     const speed = dist / dt;
                     totalSpeed += speed;
                     sampleCount++;
 
-                    if (strokePoints.length >= 2) {{
+                    if (strokePoints.length >= 2) {
                         const p0 = strokePoints[strokePoints.length - 2];
                         const a1 = Math.atan2(prev.y - p0.y, prev.x - p0.x);
                         const a2 = Math.atan2(p.y - prev.y, p.x - prev.x);
                         totalCurvature += Math.abs(a2 - a1);
                         totalJerk += Math.abs(speed - lastV);
-                    }}
+                    }
                     lastV = speed;
                     strokePoints.push(p);
 
                     const avgSpd = Math.round(totalSpeed / sampleCount);
-                    // 臨床運動學標準公式：微震顫曲率佔 60% + 速度驟變率 (Jerk) 佔 40%
                     const cPart = (totalCurvature / (sampleCount || 1)) * 34.0;
                     const jPart = Math.min(45, (totalJerk / (sampleCount || 1)) * 0.09);
                     const tension = Math.min(95, Math.max(10, Math.round(cPart + jPart)));
@@ -537,31 +531,30 @@ elif st.session_state["current_step"] == "test":
 
                     document.getElementById('kinetic-status').innerHTML = 
                         '實測運動學張力: <span style="color:#56D364; font-size:15px;">' + tension + '%</span> (' + labelState + ') ｜ 均速: ' + avgSpd + ' px/s';
-                }}
-            }}
+                }
+            }
 
-            function endDraw() {{
+            function endDraw() {
                 if (!drawing) return;
                 drawing = false;
                 ctx.beginPath();
-                if (sampleCount > 8) {{
+                if (sampleCount > 8) {
                     const cPart = (totalCurvature / (sampleCount || 1)) * 34.0;
                     const jPart = Math.min(45, (totalJerk / (sampleCount || 1)) * 0.09);
                     const finalTension = Math.min(95, Math.max(10, Math.round(cPart + jPart)));
-                    // 自動穿透更新至外層網址，達成 100% 自動同步，免手滑！
                     const pUrl = new URL(window.parent.location.href);
-                    if (pUrl.searchParams.get("tension") !== String(finalTension)) {{
+                    if (pUrl.searchParams.get("tension") !== String(finalTension)) {
                         pUrl.searchParams.set("tension", finalTension);
                         window.parent.history.replaceState(null, "", pUrl.toString());
-                    }}
-                }}
-            }}
+                    }
+                }
+            }
 
-            function clearCanvas() {{
+            function clearCanvas() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 strokePoints = []; totalSpeed = 0; totalCurvature = 0; totalJerk = 0; sampleCount = 0;
                 document.getElementById('kinetic-status').innerText = '畫布已清空';
-            }}
+            }
 
             canvas.addEventListener('mousedown', startDraw);
             canvas.addEventListener('mousemove', draw);
@@ -572,7 +565,6 @@ elif st.session_state["current_step"] == "test":
         </script>
     """, height=330)
 
-    # 顯示系統自動捕捉並鎖定的張力數值（完全免手動調校）
     auto_tension = st.session_state.get("measured_tension", selected_psycho["base_tension"])
     st.markdown(f"""
         <div style="background:#0B120E; border:1px solid #FCBF05; border-radius:10px; padding:10px 14px; margin-top:6px; display:flex; justify-content:space-between; align-items:center;">
@@ -677,7 +669,7 @@ elif st.session_state["current_step"] == "test":
     st.components.v1.html(rppg_component, height=195)
     rppg_passed = st.checkbox("🟢 我已完成手指貼附，並通過光學微血流驗證", value=False)
 
-    # 拋接至診間 (完全依照實測張力自動精算心流)
+    # 拋接至診間
     st.markdown("---")
     if st.button("🚀 完成冒險並拋接至診間", use_container_width=True):
         if not rppg_passed:
@@ -686,7 +678,6 @@ elif st.session_state["current_step"] == "test":
             now_dt = datetime.datetime.now()
             cur_token = st.session_state["patient_token"]
             
-            # 真實臨床算式：完全自動帶入畫布算出的 auto_tension
             calc_score = round(max(60.0, min(98.5, 99.2 - (0.38 * auto_tension) + random.uniform(-0.3, 0.5))), 1)
             
             if auto_tension >= 65:
