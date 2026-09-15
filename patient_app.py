@@ -195,7 +195,7 @@ def pigeon_dispatch_modal(current_token: str):
             <div style="font-size:0.95rem; color:#F5D061 !important; font-weight:bold; margin-bottom:6px;">
                 📮 夢境管理處 ‧ 航線導航中
             </div>
-            <div style="font-size:0.9rem; color:##fcbf05 !important; line-height:1.7;">
+            <div style="font-size:0.9rem; color:#fcbf05 !important; line-height:1.7;">
                 「咕咕！探險路上遇到狀況了嗎？<br>
                 寫下您的悄悄話，信哥會把這封羽毛信安全銜回管理處給閣長與工程巡守隊！全程去敏保密，不記真名！」
             </div>
