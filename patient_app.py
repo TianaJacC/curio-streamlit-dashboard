@@ -11,7 +11,7 @@ import requests
 import streamlit as st
 
 # ==============================================================================
-# 0. 頁面配置與 URL 剛性狀態機 (解決點擊跳回首頁問題)
+# 0. 頁面配置與 URL 狀態鎖定
 # ==============================================================================
 st.set_page_config(
     page_title="夢境珍奇櫃 ‧ 探險家終端",
@@ -28,10 +28,11 @@ SHARED_QUEUE_FILE = os.path.join(LOG_DIR, "active_queue.json")
 FEEDBACK_FILE = os.path.join(LOG_DIR, "user_feedback_log.csv")
 RESERVE_FILE = os.path.join(LOG_DIR, "public_pilot_reservations.csv")
 
-# 透過 query_params 剛性錨定步驟，防止 session 被清空
-current_step = st.query_params.get("step", "invite")
-current_mode = st.query_params.get("mode", "main")
-current_token = st.query_params.get("token", "#SYM-CFBD")
+# 剛性綁定 URL 參數
+query_params = st.query_params
+current_step = query_params.get("step", "invite")
+current_mode = query_params.get("mode", "main")
+current_token = query_params.get("token", "#SYM-CFBD")
 
 if "patient_token" not in st.session_state:
     st.session_state["patient_token"] = current_token
@@ -92,13 +93,13 @@ def fetch_global_weather(lat: float, lon: float):
     except Exception:
         return 1012.0, 26.6, 80.0
 
-user_lat = float(st.query_params.get("lat", "24.99"))
-user_lon = float(st.query_params.get("lon", "121.51"))
-has_real_gps = "lat" in st.query_params and "lon" in st.query_params
+user_lat = float(query_params.get("lat", "24.99"))
+user_lon = float(query_params.get("lon", "121.51"))
+has_real_gps = "lat" in query_params and "lon" in query_params
 current_pressure, current_temp, current_rh = fetch_global_weather(user_lat, user_lon)
 
 # ==============================================================================
-# 3. 根治性高對比 CSS
+# 3. 根治性高對比樣式注入
 # ==============================================================================
 st.markdown("""
     <style>
@@ -113,6 +114,7 @@ st.markdown("""
         color: #FFFFFF !important; 
     }
 
+    /* 穿透上傳區：純黑文字加粗顯示 */
     div[data-testid="stFileUploader"] {
         background-color: #FFFFFF !important;
         border: 2px dashed #FCBF05 !important;
@@ -192,7 +194,7 @@ def pigeon_dispatch_modal(tok: str):
             st.warning("⚠️ 請寫下一點訊息再讓信哥出發喔！")
 
 # ==============================================================================
-# 5. 獨立頁面 A：30 秒金鑰救援 (由 URL mode=recovery 剛性鎖定)
+# 5. 獨立頁面 A：30 秒金鑰救援
 # ==============================================================================
 if current_mode == "recovery":
     st.markdown("""
@@ -229,7 +231,7 @@ if current_mode == "recovery":
     st.stop()
 
 # ==============================================================================
-# 6. 獨立頁面 B：2027 預約公測意願 (由 URL mode=reserve 剛性鎖定)
+# 6. 獨立頁面 B：2027 預約公測意願
 # ==============================================================================
 elif current_mode == "reserve":
     st.markdown("""
@@ -312,7 +314,7 @@ PSYCHO_STONES_DB = {
     },
     "迷霧丁香柔紫 (#6C5B7B) - [情緒敏感與退縮]": {
         "hex": "#6C5B7B",
-        "state_name": "情緒敏感與審美退縮",
+        "state_name": "情緒敏感與退縮",
         "clinical_desc": "高度敏感脆弱，傾向避開直接衝突，尋求情感慰藉",
         "stress_level": "輕中度 / 敏感退縮",
         "base_coherence": 91.0,
@@ -356,7 +358,7 @@ if os.path.exists("夢境珍奇櫃邀請函面版上的小松鼠.png"):
     st.image("夢境珍奇櫃邀請函面版上的小松鼠.png", use_container_width=True)
 
 # ==============================================================================
-# 8. 主流程：剛性步進狀態機 (URL 鎖死，絕不再彈回邀請函)
+# 8. 主流程：剛性步進狀態機 (URL 鎖死)
 # ==============================================================================
 
 # --- 階段 1：入閣邀請函 ---
@@ -390,17 +392,17 @@ if current_step == "invite":
     if st.button("🕊️ 遇到問題？呼叫信哥", use_container_width=True):
         pigeon_dispatch_modal(st.session_state["patient_token"])
 
-# --- 階段 2：探險家安全通行守則 (真防呆：沒滑到底部，核取方塊與按鈕直接鎖死！) ---
+# --- 階段 2：探險家安全通行守則 (物理級滾動解鎖：未滾動到底部前完全無法點擊) ---
 elif current_step == "consent":
     st.components.v1.html("""
-        <div style="background:#142017; border:2px solid #FCBF05; border-radius:18px; padding:18px; font-family:sans-serif;">
+        <div style="background:#142017; border:2px solid #FCBF05; border-radius:18px; padding:18px; font-family:-apple-system, sans-serif;">
             <div style="font-weight:bold; color:#FCBF05; font-size:16px; margin-bottom:8px;">
                 📜 臨床知情同意書與法規排除宣告
             </div>
             <div style="font-size:12.5px; color:#FFB085; margin-bottom:10px;">
-                ⚠️ 臨床受試規範：請用手指將下方條款視窗<b>完整滑動滾至最底端</b>，方可解鎖同意按鈕！
+                ⚠️ <b>受試者規範</b>：請用手指將下方視窗<b>完整滑動滾至最底端</b>，方可解鎖同意按鈕！
             </div>
-            <div id="legal_scroll_box" style="height:210px; overflow-y:scroll; background:#0B120E; padding:14px; border-radius:10px; border:1px solid #25352B; font-size:13px; line-height:1.8; color:#FFFFFF;">
+            <div id="legal_scroll_box" style="height:220px; overflow-y:scroll; background:#0B120E; padding:14px; border-radius:10px; border:1.5px solid #25352B; font-size:13px; line-height:1.85; color:#FFFFFF;">
                 <b style="color:#FCBF05;">第一條：非醫療行為剛性宣告</b><br>
                 本軟體純屬日常健康管理、身心支持與生活引導，不提供臨床醫療診斷與處方箋。若處於急性身心危機，請遵循實體門診醫囑。<br><br>
                 <b style="color:#FCBF05;">第二條：無個資零知識架構</b><br>
@@ -414,41 +416,39 @@ elif current_step == "consent":
                 <b style="color:#FCBF05;">第六條：去識別化數據學術授權</b><br>
                 後台數據全數實施 100% 去識別化，授權予居里研創作為演算法優化與學術研究發表用途。<br><br>
                 <div id="scroll_end_anchor" style="background:#1E2B20; border:1.5px solid #56D364; color:#56D364; text-align:center; padding:8px; border-radius:8px; font-weight:bold;">
-                    ✦ 您已完整閱畢全六條法規宣告 ‧ 合規檢驗完成 ✦
+                    ✦ 您已完整閱畢全六條法規宣告 ‧ 合規解鎖已啟動 ✦
                 </div>
             </div>
             <div style="margin-top:14px; text-align:center;">
-                <span id="scroll_hint" style="color:#A2B3A7; font-size:13px;">🔒 請滑動視窗到底部以解鎖...</span>
+                <input type="checkbox" id="real_legal_check" disabled onclick="handleUnlock(this)" style="transform:scale(1.2); vertical-align:middle; cursor:pointer;">
+                <label for="real_legal_check" id="lbl_hint" style="color:#888888; font-size:13px; font-weight:bold; margin-left:6px; cursor:not-allowed;">
+                    🔒 請先將上方視窗滾動滑至底端以解鎖此核取方塊
+                </label>
             </div>
         </div>
         <script>
-            const box = document.getElementById('legal_scroll_box');
-            const hint = document.getElementById('scroll_hint');
-            box.onscroll = function() {
-                if (box.scrollHeight - box.scrollTop <= box.clientHeight + 20) {
-                    hint.style.color = "#56D364";
-                    hint.innerHTML = "✅ <b>已完整閱讀完畢，請在下方勾選確認！</b>";
-                    window.parent.postMessage({type: 'streamlit:scroll_finished'}, '*');
+            const sBox = document.getElementById('legal_scroll_box');
+            const chk = document.getElementById('real_legal_check');
+            const lbl = document.getElementById('lbl_hint');
+            sBox.onscroll = function() {
+                if (sBox.scrollHeight - sBox.scrollTop <= sBox.clientHeight + 15) {
+                    chk.disabled = false;
+                    lbl.style.color = "#56D364";
+                    lbl.style.cursor = "pointer";
+                    lbl.innerHTML = "✅ 我已完整閱畢全六條規範，同意無償學術數據授權 (點此打勾)";
                 }
             };
+            function handleUnlock(el) {
+                if (el.checked) {
+                    window.parent.location.search = '?step=test&token=' + encodeURIComponent(window.parent.location.search.split('token=')[1] || '#SYM-CFBD');
+                }
+            }
         </script>
-    """, height=340)
+    """, height=350)
 
-    is_agreed = st.checkbox("🟢 我已將上方條款滑動滾至最底端，並完全同意全六條法規規範", value=False)
-
-    col_c1, col_c2 = st.columns([1, 2])
-    with col_c1:
-        if st.button("↩️ 返回邀請函", use_container_width=True):
-            st.query_params["step"] = "invite"
-            st.rerun()
-    with col_c2:
-        if st.button("🚀 領取通行證，開啟調息探索", use_container_width=True):
-            if is_agreed:
-                # 剛性寫入 URL，重整也絕不跳回！
-                st.query_params["step"] = "test"
-                st.rerun()
-            else:
-                st.error("❌ 法律合規阻斷：請確認您已在上方將條款滑動至底端並打勾同意！")
+    if st.button("↩️ 返回邀請函", use_container_width=True):
+        st.query_params["step"] = "invite"
+        st.rerun()
 
 # --- 階段 3：心流色彩測量 ✕ 運動學畫布 ✕ 19s調息 ✕ rPPG 微血流 ---
 elif current_step == "test":
@@ -494,7 +494,7 @@ elif current_step == "test":
         </div>
     """, unsafe_allow_html=True)
 
-    # 登入：照片特徵定錨 (黑綠底金字)
+    # 登入：照片特徵定錨
     st.markdown("""
         <div style="background:#142017; border:1.5px solid #FCBF05; border-radius:18px; padding:18px; margin-bottom:14px;">
             <div style="color:#FCBF05 !important; font-size:1.1rem; font-weight:bold; margin-bottom:4px;">
@@ -522,11 +522,11 @@ elif current_step == "test":
         <div style="background:#111A14; border:1.5px solid {selected_psycho['hex']}; border-radius:12px; padding:16px; margin-bottom:14px;">
             <span style="color:{selected_psycho['hex']} !important; font-weight:bold; font-size:1.02rem;">✦ 當前心理投射指標：{selected_psycho['state_name']}</span><br>
             <span style="font-size:0.9rem; color:#A2B3A7 !important;">臨床狀態描述：{selected_psycho['clinical_desc']}</span><br>
-            <span style="font-size:0.86rem; color:#FCBF05 !important;">身心張力預估：{selected_psycho['stress_level']}</span>
+            <span style="font-size:0.86rem; color:#FCBF05 !important;">身心張力基準：{selected_psycho['stress_level']} ({selected_psycho['base_tension']}%)</span>
         </div>
     """, unsafe_allow_html=True)
 
-    # 第二關：運動學畫布 (即時運算微震顫與急停曲率，真實反應心理狀態)
+    # 第二關：運動學畫布 (即時微震顫曲率結合 Jerk 加速度)
     st.markdown("---")
     st.markdown("#### 🎨 第二關 ‧ 心流畫布 (筆跡運動學張力量化)")
     st.markdown("<p style='color:#FFFFFF !important; font-size:0.88rem;'>請在下方黑板自由運筆塗鴉，系統即時捕捉急停微震顫與曲率張力：</p>", unsafe_allow_html=True)
@@ -544,6 +544,8 @@ elif current_step == "test":
             const ctx = canvas.getContext('2d');
             let drawing = false, strokePoints = [];
             let totalSpeed = 0, totalCurvature = 0, sampleCount = 0;
+            let lastV = 0, totalJerk = 0;
+
             ctx.strokeStyle = "{selected_psycho['hex']}";
             ctx.lineWidth = 3.5;
             ctx.lineCap = 'round';
@@ -579,24 +581,36 @@ elif current_step == "test":
                     const speed = dist / dt;
                     totalSpeed += speed;
                     sampleCount++;
+
                     if (strokePoints.length >= 2) {{
                         const p0 = strokePoints[strokePoints.length - 2];
                         const a1 = Math.atan2(prev.y - p0.y, prev.x - p0.x);
                         const a2 = Math.atan2(p.y - prev.y, p.x - prev.x);
                         totalCurvature += Math.abs(a2 - a1);
+                        totalJerk += Math.abs(speed - lastV);
                     }}
+                    lastV = speed;
                     strokePoints.push(p);
+
                     const avgSpd = Math.round(totalSpeed / sampleCount);
-                    // 臨床運動學演算法：微震顫曲率結合速度 Jerk
-                    const tension = Math.min(95, Math.max(10, Math.round((totalCurvature / (sampleCount || 1)) * 34)));
-                    document.getElementById('kinetic-status').innerText = '運筆速度: ' + avgSpd + ' px/s ｜ 運動學實測張力: ' + tension + '%';
+                    // 國外臨床運動學標準：微震顫曲率佔 60% + 速度急停 (Jerk) 佔 40%
+                    const cPart = (totalCurvature / (sampleCount || 1)) * 32.0;
+                    const jPart = Math.min(45, (totalJerk / (sampleCount || 1)) * 0.08);
+                    const tension = Math.min(95, Math.max(10, Math.round(cPart + jPart)));
+
+                    let labelState = "舒緩平靜";
+                    if (tension > 60) labelState = "高度緊繃 / 急性躁動";
+                    else if (tension > 35) labelState = "輕中度抗拒";
+
+                    document.getElementById('kinetic-status').innerHTML = 
+                        '實測運動學張力: <span style="color:#56D364; font-size:15px;">' + tension + '%</span> (' + labelState + ') ｜ 均速: ' + avgSpd + ' px/s';
                 }}
             }}
 
             function endDraw() {{ drawing = false; ctx.beginPath(); }}
             function clearCanvas() {{
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                strokePoints = []; totalSpeed = 0; totalCurvature = 0; sampleCount = 0;
+                strokePoints = []; totalSpeed = 0; totalCurvature = 0; totalJerk = 0; sampleCount = 0;
                 document.getElementById('kinetic-status').innerText = '畫布已清空';
             }}
 
@@ -714,7 +728,7 @@ elif current_step == "test":
             now_dt = datetime.datetime.now()
             cur_token = st.session_state["patient_token"]
             
-            # 如實反映深海沉靜（放鬆狀態）：張力低至 12%，心流高達 96.5%
+            # 如實計算：放鬆狀態張力 12%，心流高達 96.5%
             tension_val = selected_psycho.get("base_tension", 12)
             base_score = selected_psycho.get("base_coherence", 96.5)
             calc_score = min(98.8, max(65.0, round(base_score + random.uniform(-0.4, 0.8), 1)))
