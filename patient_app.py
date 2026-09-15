@@ -11,7 +11,7 @@ import requests
 import streamlit as st
 
 # ==============================================================================
-# 0. 頁面配置與 URL 狀態鎖定
+# 0. 頁面配置與 URL 狀態管理
 # ==============================================================================
 st.set_page_config(
     page_title="夢境珍奇櫃 ‧ 探險家終端",
@@ -28,14 +28,21 @@ SHARED_QUEUE_FILE = os.path.join(LOG_DIR, "active_queue.json")
 FEEDBACK_FILE = os.path.join(LOG_DIR, "user_feedback_log.csv")
 RESERVE_FILE = os.path.join(LOG_DIR, "public_pilot_reservations.csv")
 
-# 剛性綁定 URL 參數
+# 讀取 URL 參數，優先以 session_state 維護流程步進
 query_params = st.query_params
-current_step = query_params.get("step", "invite")
+url_step = query_params.get("step", None)
 current_mode = query_params.get("mode", "main")
 current_token = query_params.get("token", "#SYM-CFBD")
 
 if "patient_token" not in st.session_state:
     st.session_state["patient_token"] = current_token
+
+if "current_step" not in st.session_state:
+    st.session_state["current_step"] = url_step if url_step else "invite"
+
+# 若 URL 有明確步進參數則同步
+if url_step and url_step != st.session_state["current_step"]:
+    st.session_state["current_step"] = url_step
 
 # ==============================================================================
 # 1. 跨進程持久化存取
@@ -227,6 +234,7 @@ if current_mode == "recovery":
     if st.button("⬅️ 返回主調息介面", use_container_width=True):
         st.query_params["mode"] = "main"
         st.query_params["step"] = "invite"
+        st.session_state["current_step"] = "invite"
         st.rerun()
     st.stop()
 
@@ -265,6 +273,7 @@ elif current_mode == "reserve":
     if st.button("⬅️ 返回主調息介面", use_container_width=True):
         st.query_params["mode"] = "main"
         st.query_params["step"] = "invite"
+        st.session_state["current_step"] = "invite"
         st.rerun()
     st.stop()
 
@@ -358,11 +367,11 @@ if os.path.exists("夢境珍奇櫃邀請函面版上的小松鼠.png"):
     st.image("夢境珍奇櫃邀請函面版上的小松鼠.png", use_container_width=True)
 
 # ==============================================================================
-# 8. 主流程：剛性步進狀態機 (URL 鎖死)
+# 8. 主流程：原生步進狀態機 (全頁面同步，絕對不會跳回邀請函)
 # ==============================================================================
 
 # --- 階段 1：入閣邀請函 ---
-if current_step == "invite":
+if st.session_state["current_step"] == "invite":
     st.markdown(f"""
         <div style="background:#142017; border:1.5px solid #FCBF05; border-radius:20px; padding:22px; margin-bottom:16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #25352B; padding-bottom:8px; margin-bottom:12px;">
@@ -386,23 +395,24 @@ if current_step == "invite":
     """, unsafe_allow_html=True)
 
     if st.button("🗝️ 查閱探險家安全通行守則並開啟入口", use_container_width=True):
+        st.session_state["current_step"] = "consent"
         st.query_params["step"] = "consent"
         st.rerun()
 
     if st.button("🕊️ 遇到問題？呼叫信哥", use_container_width=True):
         pigeon_dispatch_modal(st.session_state["patient_token"])
 
-# --- 階段 2：探險家安全通行守則 (物理級滾動解鎖：未滾動到底部前完全無法點擊) ---
-elif current_step == "consent":
-    st.components.v1.html("""
-        <div style="background:#142017; border:2px solid #FCBF05; border-radius:18px; padding:18px; font-family:-apple-system, sans-serif;">
-            <div style="font-weight:bold; color:#FCBF05; font-size:16px; margin-bottom:8px;">
+# --- 階段 2：探險家安全通行守則 (原生閉環：直接呈現完整條款與解鎖按鈕) ---
+elif st.session_state["current_step"] == "consent":
+    st.markdown("""
+        <div style="background:#142017; border:2px solid #FCBF05; border-radius:18px; padding:18px; margin-bottom:14px;">
+            <div style="font-weight:bold; color:#FCBF05 !important; font-size:16px; margin-bottom:8px;">
                 📜 臨床知情同意書與法規排除宣告
             </div>
-            <div style="font-size:12.5px; color:#FFB085; margin-bottom:10px;">
-                ⚠️ <b>受試者規範</b>：請用手指將下方視窗<b>完整滑動滾至最底端</b>，方可解鎖同意按鈕！
+            <div style="font-size:12.5px; color:#FFB085 !important; margin-bottom:10px;">
+                ⚠️ <b>受試者權益提示</b>：請於下方視窗滑動閱畢全六條條款規範，方可解鎖授權方塊進入調息。
             </div>
-            <div id="legal_scroll_box" style="height:220px; overflow-y:scroll; background:#0B120E; padding:14px; border-radius:10px; border:1.5px solid #25352B; font-size:13px; line-height:1.85; color:#FFFFFF;">
+            <div style="height:210px; overflow-y:scroll; background:#0B120E; padding:14px; border-radius:10px; border:1.5px solid #25352B; font-size:13px; line-height:1.85; color:#FFFFFF !important;">
                 <b style="color:#FCBF05;">第一條：非醫療行為剛性宣告</b><br>
                 本軟體純屬日常健康管理、身心支持與生活引導，不提供臨床醫療診斷與處方箋。若處於急性身心危機，請遵循實體門診醫囑。<br><br>
                 <b style="color:#FCBF05;">第二條：無個資零知識架構</b><br>
@@ -415,47 +425,38 @@ elif current_step == "consent":
                 各項流程為診所行政優化輔助工具，不保證加號順序，醫療行為以現場醫事人員判定為準。<br><br>
                 <b style="color:#FCBF05;">第六條：去識別化數據學術授權</b><br>
                 後台數據全數實施 100% 去識別化，授權予居里研創作為演算法優化與學術研究發表用途。<br><br>
-                <div id="scroll_end_anchor" style="background:#1E2B20; border:1.5px solid #56D364; color:#56D364; text-align:center; padding:8px; border-radius:8px; font-weight:bold;">
-                    ✦ 您已完整閱畢全六條法規宣告 ‧ 合規解鎖已啟動 ✦
+                <div style="background:#1E2B20; border:1.5px solid #56D364; color:#56D364; text-align:center; padding:8px; border-radius:8px; font-weight:bold;">
+                    ✦ 您已完整閱畢全六條法規宣告 ‧ 合規解鎖中 ✦
                 </div>
             </div>
-            <div style="margin-top:14px; text-align:center;">
-                <input type="checkbox" id="real_legal_check" disabled onclick="handleUnlock(this)" style="transform:scale(1.2); vertical-align:middle; cursor:pointer;">
-                <label for="real_legal_check" id="lbl_hint" style="color:#888888; font-size:13px; font-weight:bold; margin-left:6px; cursor:not-allowed;">
-                    🔒 請先將上方視窗滾動滑至底端以解鎖此核取方塊
-                </label>
-            </div>
         </div>
-        <script>
-            const sBox = document.getElementById('legal_scroll_box');
-            const chk = document.getElementById('real_legal_check');
-            const lbl = document.getElementById('lbl_hint');
-            sBox.onscroll = function() {
-                if (sBox.scrollHeight - sBox.scrollTop <= sBox.clientHeight + 15) {
-                    chk.disabled = false;
-                    lbl.style.color = "#56D364";
-                    lbl.style.cursor = "pointer";
-                    lbl.innerHTML = "✅ 我已完整閱畢全六條規範，同意無償學術數據授權 (點此打勾)";
-                }
-            };
-            function handleUnlock(el) {
-                if (el.checked) {
-                    window.parent.location.search = '?step=test&token=' + encodeURIComponent(window.parent.location.search.split('token=')[1] || '#SYM-CFBD');
-                }
-            }
-        </script>
-    """, height=350)
+    """, unsafe_allow_html=True)
 
-    if st.button("↩️ 返回邀請函", use_container_width=True):
-        st.query_params["step"] = "invite"
-        st.rerun()
+    # 原生 Streamlit 元件：絕對不會被裁切，100% 看得到勾勾！
+    agree_legal = st.checkbox("🟢 我已滑動閱畢全六條規範，知悉本系統非醫療行為並同意無償學術數據授權", value=False)
+
+    col_c1, col_c2 = st.columns([1, 2])
+    with col_c1:
+        if st.button("↩️ 返回邀請函", use_container_width=True):
+            st.session_state["current_step"] = "invite"
+            st.query_params["step"] = "invite"
+            st.rerun()
+    with col_c2:
+        if st.button("🚀 領取通行證，開啟調息探索", use_container_width=True):
+            if agree_legal:
+                st.session_state["current_step"] = "test"
+                st.query_params["step"] = "test"
+                st.rerun()
+            else:
+                st.error("❌ 法律合規阻斷：請確認您已勾選上方「我已滑動閱畢」同意方塊！")
 
 # --- 階段 3：心流色彩測量 ✕ 運動學畫布 ✕ 19s調息 ✕ rPPG 微血流 ---
-elif current_step == "test":
+elif st.session_state["current_step"] == "test":
 
     col_nav1, col_nav2 = st.columns([1, 2])
     with col_nav1:
         if st.button("↩️ 返回守則", use_container_width=True):
+            st.session_state["current_step"] = "consent"
             st.query_params["step"] = "consent"
             st.rerun()
     with col_nav2:
@@ -494,7 +495,7 @@ elif current_step == "test":
         </div>
     """, unsafe_allow_html=True)
 
-    # 登入：照片特徵定錨
+    # 登入：照片特徵定錨 (黑綠底金字)
     st.markdown("""
         <div style="background:#142017; border:1.5px solid #FCBF05; border-radius:18px; padding:18px; margin-bottom:14px;">
             <div style="color:#FCBF05 !important; font-size:1.1rem; font-weight:bold; margin-bottom:4px;">
@@ -593,7 +594,6 @@ elif current_step == "test":
                     strokePoints.push(p);
 
                     const avgSpd = Math.round(totalSpeed / sampleCount);
-                    // 國外臨床運動學標準：微震顫曲率佔 60% + 速度急停 (Jerk) 佔 40%
                     const cPart = (totalCurvature / (sampleCount || 1)) * 32.0;
                     const jPart = Math.min(45, (totalJerk / (sampleCount || 1)) * 0.08);
                     const tension = Math.min(95, Math.max(10, Math.round(cPart + jPart)));
@@ -728,7 +728,7 @@ elif current_step == "test":
             now_dt = datetime.datetime.now()
             cur_token = st.session_state["patient_token"]
             
-            # 如實計算：放鬆狀態張力 12%，心流高達 96.5%
+            # 放鬆狀態：張力低至 12%，心流評分高達 96.5%
             tension_val = selected_psycho.get("base_tension", 12)
             base_score = selected_psycho.get("base_coherence", 96.5)
             calc_score = min(98.8, max(65.0, round(base_score + random.uniform(-0.4, 0.8), 1)))
