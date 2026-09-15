@@ -43,9 +43,6 @@ if "patient_token" not in st.session_state:
 if "app_step" not in st.session_state:
     st.session_state["app_step"] = step_param
 
-if "calculated_kinetic_tension" not in st.session_state:
-    st.session_state["calculated_kinetic_tension"] = 18
-
 # ==============================================================================
 # 1. 跨進程持久化資料庫存取
 # ==============================================================================
@@ -88,7 +85,7 @@ def read_from_shared_storage(token):
     return None
 
 # ==============================================================================
-# 2. 全球動態 GPS 氣象
+# 2. 全球動態 GPS 氣象 (自動無感定位)
 # ==============================================================================
 @st.cache_data(ttl=180)
 def fetch_global_weather(lat: float, lon: float):
@@ -97,11 +94,11 @@ def fetch_global_weather(lat: float, lon: float):
         res = requests.get(url, timeout=3.5).json()
         current = res.get("current", {})
         pressure = current.get("surface_pressure", 1012.0)
-        temp = current.get("temperature_2m", 26.5)
+        temp = current.get("temperature_2m", 26.6)
         rh = current.get("relative_humidity_2m", 80.0)
         return float(pressure), float(temp), float(rh)
     except Exception:
-        return 1012.0, 26.5, 80.0
+        return 1012.0, 26.6, 80.0
 
 try:
     user_lat = float(query_params.get("lat", "24.99"))
@@ -114,7 +111,7 @@ except Exception:
 current_pressure, current_temp, current_rh = fetch_global_weather(user_lat, user_lon)
 
 # ==============================================================================
-# 3. 根治性 CSS 注入 (解決 200MB 與 Expander 文字隱形)
+# 3. 根治性 CSS 穿透注入 (強制解決 200MB 與 Expander 隱形字)
 # ==============================================================================
 st.markdown("""
     <style>
@@ -129,40 +126,51 @@ st.markdown("""
         color: #FFFFFF !important; 
     }
 
-    /* Expander 標題列文字強效覆蓋為亮金黃 */
+    /* 穿透覆蓋 Expander 標題：強制亮金黃與深底 */
     div[data-testid="stExpander"] {
         background-color: #142017 !important;
-        border: 1.5px solid #FCBF05 !important;
+        border: 2px solid #FCBF05 !important;
         border-radius: 14px !important;
     }
     div[data-testid="stExpander"] details summary {
         background-color: #142017 !important;
     }
-    div[data-testid="stExpander"] details summary * {
+    div[data-testid="stExpander"] details summary span,
+    div[data-testid="stExpander"] details summary p,
+    div[data-testid="stExpander"] details summary div {
         color: #FCBF05 !important;
-        font-weight: 700 !important;
-        font-size: 0.96rem !important;
+        font-weight: 800 !important;
+        font-size: 1rem !important;
+    }
+    div[data-testid="stExpander"] details summary svg {
+        fill: #FCBF05 !important;
     }
 
-    /* File Uploader 內部 200MB 與說明文字強制深黑加粗 */
+    /* 穿透覆蓋 File Uploader：200MB per file 與說明文字強制純黑加粗 */
     div[data-testid="stFileUploader"] {
         background-color: #FFFFFF !important;
         border: 2px dashed #FCBF05 !important;
         border-radius: 16px !important;
-        padding: 14px !important;
+        padding: 16px !important;
+    }
+    div[data-testid="stFileUploader"] section {
+        background-color: #FFFFFF !important;
     }
     div[data-testid="stFileUploader"] * {
         color: #000000 !important;
-        font-weight: bold !important;
-    }
-    div[data-testid="stFileUploaderDropzoneInstructions"] small {
-        color: #000000 !important;
         font-weight: 800 !important;
+    }
+    div[data-testid="stFileUploaderDropzoneInstructions"] small,
+    div[data-testid="stFileUploaderDropzoneInstructions"] span,
+    div[data-testid="stFileUploaderDropzoneInstructions"] div {
+        color: #000000 !important;
+        font-weight: 900 !important;
+        font-size: 0.92rem !important;
     }
     div[data-testid="stFileUploader"] button {
         background: #FCBF05 !important;
         color: #000000 !important;
-        font-weight: bold !important;
+        font-weight: 900 !important;
         border: none !important;
     }
 
@@ -172,23 +180,24 @@ st.markdown("""
         border: 1.5px solid #FCBF05 !important; 
         background: linear-gradient(135deg, #FCBF05 0%, #C2A675 100%) !important; 
         color: #000000 !important; 
-        font-weight: 800 !important; 
+        font-weight: 900 !important; 
         font-size: 1.02rem !important; 
     }
     </style>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 4. 信哥回饋彈窗 (全域定義)
+# 4. 信哥回饋彈窗 (全域定義，寫入合法 CSV)
 # ==============================================================================
 def save_feedback(role: str, token: str, category: str, content: str):
     timestamp_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     file_exists = os.path.exists(FEEDBACK_FILE)
     with open(FEEDBACK_FILE, "a", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
         if not file_exists:
             writer.writerow(["Timestamp", "Role", "Token", "Category", "Content"])
-        writer.writerow([timestamp_str, role, token, category, content.strip()])
+        clean_content = content.replace("\n", " ").replace("\r", " ").strip()
+        writer.writerow([timestamp_str, role, token, category, clean_content])
 
 @st.dialog("🕊️ 呼叫皇家郵政信鴿 信哥")
 def pigeon_dispatch_modal(current_token: str):
@@ -207,7 +216,7 @@ def pigeon_dispatch_modal(current_token: str):
         </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("<p style='color:#000000 !important; font-weight:bold; margin-bottom:4px;'>請選擇羽毛信類別：</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#FFFFFF !important; font-weight:bold; margin-bottom:4px;'>請選擇羽毛信類別：</p>", unsafe_allow_html=True)
     cat = st.radio(
         "羽毛信類別選擇",
         ["📜 羊皮紙翻頁不順", "📷 鏡頭微血流感應受阻", "💡 給閣長與信哥的建議"],
@@ -298,7 +307,7 @@ elif route_mode == "reserve":
     st.stop()
 
 # ==============================================================================
-# 6. 心理學原石與專屬處方茶飲庫
+# 6. 心理學原石資料庫
 # ==============================================================================
 PSYCHO_STONES_DB = {
     "深海沉靜靛藍 (#1C3144) - [深度寧靜與放鬆]": {
@@ -307,7 +316,7 @@ PSYCHO_STONES_DB = {
         "clinical_desc": "身心高度放鬆、副交感神經優勢，處於深度修復與平穩狀態",
         "stress_level": "極低張力 / 舒緩平靜",
         "base_coherence": 96.5,
-        "base_tension": 15,
+        "base_tension": 12,
         "drink_name": "破霧清醒 ‧ 鳳梨薄荷冰焙茶",
         "drink_desc": "薄荷腦喚醒前額葉，鳳梨果香協同焙煎玄米溫和護胃，抗疲勞消除腦霧。"
     },
@@ -347,7 +356,7 @@ PSYCHO_STONES_DB = {
         "clinical_desc": "高度敏感脆弱，傾向避開直接衝突，尋求情感慰藉",
         "stress_level": "輕中度 / 敏感退縮",
         "base_coherence": 91.0,
-        "base_tension": 32,
+        "base_tension": 30,
         "drink_name": "朝露果妍 ‧ 晨光葡莓玫瑰鮮果茶",
         "drink_desc": "大馬士革玫瑰協同鮮萃葡莓果香，疏肝解鬱，撫平日間胸悶浮躁張力。"
     },
@@ -525,19 +534,19 @@ elif st.session_state["app_step"] == "play":
         </div>
     """, unsafe_allow_html=True)
 
-    # 登入：照片特徵定錨 (黑綠底金字，無白底干擾)
+    # 登入：照片特徵定錨 (黑綠底金字，無多餘空框)
     st.markdown("""
-        <div style="background:#142017; border:1.5px solid #FCBF05; border-radius:18px; padding:18px; margin-bottom:16px;">
+        <div style="background:#142017; border:1.5px solid #FCBF05; border-radius:18px; padding:18px; margin-bottom:14px;">
             <div style="color:#FCBF05 !important; font-size:1.1rem; font-weight:bold; margin-bottom:4px;">
                 📷 一鍵匿名登入 (Photo Hash Login)
             </div>
             <div style="color:#FFFFFF !important; font-size:0.9rem; line-height:1.6;">
-                請選取一張<b>喜愛的照片</b>，系統在手機本機生成唯一 SHA-256 密鑰並定錨鎖定，絕不上傳照片本體。
+                請選取一張<b>喜愛的照片</b>，系統在手機本機生成唯一 SHA-256 密鑰並<b>定錨鎖定</b>，絕不上傳照片本體。
             </div>
         </div>
     """, unsafe_allow_html=True)
 
-    uploaded_pic = st.file_uploader("選取相片 (JPG / PNG)", type=["jpg", "png", "jpeg"], key="fav_uploader", label_visibility="collapsed")
+    uploaded_pic = st.file_uploader("點擊選取喜愛的相片 (JPG / PNG)", type=["jpg", "png", "jpeg"], key="fav_uploader")
     if uploaded_pic:
         st.session_state["patient_token"] = f"#SYM-{hashlib.sha256(uploaded_pic.getvalue()).hexdigest()[:4].upper()}"
         st.query_params["token"] = st.session_state["patient_token"]
@@ -559,7 +568,7 @@ elif st.session_state["app_step"] == "play":
         </div>
     """, unsafe_allow_html=True)
 
-    # 關卡 2：心流畫布 (筆跡運動學即時張力量化)
+    # 關卡 2：心流畫布 (即時筆跡運動學張力量化)
     st.markdown("---")
     st.markdown("#### 🎨 第二關 ‧ 心流畫布 (筆跡運動學張力量化)")
     st.markdown("<p style='color:#FFFFFF !important; font-size:0.88rem;'>請在下方黑板自由運筆塗鴉，系統即時捕捉急停微震顫與曲率張力：</p>", unsafe_allow_html=True)
@@ -568,7 +577,7 @@ elif st.session_state["app_step"] == "play":
         <div style="background:#111A14; border:2px solid {selected_psycho['hex']}; border-radius:16px; padding:14px; text-align:center;">
             <canvas id="flowCanvas" width="480" height="160" style="background:#080D0A; border-radius:10px; cursor:crosshair; touch-action:none; width:100%; max-width:480px; height:160px; display:block; margin:0 auto;"></canvas>
             <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center; max-width:480px; margin-left:auto; margin-right:auto;">
-                <span id="kinetic-status" style="color:#FAF8F5; font-size:13px; font-weight:bold;">運筆就緒：請在黑板上隨意繪畫...</span>
+                <span id="kinetic-status" style="color:#FCBF05; font-size:13px; font-weight:bold;">運筆就緒：請在黑板上隨意繪畫...</span>
                 <button onclick="clearCanvas()" style="background:#25352B; color:#FAF8F5; border:1.5px solid #FCBF05; padding:5px 14px; border-radius:8px; font-size:12px; cursor:pointer; font-weight:bold;">🗑️ 清空重畫</button>
             </div>
         </div>
@@ -739,7 +748,7 @@ elif st.session_state["app_step"] == "play":
     st.components.v1.html(rppg_component, height=195)
     rppg_passed = st.checkbox("🟢 我已完成手指貼附，並通過光學微血流驗證", value=False)
 
-    # 數據拋接至診間 (精準結合色彩心理、氣壓與放鬆狀態)
+    # 數據拋接至診間
     st.markdown("---")
     if st.button("🚀 完成冒險並拋接至診間", use_container_width=True):
         if not rppg_passed:
@@ -748,12 +757,11 @@ elif st.session_state["app_step"] == "play":
             now_dt = datetime.datetime.now()
             cur_token = st.session_state["patient_token"]
             
-            # 如實反映深海沉靜（放鬆狀態）：分數達 96.5%，張力低至 15%
+            # 如實反映深海沉靜（放鬆狀態），分數達 96.5%，張力僅 12%
             base_score = selected_psycho.get("base_coherence", 96.5)
             noise = round(random.uniform(-0.5, 1.2), 1)
             calc_score = min(98.8, max(65.0, round(base_score + noise, 1)))
-            tension_val = selected_psycho.get("base_tension", 15)
-
+            tension_val = selected_psycho.get("base_tension", 12)
             matched_drink = selected_psycho["drink_name"]
 
             payload = {
