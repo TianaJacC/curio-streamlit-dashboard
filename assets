@@ -1,0 +1,26 @@
+curio-streamlit-dashboard/
+├── app.py                      <-- 郭醫師認可的經典診間面板（完全不改動）
+├── patient_app.py              <-- 病患端日誌（載入 22 隻 3D 萌寵卡牌）
+└── assets/                     <-- 存放 22 隻萌寵圖檔的專屬資料夾
+    ├── cone.png                (1. 栗子小松鼠蔻恩閣長)
+    ├── singer.png              (2. 信鴿 Singer)
+    ├── ragdoll.png             (3. 慵懶布偶貓)
+    ├── golden.png              (4. 大不列顛黃金獵犬)
+    ├── rabbit.png              (5. 軟綿垂耳兔)
+    ├── guinea_pig.png          (6. 圓滾天竺鼠)
+    ├── shiba.png               (7. 治癒系柴犬)
+    ├── parrot.png              (8. 莫蘭迪綠鸚鵡)
+    ├── otter.png               (9. 塞納河畔水獺)
+    ├── hedgehog.png           (10. 溫暖小刺蝟)
+    ├── alpaca.png             (11. 高雅羊駝)
+    ├── totoro.png             (12. 守護者龍貓)
+    ├── red_panda.png          (13. 微醺小熊貓)
+    ├── samoyed.png            (14. 極地薩摩耶)
+    ├── sheep.png              (15. 法式垂耳羊)
+    ├── koala.png              (16. 雲端霧氣無尾熊)
+    ├── chipmunk.png           (17. 香草花栗鼠)
+    ├── corgi.png              (18. 銀河短腿柯基)
+    ├── persian.png            (19. 燕麥色波斯貓)
+    ├── border_collie.png      (20. 氣泡流金小邊牧)
+    ├── deer.png               (21. 橡樹林小麋鹿)
+    └── penguin.png            (22. 軟糖企鵝仔)
