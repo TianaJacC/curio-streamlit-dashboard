@@ -193,7 +193,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 4. 信哥回饋彈窗與強制落盤機制（全篇僅保留這一個定義）
+# 4. 信哥回饋彈窗與雙重保險強制落盤機制 (CSV + JSON 雙源同步)
 # ==============================================================================
 def save_feedback(role: str, token: str, category: str, content: str):
     timestamp_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -203,6 +203,7 @@ def save_feedback(role: str, token: str, category: str, content: str):
     os.makedirs(LOG_DIR, exist_ok=True)
     feedback_file_path = os.path.join(LOG_DIR, "user_feedback_log.csv")
     
+    # 1. 寫入 CSV 檔案
     file_exists = os.path.exists(feedback_file_path)
     try:
         with open(feedback_file_path, "a", newline="", encoding="utf-8") as f:
@@ -217,6 +218,31 @@ def save_feedback(role: str, token: str, category: str, content: str):
         print("DEBUG: 羽毛信 CSV 寫入成功！")
     except Exception as e:
         print(f"DEBUG: CSV 寫入失敗，發生錯誤：{e}")
+
+    # 2. 雙重保險：同步寫入 active_sessions.json 的 pigeon_letters 陣列
+    try:
+        db = {}
+        if os.path.exists(SHARED_DB_FILE):
+            with open(SHARED_DB_FILE, "r", encoding="utf-8") as f:
+                db = json.load(f)
+        
+        if token not in db:
+            db[token] = {}
+        
+        if "pigeon_letters" not in db[token]:
+            db[token]["pigeon_letters"] = []
+            
+        db[token]["pigeon_letters"].append({
+            "timestamp": timestamp_str,
+            "category": category,
+            "content": content.strip()
+        })
+        
+        with open(SHARED_DB_FILE, "w", encoding="utf-8") as f:
+            json.dump(db, f, ensure_ascii=False, indent=2)
+        print("DEBUG: 羽毛信 JSON 雙源備份成功！")
+    except Exception as e:
+        print(f"DEBUG: JSON 備份寫入失敗：{e}")
 
 @st.dialog("🕊️ 呼叫皇家郵政信鴿 信哥")
 def pigeon_dispatch_modal(tok: str):
@@ -243,10 +269,10 @@ def pigeon_dispatch_modal(tok: str):
     
     if st.button("🕊️ 繫上羽毛信，讓信鴿起飛！", use_container_width=True, key="pigeon_send_submit_btn"):
         if msg_body and msg_body.strip():
-            # 確實執行寫入動作
+            # 確實執行雙重保險寫入動作
             save_feedback("探險家", tok, cat, msg_body.strip())
-            st.success("✨ 咕咕！羽毛信已安全送達管理處！")
-            time.sleep(1.0)
+            st.success("✨ 咕咕！羽毛信已安全送達管理處與總控台！")
+            time.sleep(1.2)
             st.rerun()
         else:
             st.warning("⚠️ 請寫下一點訊息再讓信哥出發喔！")
