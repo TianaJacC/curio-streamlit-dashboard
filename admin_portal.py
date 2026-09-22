@@ -2,12 +2,12 @@ import csv
 import datetime
 import json
 import os
-import time  # 👈 務必確保這裡有 import time！
+import time
 import pandas as pd
 import streamlit as st
 
 # ==============================================================================
-# 0. 中央管理端頁面配置與絕對路徑統一防禦
+# 0. 中央管理端頁面配置與絕對路徑統一防禦（務必放最前面）
 # ==============================================================================
 st.set_page_config(
     page_title="夢境珍奇櫃 ‧ 中央管理總控台",
@@ -22,9 +22,11 @@ LOG_DIR = os.path.join(BASE_DIR, "system_logs")
 os.makedirs(LOG_DIR, exist_ok=True)
 
 FEEDBACK_FILE = os.path.join(LOG_DIR, "user_feedback_log.csv")
+FEEDBACK_LOG_FILE = os.path.join(LOG_DIR, "user_feedback_log.csv")
 SHARED_DB_FILE = os.path.join(LOG_DIR, "active_sessions.json")
+SHARED_QUEUE_FILE = os.path.join(LOG_DIR, "active_queue.json")
 
-# 初始化信件格式標準
+# 初始化信件格式標準（此時變數已經定義完畢，不會再報 NameError）
 def init_feedback_storage_standard():
     if not os.path.exists(FEEDBACK_LOG_FILE):
         with open(FEEDBACK_LOG_FILE, "w", newline="", encoding="utf-8") as f:
