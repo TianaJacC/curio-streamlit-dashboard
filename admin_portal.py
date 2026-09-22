@@ -19,11 +19,10 @@ st.set_page_config(
 # 強制使用絕對路徑，確保與病患端指向同一個 system_logs
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_DIR = os.path.join(BASE_DIR, "system_logs")
-FEEDBACK_FILE = os.path.join(LOG_DIR, "user_feedback_log.csv")
+os.makedirs(LOG_DIR, exist_ok=True)
 
+FEEDBACK_FILE = os.path.join(LOG_DIR, "user_feedback_log.csv")
 SHARED_DB_FILE = os.path.join(LOG_DIR, "active_sessions.json")
-SHARED_QUEUE_FILE = os.path.join(LOG_DIR, "active_queue.json")
-FEEDBACK_LOG_FILE = os.path.join(LOG_DIR, "user_feedback_log.csv")
 
 # 初始化信件格式標準
 def init_feedback_storage_standard():
