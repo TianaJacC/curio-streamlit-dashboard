@@ -1,0 +1,248 @@
+{
+  "type": "carousel",
+  "contents": [
+    {
+      "type": "bubble",
+      "size": "mega",
+      "styles": {
+        "header": { "backgroundColor": "#142017" },
+        "body": { "backgroundColor": "#0A110D" },
+        "footer": { "backgroundColor": "#142017" }
+      },
+      "header": {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+          {
+            "type": "text",
+            "text": "AURA & GLOW ｜ 7.5g / 包",
+            "color": "#FCBF05",
+            "size": "xs",
+            "weight": "bold"
+          },
+          {
+            "type": "text",
+            "text": "朝露果妍",
+            "color": "#FFFFFF",
+            "size": "xxl",
+            "weight": "bold",
+            "margin": "sm"
+          },
+          {
+            "type": "text",
+            "text": "白桃貴妃荔枝 ‧ 黃金柚香冷露感",
+            "color": "#D3E0D7",
+            "size": "sm",
+            "margin": "xs"
+          }
+        ]
+      },
+      "body": {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+          {
+            "type": "box",
+            "layout": "vertical",
+            "backgroundColor": "#1A261F",
+            "cornerRadius": "8px",
+            "paddingAll": "12px",
+            "contents": [
+              {
+                "type": "text",
+                "text": "✦ 風味輪廓 Profile",
+                "color": "#FCBF05",
+                "size": "xs",
+                "weight": "bold"
+              },
+              {
+                "type": "text",
+                "text": "白桃荔枝果蜜 × 富士蘋果潤澤 × 日本柚皮冷香",
+                "color": "#FFFFFF",
+                "size": "sm",
+                "wrap": true,
+                "margin": "sm"
+              }
+            ]
+          },
+          {
+            "type": "box",
+            "layout": "vertical",
+            "margin": "md",
+            "contents": [
+              {
+                "type": "text",
+                "text": "核心調適機能：疏肝理氣，撫平日間胸悶浮躁張力。",
+                "color": "#A2B3A7",
+                "size": "xs",
+                "wrap": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "bubble",
+      "size": "mega",
+      "styles": {
+        "header": { "backgroundColor": "#142017" },
+        "body": { "backgroundColor": "#0A110D" },
+        "footer": { "backgroundColor": "#142017" }
+      },
+      "header": {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+          {
+            "type": "text",
+            "text": "FOCUS & ENERGY ｜ 7.6g / 包",
+            "color": "#FCBF05",
+            "size": "xs",
+            "weight": "bold"
+          },
+          {
+            "type": "text",
+            "text": "晴波清醒",
+            "color": "#FFFFFF",
+            "size": "xxl",
+            "weight": "bold",
+            "margin": "sm"
+          },
+          {
+            "type": "text",
+            "text": "炭烤黃金芭樂百香 ‧ 熱帶果茶王",
+            "color": "#D3E0D7",
+            "size": "sm",
+            "margin": "xs"
+          }
+        ]
+      },
+      "body": {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+          {
+            "type": "box",
+            "layout": "vertical",
+            "backgroundColor": "#1A261F",
+            "cornerRadius": "8px",
+            "paddingAll": "12px",
+            "contents": [
+              {
+                "type": "text",
+                "text": "✦ 風味輪廓 Profile",
+                "color": "#FCBF05",
+                "size": "xs",
+                "weight": "bold"
+              },
+              {
+                "type": "text",
+                "text": "紅心芭樂果甜 × 爆汁百香酸甜 × 炭焙苦蕎熟香",
+                "color": "#FFFFFF",
+                "size": "sm",
+                "wrap": true,
+                "margin": "sm"
+              }
+            ]
+          },
+          {
+            "type": "box",
+            "layout": "vertical",
+            "margin": "md",
+            "contents": [
+              {
+                "type": "text",
+                "text": "核心調適機能：溫和護胃、驅散腦霧，快速喚醒前額葉心流專注。",
+                "color": "#A2B3A7",
+                "size": "xs",
+                "wrap": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "bubble",
+      "size": "mega",
+      "styles": {
+        "header": { "backgroundColor": "#142017" },
+        "body": { "backgroundColor": "#0A110D" },
+        "footer": { "backgroundColor": "#142017" }
+      },
+      "header": {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+          {
+            "type": "text",
+            "text": "DEEP SLEEP & REPAIR ｜ 7.8g / 包",
+            "color": "#FCBF05",
+            "size": "xs",
+            "weight": "bold"
+          },
+          {
+            "type": "text",
+            "text": "暮夜靜謐",
+            "color": "#FFFFFF",
+            "size": "xxl",
+            "weight": "bold",
+            "margin": "sm"
+          },
+          {
+            "type": "text",
+            "text": "法式焦糖金烤 燕麥可可殼茶",
+            "color": "#D3E0D7",
+            "size": "sm",
+            "margin": "xs"
+          }
+        ]
+      },
+      "body": {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+          {
+            "type": "box",
+            "layout": "vertical",
+            "backgroundColor": "#1A261F",
+            "cornerRadius": "8px",
+            "paddingAll": "12px",
+            "contents": [
+              {
+                "type": "text",
+                "text": "✦ 風味輪廓 Profile",
+                "color": "#FCBF05",
+                "size": "xs",
+                "weight": "bold"
+              },
+              {
+                "type": "text",
+                "text": "莊園黑巧焦糖香 × 直火大麥焙香 × 紅棗溫潤回甘",
+                "color": "#FFFFFF",
+                "size": "sm",
+                "wrap": true,
+                "margin": "sm"
+              }
+            ]
+          },
+          {
+            "type": "box",
+            "layout": "vertical",
+            "margin": "md",
+            "contents": [
+              {
+                "type": "text",
+                "text": "核心調適機能：誘導迷走神經共振，平息思慮反芻、安穩入眠。",
+                "color": "#A2B3A7",
+                "size": "xs",
+                "wrap": true
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
