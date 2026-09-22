@@ -38,8 +38,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_DIR = os.path.join(BASE_DIR, "system_logs")
 os.makedirs(LOG_DIR, exist_ok=True)
 
-FEEDBACK_FILE = os.path.join(LOG_DIR, "user_feedback_log.csv")
 SHARED_DB_FILE = os.path.join(LOG_DIR, "active_sessions.json")
+SHARED_QUEUE_FILE = os.path.join(LOG_DIR, "active_queue.json")
+FEEDBACK_FILE = os.path.join(LOG_DIR, "user_feedback_log.csv")
 
 query_params = st.query_params
 url_step = query_params.get("step", None)
