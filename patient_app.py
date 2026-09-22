@@ -257,22 +257,31 @@ def pigeon_dispatch_modal(tok: str):
         </div>
     """, unsafe_allow_html=True)
 
+    # 確保每個元件都有獨立且唯一的 key，避免手機端狀態錯亂
     cat = st.radio(
         "請選擇羽毛信類別：",
         ["📜 羊皮紙翻頁提示", "📷 指尖靜心感應校準協助", "💡 給閣長與信哥的悄悄話"],
         index=0,
-        key="pigeon_cat_input"
+        key="mobile_pigeon_cat_radio"
     )
     
-    msg_body = st.text_area("羽毛信內容：", placeholder="咕咕！請告訴信哥您在夢境裡需要協助的地方...", height=85, key="pigeon_msg_text")
+    msg_body = st.text_area(
+        "羽毛信內容：", 
+        placeholder="咕咕！請告訴信哥您在夢境裡需要協助的地方...", 
+        height=90, 
+        key="mobile_pigeon_textarea"
+    )
     
-    if st.button("🕊️ 繫上羽毛信，讓信鴿起飛！", use_container_width=True, key="pigeon_send_submit_btn"):
+    if st.button("🕊️ 繫上羽毛信，讓信鴿起飛！", use_container_width=True, key="mobile_pigeon_submit_btn"):
         if msg_body and msg_body.strip():
-            # 確實執行雙重保險寫入動作
-            save_feedback("探險家", tok, cat, msg_body.strip())
-            st.success("✨ 咕咕！羽毛信已安全送達管理處與總控台！")
-            time.sleep(1.2)
-            st.rerun()
+            try:
+                # 確實執行雙重保險寫入動作
+                save_feedback("探險家", tok, cat, msg_body.strip())
+                st.success("✨ 咕咕！羽毛信已成功繫上，信鴿已順利起飛送達管理處！")
+                time.sleep(1.5)
+                st.rerun()
+            except Exception as e:
+                st.error(f"⚠️ 信鴿飛行受阻：{e}")
         else:
             st.warning("⚠️ 請寫下一點訊息再讓信哥出發喔！")
 
