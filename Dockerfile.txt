@@ -1,0 +1,26 @@
+# 使用官方 Python 3.11 輕量映像檔
+FROM python:3.11-slim
+
+# 設定工作目錄
+WORKDIR /app
+
+# 安裝系統相依套件（若有需要可在此擴充）
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# 複製依賴清單並安裝 Python 套件
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 複製專案所有檔案到容器中
+COPY . .
+
+# 確保系統日誌資料夾存在
+RUN mkdir -p system_logs
+
+# 開放 Streamlit 預設連接埠
+EXPOSE 8501
+
+# 啟動指令：預設運行醫生/中央總控台主程式 (app.py)
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
