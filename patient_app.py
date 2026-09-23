@@ -540,12 +540,12 @@ elif st.session_state["current_step"] == "test":
         </div>
     """, unsafe_allow_html=True)
 
-# 第二關：研究級神經運動學與數位生物標記測量儀
+# 第二關：研究級神經運動學與數位生物標記測量儀（帶有視覺化引導軌跡）
     st.markdown("---")
     st.markdown("#### 🎨 第二關 ‧ 頂級研究級神經運動學與頻譜分析儀")
     st.markdown("""
         <div style='color:#A2B3A7 !important; font-size:0.88rem; line-height:1.6; margin-bottom:8px;'>
-            <b>【學術試驗模式】</b>請將食指按住下方起點，平穩沿著綠色引導軌跡滑動至終點。系統將同步採集 <b>LDLJ 平順度、8-12Hz 頻譜微顫功率 (PSD) 與 Fréchet 軌跡失真率</b>：
+            <b>【學術試驗模式】</b>請將食指按住下方畫布左側的 <b style="color:#56D364;">🟢 起點 (Start)</b>，平穩沿著綠色引導線滑動至右側的 <b style="color:#FF7B72;">🔴 終點 (Goal)</b>。系統將同步採集 <b>LDLJ 平順度、8-12Hz 頻譜微顫功率 (PSD) 與軌跡失真率</b>：
         </div>
     """, unsafe_allow_html=True)
 
@@ -572,18 +572,18 @@ elif st.session_state["current_step"] == "test":
 
     auto_tension = int(st.session_state["measured_tension"])
 
-    # 透過 st.components.v1.html 嵌入頂級研究級測量儀
+    # 透過 st.components.v1.html 嵌入帶有引導軌跡的測量儀
     st.components.v1.html(f"""
         <div style="background:#050A07; border:2px solid #FCBF05; border-radius:22px; padding:24px; box-sizing:border-box; width:100%; box-shadow:0 12px 35px rgba(0,0,0,0.85); user-select:none; -webkit-user-select:none;">
             <div style="color:#FCBF05; font-size:16px; font-weight:bold; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
                 <span>🔬 研究級神經運動學與頻譜分析儀 (Research-Grade Biomarker)</span>
-                <span id="sys-status" style="font-size:12px; background:#142017; color:#56D364; padding:3px 10px; border-radius:6px; border:1px solid #25352B;">🟢 FFT 採樣中 (60Hz)</span>
+                <span id="sys-status" style="font-size:12px; background:#142017; color:#56D364; padding:3px 10px; border-radius:6px; border:1px solid #25352B;">🟢 待命中 (請由左至右滑動)</span>
             </div>
             <div style="color:#A2B3A7; font-size:13px; margin-bottom:14px; line-height:1.7;">
-                請將食指按住下方起點，平穩沿著綠色引導軌跡滑動至終點。系統將進行高精度計算。
+                請由左側綠色圓點出發，順著導引線平穩滑向右側紅色終點。
             </div>
 
-            <!-- 高精度研究級軌跡畫布 -->
+            <!-- 帶有視覺化起終點與導引線的高精度畫布 -->
             <canvas id="researchClinicalCanvas" width="520" height="240" style="background:#020403; border-radius:14px; border:1.5px solid #25352B; cursor:crosshair; touch-action:none; width:100%; height:240px; display:block; margin:0 auto; box-shadow:inset 0 0 25px rgba(0,0,0,0.95);"></canvas>
 
             <!-- 臨床多維度精密數據看板 (4大核心生物標記) -->
@@ -621,10 +621,57 @@ elif st.session_state["current_step"] == "test":
             let sampleCounter = 0;
             let currentComputedTension = {auto_tension};
 
-            rCtx.strokeStyle = '{canvas_theme_color}';
-            rCtx.lineWidth = 4.0;
-            rCtx.lineCap = 'round';
-            rCtx.lineJoin = 'round';
+            // 起點與終點座標定義
+            const startPoint = {{ x: 60, y: 120 }};
+            const endPoint = {{ x: 460, y: 120 }};
+
+            function drawGuides() {{
+                rCtx.clearRect(0, 0, rCanvas.width, rCanvas.height);
+
+                // 1. 繪製引導路徑（微光虛線）
+                rCtx.save();
+                rCtx.strokeStyle = 'rgba(86, 211, 100, 0.25)';
+                rCtx.lineWidth = 2;
+                rCtx.setLineDash([6, 6]);
+                rCtx.beginPath();
+                rCtx.moveTo(startPoint.x, startPoint.y);
+                rCtx.quadraticCurveTo(260, 50, endPoint.x, endPoint.y);
+                rCtx.stroke();
+                rCtx.restore();
+
+                // 2. 繪製綠色起點 (Start)
+                rCtx.save();
+                rCtx.fillStyle = '#56D364';
+                rCtx.shadowColor = '#56D364';
+                rCtx.shadowBlur = 15;
+                rCtx.beginPath();
+                rCtx.arc(startPoint.x, startPoint.y, 18, 0, Math.PI * 2);
+                rCtx.fill();
+                rCtx.fillStyle = '#020403';
+                rCtx.font = 'bold 11px sans-serif';
+                rCtx.textAlign = 'center';
+                rCtx.textBaseline = 'middle';
+                rCtx.fillText('START', startPoint.x, startPoint.y);
+                rCtx.restore();
+
+                // 3. 繪製紅色終點 (Goal)
+                rCtx.save();
+                rCtx.fillStyle = '#FF7B72';
+                rCtx.shadowColor = '#FF7B72';
+                rCtx.shadowBlur = 15;
+                rCtx.beginPath();
+                rCtx.arc(endPoint.x, endPoint.y, 18, 0, Math.PI * 2);
+                rCtx.fill();
+                rCtx.fillStyle = '#020403';
+                rCtx.font = 'bold 11px sans-serif';
+                rCtx.textAlign = 'center';
+                rCtx.textBaseline = 'middle';
+                rCtx.fillText('GOAL', endPoint.x, endPoint.y);
+                rCtx.restore();
+            }}
+
+            // 初始化畫布導引
+            drawGuides();
 
             function getPosEvent(e) {{
                 const rect = rCanvas.getBoundingClientRect();
@@ -646,12 +693,21 @@ elif st.session_state["current_step"] == "test":
             rCanvas.addEventListener('mouseup', (e) => {{ endResearchTrace(); }});
 
             function startResearchTrace(p) {{
+                // 檢查是否從綠色起點附近出發
+                const distToStart = Math.hypot(p.x - startPoint.x, p.y - startPoint.y);
+                if (distToStart > 40) return; // 必須從起點附近按下去才開始採樣
+
                 isTracing = true;
                 tPoints = [p];
                 accHistory = [];
                 ldljSum = 0;
                 sampleCounter = 0;
-                rCtx.clearRect(0, 0, rCanvas.width, rCanvas.height);
+                
+                drawGuides();
+                rCtx.strokeStyle = '{canvas_theme_color}';
+                rCtx.lineWidth = 4.0;
+                rCtx.lineCap = 'round';
+                rCtx.lineJoin = 'round';
                 rCtx.beginPath();
                 rCtx.moveTo(p.x, p.y);
             }}
@@ -684,6 +740,8 @@ elif st.session_state["current_step"] == "test":
 
                     const normLDLJ = sampleCounter > 0 ? (ldljSum / sampleCounter).toFixed(2) : 0.00;
                     const simulatedPSD = Math.min(32.0, (normLDLJ * 1.4 + Math.random() * 0.8).toFixed(2));
+                    
+                    // 計算與終點的 Fréchet 軌跡失真模擬
                     const frechetDist = Math.min(45.0, (dist * 0.35 + Math.abs(v * 0.01)).toFixed(1));
 
                     currentComputedTension = Math.min(98, Math.max(10, Math.round(normLDLJ * 8.5 + simulatedPSD * 1.1 + frechetDist * 0.4)));
@@ -697,6 +755,7 @@ elif st.session_state["current_step"] == "test":
             }}
 
             function endResearchTrace() {{
+                if (!isTracing) return;
                 isTracing = false;
                 rCtx.beginPath();
                 syncResearchData();
@@ -716,7 +775,7 @@ elif st.session_state["current_step"] == "test":
                 }}, 550);
             }}
         </script>
-    """, height=600)
+    """, height=500)
 
     # 動態臨床生理診斷與心流一致性計算
     if auto_tension >= 65:
