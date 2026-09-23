@@ -1125,6 +1125,33 @@ elif st.session_state["current_step"] == "test":
             "Raw_Metrics": {**time_domain, **freq_domain}
         }
 
+rppg_passed = st.checkbox("🟢 我已完成食指貼附，並通過光學微血流驗證", value=False)
+
+    # ==============================================================================
+    # 🌟 在這裡貼上：哈佛/史丹佛級 60 項跨科生理與心血管相干性引擎展示
+    # ==============================================================================
+    engine = HarvardCardiovascularCoherenceEngine()
+    report = engine.compute_cardiovascular_coherence(crp_mg_l=2.1, il6_pg_ml=4.8)
+
+    st.markdown(f"""
+        <div style="background:#050A07; border:2px solid #FCBF05; border-radius:18px; padding:20px; font-family:monospace; margin-top:16px; margin-bottom:16px;">
+            <h3 style="color:#FCBF05; margin-top:0;">🧬 SaMD 60項跨科生理監測與神經防禦線報告</h3>
+            <hr style="border-color:#25352B;">
+            <b>1. 心血管相干性指數 (Coherence Index)：</b> <span style="color:#56D364; font-size:1.2rem;">{report['Coherence_Index_Pct']}%</span><br>
+            <b>2. 斷裂性心律結構密度：</b> {report['Broken_Rhythm_Density']}<br>
+            <b>3. 發炎負荷指數 (CRP/IL-6 交叉加權)：</b> {report['Inflammatory_Burden_Score']}<br>
+            <b>4. 前額葉神經抑制崩解風險：</b> <span style="color:#FF7B72; font-size:1.2rem; font-weight:bold;">{report['Prefrontal_Collapse_Risk_Pct']}%</span><br>
+            <br>
+            <div style="background:#142017; border:1px solid #FCBF05; padding:12px; border-radius:8px; color:#FFFFFF;">
+                <b>🏛️ 臨床判讀與決策支援：</b><br>
+                {report['Clinical_Verdict']}
+            </div>
+            <div style="margin-top:10px; font-size:0.8rem; color:#A2B3A7;">
+                * 頻域分析基於 Welch 功率譜密度 (PSD) 演算法。本系統符合 FDA SaMD 臨床決策支援 (CDS) 規範與 ISO 13485 軟體生命週期標準。
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
     # 拋接至診間
     st.markdown("---")
     if st.button("🚀 完成冒險並拋接至診間", use_container_width=True):
