@@ -915,7 +915,7 @@ elif st.session_state["current_step"] == "test":
         </div>
         
         <!-- 放大版高質感醫療級示波器畫布 (高度擴大至 220px，具備專業醫療格線) -->
-        <canvas id="ppgWaveformCanvas" width="520" height="220" style="background:#010202; border-radius:12px; border:1.5px solid #25352B; width:100%; height:220px; display:block; margin:0 auto; box-shadow:inset 0 0 25px rgba(0,0,0,0.95);"></canvas>
+        <canvas id="ppgWaveformCanvas" width="520" height="320" style="background:#010202; border-radius:12px; border:1.5px solid #25352B; width:100%; height:320px; display:block; margin:0 auto; box-shadow:inset 0 0 25px rgba(0,0,0,0.95);"></canvas>
 
         <!-- 6大核心光電生醫指標看板 -->
         <div style="margin-top:14px; display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;">
@@ -950,7 +950,7 @@ elif st.session_state["current_step"] == "test":
 
         <div style="margin-top:16px;">
             <button id="btn-start-ppg" onclick="runStrictOpticalPPG()" style="background:linear-gradient(135deg, #FCBF05 0%, #C2A675 100%); color:#010202; border:none; padding:12px 26px; border-radius:12px; font-weight:900; cursor:pointer; font-size:14.5px; box-shadow:0 4px 16px rgba(252,191,5,0.35);">
-                📷 啟動頂級醫療級微血流光學掃描 (5秒)
+                📷 啟動醫療級微血流光學掃描 (5秒)
             </button>
         </div>
     </div>
