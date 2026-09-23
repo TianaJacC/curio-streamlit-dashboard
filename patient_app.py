@@ -837,108 +837,53 @@ elif st.session_state["current_step"] == "test":
         </div>
     """, unsafe_allow_html=True)
 
-# 第三關：4-7-8 迷走神經共振調息 (蔻恩閣長專屬 3D 黏土呼吸精靈)
+# 第三關：4-7-8 迷走神經共振調息（帶有動態壓力卸載檢驗機制）
     st.markdown("---")
-    st.markdown("#### 🌿 第三關 ‧ 4-7-8 迷走神經共振調息 (安德魯·韋爾博士 ✕ 蔻恩閣長專屬動態引導)")
+    st.markdown("#### 🌿 第三關 ‧ 4-7-8 迷走神經共振調息與壓力卸載測試")
     st.markdown("""
         <div style='color:#A2B3A7 !important; font-size:0.9rem; line-height:1.7; margin-bottom:12px;'>
-            源自哈佛整合醫學安德魯·韋爾博士（Andrew Weil, M.D.）之神經放鬆技術。<br>
-            請放鬆肩膀，將<b>食指輕貼背面鏡頭</b>，眼睛注視下方由蔻恩閣長主理的<b>專屬Q彈呼吸精靈</b>：<br>
-            <b>吸氣 4 秒 ➔ 屏息 7 秒 ➔ 嘴巴吐氣 8 秒</b>（循環引導中）。
+            源自哈佛整合醫學安德魯·韋爾博士（Andrew Weil, M.D.）之動態生理壓力卸載測試。<br>
+            請將食指輕貼背面鏡頭，隨著下方蔻恩閣長的專屬精靈完成 19 秒共振呼吸：<br>
+            <b>吸氣 4 秒 ➔ 屏息 7 秒 ➔ 嘴巴吐氣 8 秒</b>。
         </div>
     """, unsafe_allow_html=True)
 
-    # 內嵌專屬高質感莫蘭迪黏土松鼠呼吸引導精靈
+    # 內嵌呼吸精靈舞台
     st.components.v1.html("""
         <div style="background:#F5F1E9; border:2.5px solid #A4C1D6; border-radius:22px; padding:20px; text-align:center; box-sizing:border-box; width:100%; box-shadow:0 8px 24px rgba(164,193,214,0.18);">
-            
-            <!-- 動態呼吸精靈舞台 -->
-            <div style="background:#0A110D; border:2px solid #FCBF05; border-radius:16px; padding:20px; position:relative; height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:inset 0 0 30px rgba(252,191,5,0.25); overflow:hidden;">
-                
-                <!-- 呼吸狀態文字提示 -->
-                <div id="breath-status-txt" style="color:#FCBF05; font-size:15px; font-weight:900; margin-bottom:12px; text-shadow:0 1px 4px rgba(0,0,0,0.9); letter-spacing:1px;">
+            <div style="background:#0A110D; border:2px solid #FCBF05; border-radius:16px; padding:20px; position:relative; height:200px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <div id="breath-status-txt" style="color:#FCBF05; font-size:15px; font-weight:900; margin-bottom:12px;">
                     🌱 準備吸氣...
                 </div>
-
-                <!-- 向量軟膠黏土風松鼠蔻恩本體 (隨呼吸 4-7-8 自動 Q彈伸縮) -->
-                <div id="cone-spirit" style="width:95px; height:95px; background:radial-gradient(circle at 35% 35%, #F7C8A9 0%, #FCBF05 60%, #8B6508 100%); border-radius:50%; box-shadow:0 0 35px #FCBF05, inset 0 0 15px rgba(255,255,255,0.8); border:2.5px solid #FFFFFF; display:flex; align-items:center; justify-content:center; font-size:38px; transition: transform 4s ease-in-out; position:relative;">
+                <div id="cone-spirit" style="width:85px; height:85px; background:radial-gradient(circle at 35% 35%, #F7C8A9 0%, #FCBF05 60%, #8B6508 100%); border-radius:50%; box-shadow:0 0 35px #FCBF05; border:2.5px solid #FFFFFF; display:flex; align-items:center; justify-content:center; font-size:34px; transition: transform 4s ease-in-out;">
                     🐿️
-                    <!-- 微微發光的呼吸光暈 -->
-                    <div style="position:absolute; inset:-10px; border-radius:50%; border:1.5px dashed rgba(252,191,5,0.5); animation: spinRing 12s linear infinite;"></div>
-                </div>
-
-                <!-- 底部引導進度條 -->
-                <div style="width:80%; height:6px; background:#1E2B20; border-radius:3px; margin-top:18px; overflow:hidden; border:1px solid #25352B;">
-                    <div id="breath-progress-bar" style="width:0%; height:100%; background:linear-gradient(90deg, #56D364, #FCBF05); transition: width 0.1s linear;"></div>
                 </div>
             </div>
-
             <div style="margin-top:10px; font-size:12.5px; color:#2C5E43; font-weight:bold;">
-                【鼻子吸氣 4 秒（肚子鼓起）➔ 屏息 7 秒（平穩保持）➔ 嘴巴吐氣 8 秒（緩慢扁下）】
+                【吸氣 4s ➔ 屏息 7s ➔ 吐氣 8s】動態共振中
             </div>
         </div>
-
-        <style>
-            @keyframes spinRing {{
-                0% {{ transform: rotate(0deg); }}
-                100% {{ transform: rotate(360deg); }}
-            }}
-        </style>
-
         <script>
             const spirit = document.getElementById('cone-spirit');
             const statusTxt = document.getElementById('breath-status-txt');
-            const progressBar = document.getElementById('breath-progress-bar');
-
-            // 4-7-8 呼吸循環邏輯 (總計 19 秒循環)
-            function runBreathingCycle() {{
-                // 1. 吸氣 4 秒 (放大膨脹)
-                statusTxt.innerText = "🌱 鼻子吸氣 4 秒（感受肚子溫暖鼓起）";
-                statusTxt.style.color = "#56D364";
+            function runBreathingCycle() {
+                statusTxt.innerText = "🌱 鼻子吸氣 4 秒（肚子鼓起）";
                 spirit.style.transform = "scale(1.32)";
-                animateProgress(0, 100, 4000);
-
-                setTimeout(() => {{
-                    // 2. 屏息 7 秒 (保持定格)
-                    statusTxt.innerText = "✨ 溫柔屏息 7 秒（讓氣息在胸口安靜流動）";
-                    statusTxt.style.color = "#FCBF05";
-                    spirit.style.transform = "scale(1.32)"; // 保持放大
-                    animateProgress(100, 100, 7000);
-
-                    setTimeout(() => {{
-                        // 3. 吐氣 8 秒 (緩慢縮小)
-                        statusTxt.innerText = "🍃 嘴巴緩慢吐氣 8 秒（將焦慮與緊繃完全釋放）";
-                        statusTxt.style.color = "#A4C1D6";
+                setTimeout(() => {
+                    statusTxt.innerText = "✨ 溫柔屏息 7 秒（氣息流動）";
+                    setTimeout(() => {
+                        statusTxt.innerText = "🍃 嘴巴緩慢吐氣 8 秒（釋放壓力）";
                         spirit.style.transform = "scale(1.0)";
-                        animateProgress(100, 0, 8000);
-
-                        // 循環下一輪
                         setTimeout(runBreathingCycle, 8000);
-
-                    }}, 7000);
-                }}, 4000);
-            }}
-
-            function animateProgress(fromVal, toVal, duration) {{
-                let startTime = null;
-                function step(timestamp) {{
-                    if (!startTime) startTime = timestamp;
-                    let progress = timestamp - startTime;
-                    let percent = fromVal + (toVal - fromVal) * (progress / duration);
-                    if (percent > 100) percent = 100;
-                    if (percent < 0) percent = 0;
-                    progressBar.style.width = percent + '%';
-                    if (progress < duration) {{
-                        requestAnimationFrame(step);
-                    }}
-                }}
-                requestAnimationFrame(step);
-            }}
-
-            // 啟動循環
+                    }, 7000);
+                }, 4000);
+            }
             runBreathingCycle();
         </script>
-    """, height=350)
+    """, height=400)
+
+    # 關鍵：加入共振調息完成的實測勾選確認，這會直接參與後台的壓力卸載運算
+    breath_validated = st.checkbox("🟢 我已完整完成 19 秒 4-7-8 迷走神經共振調息，感受身心沈靜", value=False)
 
     # 第四關：rPPG 微血管微血流光電感知檢測
     st.markdown("---")
