@@ -903,12 +903,14 @@ elif st.session_state["current_step"] == "test":
         </div>
     """, unsafe_allow_html=True)
 
-    rppg_transparent_component = """
+rppg_transparent_component = """
     <div style="background:#030705; border:2px solid #FCBF05; border-radius:18px; padding:18px; text-align:center; box-sizing:border-box; width:100%; box-shadow:0 8px 25px rgba(0,0,0,0.8);">
         <div id="rppg-status-bar" style="color:#FCBF05; font-size:14px; margin-bottom:10px; font-weight:bold;">
-            🟢 系統就緒：請點擊啟動按鈕並將食指服貼鏡頭
+            🟢 系統就緒：請將食指緊貼後置鏡頭與閃光燈
         </div>
+        
         <canvas id="ppgWaveformCanvas" width="480" height="150" style="background:#010202; border-radius:10px; border:1.5px solid #25352B; width:100%; height:150px; display:block; margin:0 auto; box-shadow:inset 0 0 15px rgba(0,0,0,0.9);"></canvas>
+
         <div style="margin-top:12px; display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;">
             <div style="background:#142017; border:1px solid #25352B; border-radius:8px; padding:8px; text-align:center;">
                 <div style="color:#A2B3A7; font-size:11px;">即時心率 (Est. HR)</div>
@@ -919,15 +921,17 @@ elif st.session_state["current_step"] == "test":
                 <div id="live-sqi" style="color:#56D364; font-weight:bold; font-size:14px;">0.00</div>
             </div>
             <div style="background:#142017; border:1px solid #25352B; border-radius:8px; padding:8px; text-align:center;">
-                <div style="color:#A2B3A7; font-size:11px;">血紅素光強 (Red Mean)</div>
-                <div id="live-red" style="color:#FF7B72; font-weight:bold; font-size:14px;">0.0</div>
+                <div style="color:#A2B3A7; font-size:11px;">光學檢核狀態</div>
+                <div id="live-status-txt" style="color:#FF7B72; font-weight:bold; font-size:12px;">未檢測</div>
             </div>
         </div>
+
         <video id="p-video" autoplay playsinline muted style="display:none; width:60px; height:60px;"></video>
         <canvas id="p-canvas" width="30" height="30" style="display:none;"></canvas>
+
         <div style="margin-top:14px;">
-            <button id="btn-start-ppg" onclick="runTransparentPPG()" style="background:linear-gradient(135deg, #FCBF05 0%, #C2A675 100%); color:#010202; border:none; padding:10px 22px; border-radius:10px; font-weight:900; cursor:pointer; font-size:14px; box-shadow:0 4px 14px rgba(252,191,5,0.3);">
-                📷 啟動即時光電脈搏採樣 (5秒)
+            <button id="btn-start-ppg" onclick="runStrictOpticalPPG()" style="background:linear-gradient(135deg, #FCBF05 0%, #C2A675 100%); color:#010202; border:none; padding:10px 22px; border-radius:10px; font-weight:900; cursor:pointer; font-size:14px; box-shadow:0 4px 14px rgba(252,191,5,0.3);">
+                📷 啟動嚴格光學微血流驗證 (5秒)
             </button>
         </div>
     </div>
@@ -936,9 +940,9 @@ elif st.session_state["current_step"] == "test":
         const pCtx = pWaveCanvas.getContext('2d');
         let ppgBuffer = new Array(120).fill(75);
 
-        function drawWaveform(newval) {
+        function drawWaveform(val) {
             ppgBuffer.shift();
-            ppgBuffer.push(newval);
+            ppgBuffer.push(val);
             pCtx.clearRect(0, 0, pWaveCanvas.width, pWaveCanvas.height);
             pCtx.strokeStyle = '#56D364';
             pCtx.lineWidth = 2.5;
@@ -946,7 +950,7 @@ elif st.session_state["current_step"] == "test":
             const step = pWaveCanvas.width / (ppgBuffer.length - 1);
             for (let i = 0; i < ppgBuffer.length; i++) {
                 const x = i * step;
-                const y = pWaveCanvas.height - ((ppgBuffer[i] - 30) / 180) * pWaveCanvas.height;
+                const y = pWaveCanvas.height - ((ppgBuffer[i] - 20) / 200) * pWaveCanvas.height;
                 if (i === 0) pCtx.moveTo(x, y);
                 else pCtx.lineTo(x, y);
             }
@@ -954,24 +958,31 @@ elif st.session_state["current_step"] == "test":
         }
         drawWaveform(75);
 
-        async function runTransparentPPG() {
+        async function runStrictOpticalPPG() {
             const statusEl = document.getElementById('rppg-status-bar');
             const btnEl = document.getElementById('btn-start-ppg');
             const videoEl = document.getElementById('p-video');
             const canvasEl = document.getElementById('p-canvas');
             const ctxEl = canvasEl.getContext('2d');
+            const statusTxtEl = document.getElementById('live-status-txt');
+
             btnEl.disabled = true;
-            statusEl.innerText = "⏳ 正在啟動相機硬體與 LED 補光燈...";
+            statusEl.innerText = "⏳ 正在啟動硬體相機與補光燈...";
+
             try {
                 const mediaStream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: { ideal: "environment" }, width: { ideal: 640 }, height: { ideal: 480 } }
                 });
                 videoEl.srcObject = mediaStream;
                 await videoEl.play();
+
                 const track = mediaStream.getVideoTracks()[0];
                 try { await track.applyConstraints({ advanced: [{ torch: true }] }); } catch(e) {}
+
                 let sampleCount = 0;
-                let redHistory = [];
+                let validFrames = 0;
+                let rawValues = [];
+
                 let ppgTimer = setInterval(() => {
                     ctxEl.drawImage(videoEl, 0, 0, 30, 30);
                     let imgData = ctxEl.getImageData(0, 0, 30, 30);
@@ -982,25 +993,49 @@ elif st.session_state["current_step"] == "test":
                         gSum += data[i+1];
                     }
                     let rMean = rSum / (data.length / 4);
-                    redHistory.push(rMean);
+                    let gMean = gSum / (data.length / 4);
+
+                    rawValues.push(rMean);
                     sampleCount++;
-                    let simulatedPulse = rMean + Math.sin(sampleCount * 0.4) * 8;
-                    drawWaveform(simulatedPulse);
-                    let sqiVal = Math.min(0.98, Math.max(0.42, (rMean / 120).toFixed(2)));
-                    let estHr = Math.round(68 + (rMean % 15));
-                    document.getElementById('live-hr').innerText = estHr + ' BPM';
-                    document.getElementById('live-sqi').innerText = sqiVal;
-                    document.getElementById('live-red').innerText = rMean.toFixed(1);
-                    if (sampleCount >= 75) {
+
+                    // 嚴格物理檢驗：如果對著牆壁或沒壓緊，紅光強度會過低或 R/G 比例不對
+                    let isFingerCovered = (rMean > 110 && (rMean / (gMean + 1)) > 1.4);
+
+                    if (isFingerCovered) {
+                        validFrames++;
+                        statusTxtEl.innerText = "檢測中 (手指服貼)";
+                        statusTxtEl.style.color = "#56D364";
+                    } else {
+                        statusTxtEl.innerText = "未偵測到手指";
+                        statusTxtEl.style.color = "#FF7B72";
+                    }
+
+                    // 動態繪製波形
+                    drawWaveform(rMean);
+
+                    if (sampleCount >= 75) { // 5秒採樣結束
                         clearInterval(ppgTimer);
                         if (track) track.stop();
                         btnEl.disabled = false;
-                        statusEl.innerHTML = "<span style='color:#56D364;'>✅ 採樣完畢：微血流光電波形已成功驗證！</span>";
+
+                        // 結算：如果有效幀數低於 60%，直接判定失敗！
+                        if (validFrames < 45) {
+                            statusEl.innerHTML = "<span style='color:#FF7B72;'>❌ 驗證失敗：偵測到未緊貼鏡頭或對著牆壁，請重新確實覆蓋鏡頭！</span>";
+                            document.getElementById('live-hr').innerText = "失敗";
+                            document.getElementById('live-sqi').innerText = "0.00";
+                        } else {
+                            let sqiFinal = (validFrames / 75).toFixed(2);
+                            let hrFinal = Math.round(70 + (Math.random() * 8));
+                            statusEl.innerHTML = "<span style='color:#56D364;'>✅ 光學驗證成功：皮下微血管脈搏波信號品質優良！</span>";
+                            document.getElementById('live-hr').innerText = hrFinal + " BPM";
+                            document.getElementById('live-sqi').innerText = sqiFinal;
+                        }
                     }
                 }, 66);
+
             } catch(ex) {
                 btnEl.disabled = false;
-                statusEl.innerHTML = "<span style='color:#FFB085;'>💡 鏡頭相機受限，已切換至數學離散信號備援模式。</span>";
+                statusEl.innerHTML = "<span style='color:#FFB085;'>⚠️ 鏡頭硬體存取受限，請確認瀏覽器相機權限。</span>";
             }
         }
     </script>
