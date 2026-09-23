@@ -752,7 +752,9 @@ elif st.session_state["current_step"] == "test":
                     const frechetPx = Math.min(50.0, maxDev.toFixed(1));
 
                     // 綜合臨床張力演算法
-                    currentComputedTension = Math.min(99, Math.max(10, Math.round(ldljScore * 4.2 + fftPsd * 1.3 + frechetPx * 0.38)));
+// 【修正後】真正符合放鬆狀態的臨床張力演算法
+                    let relaxFactor = Math.max(0, 50 - (ldljVal * 2.0) - (dftPsdDb * 0.5));
+                    currentComputedTension = Math.min(95, Math.max(12, Math.round(relaxFactor + frechetPx * 0.2)));
 
                     document.getElementById('res-ldlj-v4').innerText = ldljScore;
                     document.getElementById('res-psd-v4').innerText = fftPsd + ' dB';
