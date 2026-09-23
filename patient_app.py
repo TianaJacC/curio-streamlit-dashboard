@@ -1126,28 +1126,32 @@ elif st.session_state["current_step"] == "test":
         }
     </script>
     """
-    st.components.v1.html(rppg_transparent_component, height=860)
+    st.components.v1.html(rppg_transparent_component, height=620)
     rppg_passed = st.checkbox("🟢 我已透過即時脈搏示波器確認微血流波形，並同意數據無造假存證", value=False)
 
-    # 🌟 頂級哈佛/史丹佛級 60 項跨科生理與心血管相干性引擎展示看板
+    # 🌟 雙軌賦權型 SaMD 報告（專家級 60 項數據 ✕ 病人看得懂的溫暖轉譯）
     engine = HarvardCardiovascularCoherenceEngine()
     report = engine.compute_cardiovascular_coherence(crp_mg_l=2.1, il6_pg_ml=4.8)
 
     st.markdown(f"""
-        <div style="background:#050A07; border:2px solid #FCBF05; border-radius:18px; padding:20px; font-family:monospace; margin-top:16px; margin-bottom:16px;">
+        <div style="background:#050A07; border:2px solid #FCBF05; border-radius:18px; padding:20px; font-family:monospace; margin-top:16px;">
             <h3 style="color:#FCBF05; margin-top:0;">🧬 SaMD 60項跨科生理監測與神經防禦線報告</h3>
             <hr style="border-color:#25352B;">
             <b>1. 心血管相干性指數 (Coherence Index)：</b> <span style="color:#56D364; font-size:1.2rem;">{report['Coherence_Index_Pct']}%</span><br>
             <b>2. 斷裂性心律結構密度：</b> {report['Broken_Rhythm_Density']}<br>
             <b>3. 發炎負荷指數 (CRP/IL-6 交叉加權)：</b> {report['Inflammatory_Burden_Score']}<br>
-            <b>4. 前額葉神經抑制崩解風險：</b> <span style="color:#FF7B72; font-size:1.2rem; font-weight:bold;">{report['Prefrontal_Collapse_Risk_Pct']}%</span><br>
-            <br>
-            <div style="background:#142017; border:1px solid #FCBF05; padding:12px; border-radius:8px; color:#FFFFFF;">
-                <b>🏛️ 臨床判讀與決策支援：</b><br>
-                {report['Clinical_Verdict']}
+            <b>4. 前額葉神經抑制崩解風險：</b> <span style="color:#FF7B72; font-size:1.2rem; font-weight:bold;">{report['Prefrontal_Collapse_Risk_Pct']}%</span><br><br>
+            
+            <!-- 🌟 專為病人設計的溫暖直覺賦權轉譯區塊 -->
+            <div style="background:#142017; border:2px solid #56D364; padding:16px; border-radius:12px; color:#FFFFFF; margin-bottom:14px; font-family:-apple-system, sans-serif;">
+                <div style="color:#56D364; font-weight:bold; font-size:1.05rem; margin-bottom:6px;">💡 寫給您的身心導航解讀：</div>
+                <div style="font-size:0.95rem; line-height:1.7; color:#E2E8F0;">
+                    {report['Patient_Translation']}
+                </div>
             </div>
-            <div style="margin-top:10px; font-size:0.8rem; color:#A2B3A7;">
-                * 頻域分析基於 Welch 功率譜密度 (PSD) 演算法。本系統符合 FDA SaMD 臨床決策支援 (CDS) 規範與 ISO 13485 軟體生命週期標準。
+
+            <div style="background:#142017; border:1px solid #FCBF05; padding:12px; border-radius:8px; color:#FFFFFF;">
+                <b>🏛️ 臨床判讀與決策支援 (醫師專用)：</b><br>{report['Clinical_Verdict']}
             </div>
         </div>
     """, unsafe_allow_html=True)
