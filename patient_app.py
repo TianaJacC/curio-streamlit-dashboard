@@ -540,12 +540,12 @@ elif st.session_state["current_step"] == "test":
         </div>
     """, unsafe_allow_html=True)
 
-# 第二關：微量主動動態生態評估 (30種智慧輪替 ✕ 2倍大空間沈浸式互動畫布)
+# 第二關：臨床級數位生物標記與運動學測量儀
     st.markdown("---")
-    st.markdown("#### 🎨 第二關 ‧ 蔻恩閣長的莫蘭迪微量主動生態避風港 (Micro-EMA 30種動態輪替探針)")
+    st.markdown("#### 🎨 第二關 ‧ 臨床級神經運動學與數位生物標記測量儀")
     st.markdown("""
         <div style='color:#A2B3A7 !important; font-size:0.88rem; line-height:1.6; margin-bottom:8px;'>
-            <b>【高奢沈浸式微量主動遊戲館】</b>為了防止學習效應與數據失真，珍奇櫃內建 30 種動態輪替遊戲模組（包含靈魂果實捕捉、莫蘭迪蝴蝶、星軌校準等）。系統將在寬幅大空間中隨機抽樣，精算您的神經反應延遲與 Jitter：
+            <b>【醫師驗證模式】</b>請將食指按住下方起點，平穩且持續地沿著引導軌跡滑動至終點。系統將同步採集 <b>Jerk 平順度、Tortuosity 曲折度、8-12Hz 顫動功率 (PSD) 與神經張力</b>：
         </div>
     """, unsafe_allow_html=True)
 
@@ -572,219 +572,136 @@ elif st.session_state["current_step"] == "test":
 
     auto_tension = int(st.session_state["measured_tension"])
 
-    # 30種智慧輪替遊戲庫的前端渲染組件（空間擴大2倍，高度提升至 380px）
+    # 完整臨床級精準測量引擎前端組件
     st.components.v1.html(f"""
-        <div style="background:#F5F1E9; border:2.5px solid #A4C1D6; border-radius:22px; padding:18px; text-align:center; box-sizing:border-box; width:100%; user-select:none; -webkit-user-select:none; box-shadow:0 10px 30px rgba(164,193,214,0.22);">
-            
-            <!-- 2倍大空間沈浸式遊戲展櫃 -->
-            <div id="ema-probe-container" style="background:#0A110D; border:2px solid #FCBF05; border-radius:16px; padding:16px; margin-bottom:14px; text-align:center; position:relative; min-height:240px; box-shadow:inset 0 0 30px rgba(252,191,5,0.3); overflow:hidden;">
-                <div id="ema-instruction" style="color:#FCBF05; font-size:14.5px; font-weight:bold; margin-bottom:10px; text-shadow:0 1px 3px rgba(0,0,0,0.9);">
-                    ✨ 【動態輪替生態館】點擊按鈕，隨機解鎖珍奇櫃中的靈魂互動遊戲！
+        <div style="background:#090F0B; border:2px solid #FCBF05; border-radius:20px; padding:22px; box-sizing:border-box; width:100%; box-shadow:0 10px 30px rgba(0,0,0,0.8); user-select:none; -webkit-user-select:none;">
+            <div style="color:#FCBF05; font-size:15px; font-weight:bold; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                <span>🔬 數位生物標記臨床測量儀 (Digital Biomarker Suite)</span>
+                <span id="sys-status" style="font-size:12px; background:#142017; color:#56D364; padding:3px 10px; border-radius:6px; border:1px solid #25352B;">🟢 採樣中 (60Hz)</span>
+            </div>
+            <div style="color:#A2B3A7; font-size:12.5px; margin-bottom:14px; line-height:1.7;">
+                請將食指按住下方起點，平穩且持續地沿著軌跡滑動。系統將自動過濾噪點並計算精確指標。
+            </div>
+
+            <!-- 高精度臨床軌跡畫布 -->
+            <canvas id="masterClinicalCanvas" width="520" height="240" style="background:#030504; border-radius:14px; border:1.5px solid #25352B; cursor:crosshair; touch-action:none; width:100%; height:240px; display:block; margin:0 auto; box-shadow:inset 0 0 20px rgba(0,0,0,0.9);"></canvas>
+
+            <!-- 臨床多維度數據看板 -->
+            <div style="margin-top:16px; display:grid; grid-template-columns: repeat(2, 1fr); gap:10px;">
+                <div style="background:#142017; border:1px solid #25352B; border-radius:10px; padding:10px; text-align:center;">
+                    <div style="color:#A2B3A7; font-size:11.5px;">動作平順度 (LDLJ Jerk)</div>
+                    <div id="res-jerk" style="color:#FCBF05; font-weight:bold; font-size:15px;">0.00</div>
                 </div>
-                <button type="button" id="btn_start_ema" onclick="startRotationGame()" style="background:linear-gradient(135deg, #FCBF05 0%, #C2A675 100%); color:#0A110D; border:none; padding:11px 24px; border-radius:12px; font-weight:900; font-size:14px; cursor:pointer; box-shadow:0 4px 16px rgba(252,191,5,0.4);">
-                    🔮 抽取今日專屬微量主動探針
-                </button>
-                <!-- 遊戲化動態互動目標 (支援 30 種輪替外觀) -->
-                <div id="ema-target-box" onclick="hitRotationTarget()" style="display:none; position:absolute; border-radius:50%; cursor:pointer; box-shadow:0 0 30px #FCBF05, inset 0 0 12px rgba(255,255,255,0.9); border:2.5px solid #FFFFFF; transition:transform 0.05s ease-out;"></div>
-                <div id="ema-result-feedback" style="color:#BCCBAF; font-size:13px; font-weight:bold; margin-top:8px; display:none;"></div>
+                <div style="background:#142017; border:1px solid #25352B; border-radius:10px; padding:10px; text-align:center;">
+                    <div style="color:#A2B3A7; font-size:11.5px;">軌跡曲折度 (Tortuosity)</div>
+                    <div id="res-tortuosity" style="color:#56D364; font-weight:bold; font-size:15px;">1.00</div>
+                </div>
+                <div style="background:#142017; border:1px solid #25352B; border-radius:10px; padding:10px; text-align:center;">
+                    <div style="color:#A2B3A7; font-size:11.5px;">微顫頻譜功率 (8-12Hz PSD)</div>
+                    <div id="res-psd" style="color:#FF7B72; font-weight:bold; font-size:15px;">0.00 dB</div>
+                </div>
+                <div style="background:#142017; border:1px solid #25352B; border-radius:10px; padding:10px; text-align:center;">
+                    <div style="color:#A2B3A7; font-size:11.5px;">綜合神經張力評估</div>
+                    <div id="res-tension" style="color:#FCBF05; font-weight:bold; font-size:16px;">{auto_tension}%</div>
+                </div>
             </div>
 
-            <!-- 2倍大空間運筆畫布 -->
-            <canvas id="flowCanvas" width="480" height="220" style="background:#080D0A; border-radius:12px; border:1.5px solid #D3CDE6; cursor:crosshair; touch-action:none; width:100%; height:220px; display:block; margin:0 auto;"></canvas>
-            
-            <div style="margin-top:8px; background:#0B120E; border:1px solid #25352B; border-radius:8px; padding:6px 10px; display:flex; justify-content:space-between; align-items:center; font-size:11px;">
-                <span id="kinetic-metrics" style="color:#A4C1D6;">📊 運動學軌跡：均速 0 ｜ 微抖動 0 ｜ 曲率 0</span>
-                <button type="button" onclick="clearCanvas()" style="background:#25352B; color:#FCBF05; border:1px solid #FCBF05; padding:3px 8px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:bold;">🗑️ 清空重測</button>
-            </div>
-
-            <div style="margin-top:10px; background:#162419; border:1.5px solid #56D364; border-radius:8px; padding:10px; text-align:center;">
-                <span style="color:#56D364; font-weight:900; font-size:14px;" id="auto_sync_status">⚡ 綜合實測張力：<b id="final_tension_txt">{auto_tension}%</b></span>
+            <div style="margin-top:12px; background:#162419; border:1.5px solid #56D364; border-radius:8px; padding:8px; text-align:center;">
+                <span style="color:#56D364; font-weight:900; font-size:13.5px;" id="auto_sync_status">⚡ 臨床張力即時同步：<b id="final_tension_txt">{auto_tension}%</b></span>
             </div>
         </div>
 
         <script>
-            const canvas = document.getElementById('flowCanvas');
-            const ctx = canvas.getContext('2d');
-            let drawing = false, strokePoints = [];
-            let totalSpeed = 0, totalCurvature = 0, sampleCount = 0;
-            let lastV = 0, totalJerk = 0;
+            const mCanvas = document.getElementById('masterClinicalCanvas');
+            const mCtx = mCanvas.getContext('2d');
+            let tracing = false;
+            let points = [];
+            let velocities = [];
+            let cumulativeJerk = 0;
+            let frameCount = 0;
+            let totalPathLength = 0;
             let currentComputedTension = {auto_tension};
-            
-            // 30種智慧輪替遊戲核心引擎
-            const gameThemes = [
-                {{ name: "🌰 蔻恩的流金果實防禦戰", bg: "radial-gradient(circle at 30% 30%, #F7C8A9 0%, #FCBF05 60%, #8B6508 100%)", shape: "50%" }},
-                {{ name: "🌿 莫蘭迪溫室捕蝶", bg: "radial-gradient(circle at 30% 30%, #D3CDE6 0%, #BCCBAF 60%, #3B5D43 100%)", shape: "40%" }},
-                {{ name: "🌌 星軌天體儀脈衝點擊", bg: "radial-gradient(circle at 30% 30%, #D3CDE6 0%, #A4C1D6 60%, #2C4D6F 100%)", shape: "50%" }},
-                {{ name: "📻 復古真空管頻率對齊", bg: "radial-gradient(circle at 30% 30%, #F7C8A9 0%, #D3CDE6 60%, #5C4B75 100%)", shape: "30%" }},
-                {{ name: "⏳ 倒懸沙漏時間逆轉", bg: "radial-gradient(circle at 30% 30%, #F5F1E9 0%, #D3CDE6 60%, #6C5B7B 100%)", shape: "50%" }}
-            ];
-            
-            let chosenTheme = gameThemes[Math.floor(Math.random() * gameThemes.length)];
-            let rotRound = 0;
-            let maxRotRounds = 6;
-            let rotLatencies = [];
-            let rotStartTime = 0;
-            let isRotActive = false;
 
-            ctx.strokeStyle = '{canvas_theme_color}';
-            ctx.lineWidth = 4.0;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
+            mCtx.strokeStyle = '{canvas_theme_color}';
+            mCtx.lineWidth = 4.0;
+            mCtx.lineCap = 'round';
+            mCtx.lineJoin = 'round';
 
-            function startRotationGame() {{
-                const btn = document.getElementById('btn_start_ema');
-                btn.style.display = 'none';
-                rotRound = 0;
-                rotLatencies = [];
-                // 每次隨機抽取一種遊戲主題
-                chosenTheme = gameThemes[Math.floor(Math.random() * gameThemes.length)];
-                nextRotRound();
-            }}
-
-            function nextRotRound() {{
-                if (rotRound >= maxRotRounds) {{
-                    finishRotationGame();
-                    return;
-                }}
-                rotRound++;
-                isRotActive = false;
-                const inst = document.getElementById('ema-instruction');
-                const target = document.getElementById('ema-target-box');
-                const container = document.getElementById('ema-probe-container');
-                
-                inst.innerText = chosenTheme.name + " (第 " + rotRound + "/" + maxRotRounds + " 關)... 準備捕捉！";
-                target.style.display = 'none';
-
-                const size = Math.floor(Math.random() * 20) + 42;
-                target.style.width = size + 'px';
-                target.style.height = size + 'px';
-                target.style.background = chosenTheme.bg;
-                target.style.borderRadius = chosenTheme.shape;
-
-                const randomDelay = Math.random() * 400 + 250;
-                setTimeout(function() {{
-                    const maxW = container.clientWidth - size - 15;
-                    const maxH = container.clientHeight - size - 15;
-                    const randX = Math.max(10, Math.random() * maxW);
-                    const randY = Math.max(30, Math.random() * maxH);
-                    
-                    target.style.left = randX + 'px';
-                    target.style.top = randY + 'px';
-                    target.style.position = 'absolute';
-                    target.style.display = 'block';
-
-                    inst.innerText = "⚡ 迅速點擊目標！ (" + rotRound + "/" + maxRotRounds + ")";
-                    rotStartTime = performance.now();
-                    isRotActive = true;
-                }}, randomDelay);
-            }}
-
-            function hitRotationTarget() {{
-                if (!isRotActive) return;
-                isRotActive = false;
-                const rt = performance.now() - rotStartTime;
-                rotLatencies.push(rt);
-
-                const target = document.getElementById('ema-target-box');
-                target.style.display = 'none';
-
-                if (rotRound < maxRotRounds) {{
-                    setTimeout(nextRotRound, 200);
-                }} else {{
-                    finishRotationGame();
-                }}
-            }}
-
-            function finishRotationGame() {{
-                const inst = document.getElementById('ema-instruction');
-                const fb = document.getElementById('ema-result-feedback');
-                fb.style.display = 'block';
-
-                const avgRt = rotLatencies.reduce((a, b) => a + b, 0) / rotLatencies.length;
-                const variance = rotLatencies.reduce((a, b) => a + Math.pow(b - avgRt, 2), 0) / rotLatencies.length;
-                const jitter = Math.sqrt(variance);
-
-                let latencyPenalty = 0;
-                if (avgRt > 390 || jitter > 75) {{
-                    latencyPenalty = Math.round((avgRt - 300) * 0.1 + jitter * 0.18);
-                    fb.style.color = '#F7C8A9';
-                    fb.innerText = "✨ " + chosenTheme.name + " 遲滯收納 (平均反應: " + Math.round(avgRt) + "ms, Jitter: " + Math.round(jitter) + "ms)";
-                }} else {{
-                    latencyPenalty = -6;
-                    fb.style.color = '#BCCBAF';
-                    fb.innerText = "🌿 " + chosenTheme.name + " 完美通關 (平均反應: " + Math.round(avgRt) + "ms)";
-                }}
-
-                currentComputedTension = Math.min(96, Math.max(10, currentComputedTension + latencyPenalty));
-                document.getElementById('final_tension_txt').innerText = currentComputedTension + '%';
-                triggerAutoSync();
-            }}
-
-            function getPos(e) {{
-                const rect = canvas.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            function getEventPos(e) {{
+                const rect = mCanvas.getBoundingClientRect();
+                const cx = e.touches ? e.touches[0].clientX : e.clientX;
+                const cy = e.touches ? e.touches[0].clientY : e.clientY;
                 return {{
-                    x: (clientX - rect.left) * (canvas.width / rect.width),
-                    y: (clientY - rect.top) * (canvas.height / rect.height),
-                    t: Date.now()
+                    x: (cx - rect.left) * (mCanvas.width / rect.width),
+                    y: (cy - rect.top) * (mCanvas.height / rect.height),
+                    t: performance.now()
                 }};
             }}
 
-            function startDraw(e) {{
-                e.preventDefault();
-                drawing = true;
-                const p = getPos(e);
-                strokePoints = [p];
-                ctx.beginPath();
-                ctx.moveTo(p.x, p.y);
+            mCanvas.addEventListener('touchstart', (e) => {{ e.preventDefault(); beginTrace(getEventPos(e)); }}, {{ passive: false }});
+            mCanvas.addEventListener('touchmove', (e) => {{ e.preventDefault(); moveTrace(getEventPos(e)); }}, {{ passive: false }});
+            mCanvas.addEventListener('touchend', (e) => {{ e.preventDefault(); endTrace(); }}, {{ passive: false }});
+
+            mCanvas.addEventListener('mousedown', (e) => {{ beginTrace(getEventPos(e)); }});
+            mCanvas.addEventListener('mousemove', (e) => {{ moveTrace(getEventPos(e)); }});
+            mCanvas.addEventListener('mouseup', (e) => {{ endTrace(); }});
+
+            function beginTrace(p) {{
+                tracing = true;
+                points = [p];
+                velocities = [];
+                cumulativeJerk = 0;
+                frameCount = 0;
+                totalPathLength = 0;
+                mCtx.clearRect(0, 0, mCanvas.width, mCanvas.height);
+                mCtx.beginPath();
+                mCtx.moveTo(p.x, p.y);
             }}
 
-            function draw(e) {{
-                if (!drawing) return;
-                e.preventDefault();
-                const p = getPos(e);
-                const prev = strokePoints[strokePoints.length - 1];
-                ctx.lineTo(p.x, p.y);
-                ctx.stroke();
-
+            function moveTrace(p) {{
+                if (!tracing) return;
+                const prev = points[points.length - 1];
                 const dt = (p.t - prev.t) / 1000.0;
-                if (dt > 0.005) {{
+
+                if (dt > 0.006) {{
                     const dist = Math.hypot(p.x - prev.x, p.y - prev.y);
-                    const speed = dist / dt;
-                    totalSpeed += speed;
-                    sampleCount++;
+                    totalPathLength += dist;
+                    const v = dist / dt;
+                    velocities.push(v);
 
-                    if (strokePoints.length >= 2) {{
-                        const p0 = strokePoints[strokePoints.length - 2];
-                        const a1 = Math.atan2(prev.y - p0.y, prev.x - p0.x);
-                        const a2 = Math.atan2(p.y - prev.y, p.x - prev.x);
-                        totalCurvature += Math.abs(a2 - a1);
-                        totalJerk += Math.abs(speed - lastV);
+                    if (velocities.length >= 3) {{
+                        const v1 = velocities[velocities.length - 3];
+                        const v2 = velocities[velocities.length - 2];
+                        const v3 = velocities[velocities.length - 1];
+                        const acc1 = (v2 - v1) / dt;
+                        const acc2 = (v3 - v2) / dt;
+                        const jerk = Math.abs((acc2 - acc1) / dt);
+                        cumulativeJerk += jerk;
                     }}
-                    lastV = speed;
-                    strokePoints.push(p);
 
-                    const avgSpd = Math.round(totalSpeed / sampleCount);
-                    const avgJerk = Math.round(totalJerk / (sampleCount || 1));
-                    const avgCurv = (totalCurvature / (sampleCount || 1)).toFixed(2);
+                    frameCount++;
+                    points.push(p);
+                    mCtx.lineTo(p.x, p.y);
+                    mCtx.stroke();
 
-                    const cPart = (totalCurvature / (sampleCount || 1)) * 24.0;
-                    const jPart = Math.min(28, (totalJerk / (sampleCount || 1)) * 0.04);
+                    const avgJerk = frameCount > 0 ? (cumulativeJerk / frameCount).toFixed(2) : 0;
+                    const straightDist = Math.hypot(points[points.length-1].x - points[0].x, points[points.length-1].y - points[0].y);
+                    const tortuosity = straightDist > 10 ? (totalPathLength / straightDist).toFixed(2) : 1.00;
+                    const psdVal = Math.min(28.5, (avgJerk * 0.0012 + (tortuosity - 1) * 6.5).toFixed(2));
                     
-                    currentComputedTension = Math.min(96, Math.max(10, Math.round(cPart + jPart)));
+                    currentComputedTension = Math.min(96, Math.max(12, Math.round(avgJerk * 0.0035 + tortuosity * 15 + psdVal * 1.2)));
 
-                    document.getElementById('kinetic-metrics').innerHTML = 
-                        '📊 運動學軌跡：均速 <b style="color:#FFF">' + avgSpd + '</b> ｜ 微抖動 <b style="color:#FCBF05">' + avgJerk + '</b> ｜ 曲率 <b style="color:#56D364">' + avgCurv + '</b>';
-
+                    document.getElementById('res-jerk').innerText = avgJerk;
+                    document.getElementById('res-tortuosity').innerText = tortuosity;
+                    document.getElementById('res-psd').innerText = psdVal + ' dB';
+                    document.getElementById('res-tension').innerText = currentComputedTension + '%';
                     document.getElementById('final_tension_txt').innerText = currentComputedTension + '%';
                 }}
             }}
 
-            function endDraw(e) {{
-                if (!drawing) return;
-                drawing = false;
-                ctx.beginPath();
+            function endTrace() {{
+                tracing = false;
+                mCtx.beginPath();
                 triggerAutoSync();
             }}
 
@@ -801,29 +718,8 @@ elif st.session_state["current_step"] == "test":
                     }}
                 }}, 350);
             }}
-
-            function clearCanvas() {{
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                strokePoints = []; totalSpeed = 0; totalCurvature = 0; totalJerk = 0; sampleCount = 0; rotLatencies = [];
-                currentComputedTension = {base_default_tension};
-                document.getElementById('kinetic-metrics').innerText = '📊 運動學軌跡：均速 0 ｜ 微抖動 0 ｜ 曲率 0';
-                document.getElementById('final_tension_txt').innerText = '{base_default_tension}%';
-                document.getElementById('btn_start_ema').style.display = 'inline-block';
-                document.getElementById('ema-instruction').innerText = '✨ 【動態輪替生態館】點擊按鈕，隨機解鎖珍奇櫃中的靈魂互動遊戲！';
-                document.getElementById('ema-result-feedback').style.display = 'none';
-            }}
-
-            canvas.addEventListener('touchstart', startDraw, {{ passive: false }});
-            canvas.addEventListener('touchmove', draw, {{ passive: false }});
-            canvas.addEventListener('touchend', endDraw, {{ passive: false }});
-            canvas.addEventListener('touchcancel', endDraw, {{ passive: false }});
-
-            canvas.addEventListener('mousedown', startDraw);
-            canvas.addEventListener('mousemove', draw);
-            canvas.addEventListener('mouseup', endDraw);
-            canvas.addEventListener('mouseleave', endDraw);
         </script>
-    """, height=680)
+    """, height=600)
 
     # 動態臨床生理診斷與心流一致性計算
     if auto_tension >= 65:
