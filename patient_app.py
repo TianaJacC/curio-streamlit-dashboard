@@ -105,8 +105,9 @@ class HarvardCardiovascularCoherenceEngine:
         lf_mask = (freqs >= 0.04) & (freqs < 0.15)
         hf_mask = (freqs >= 0.15) & (freqs < 0.40)
         
-        lf_power = np.trapz(psd[lf_mask], freqs[lf_mask]) if np.sum(lf_mask) > 0 else 120.0
-        hf_power = np.trapz(psd[hf_mask], freqs[hf_mask]) if np.sum(hf_mask) > 0 else 80.0
+        # 使用相容性極佳的 np.sum 取代 np.trapz
+        lf_power = float(np.sum(psd[lf_mask])) * (freqs[1] - freqs[0]) if np.sum(lf_mask) > 0 else 120.0
+        hf_power = float(np.sum(psd[hf_mask])) * (freqs[1] - freqs[0]) if np.sum(hf_mask) > 0 else 80.0
         lf_hf_ratio = lf_power / (hf_power + 1e-6)
 
         return {"LF_Power": float(lf_power), "HF_Power": float(hf_power), "LF_HF_Ratio": float(lf_hf_ratio)}
