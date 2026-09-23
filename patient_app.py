@@ -1126,7 +1126,7 @@ elif st.session_state["current_step"] == "test":
         }
     </script>
     """
-    st.components.v1.html(rppg_transparent_component, height=620)
+    st.components.v1.html(rppg_transparent_component, height=920)
     rppg_passed = st.checkbox("🟢 我已透過即時脈搏示波器確認微血流波形，並同意數據無造假存證", value=False)
 
     # 🌟 雙軌賦權型 SaMD 報告（專家級 60 項數據 ✕ 病人看得懂的溫暖轉譯）
