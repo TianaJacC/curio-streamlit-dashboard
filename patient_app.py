@@ -1091,7 +1091,7 @@ elif st.session_state["current_step"] == "test":
         }
     </script>
     """
-    st.components.v1.html(rppg_transparent_component, height=360)
+    st.components.v1.html(rppg_transparent_component, height=660)
     rppg_passed = st.checkbox("🟢 我已透過即時脈搏示波器確認微血流波形，並同意數據無造假存證", value=False)
 
     # 🌟 頂級哈佛/史丹佛級 60 項跨科生理與心血管相干性引擎展示看板
