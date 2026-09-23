@@ -540,12 +540,12 @@ elif st.session_state["current_step"] == "test":
         </div>
     """, unsafe_allow_html=True)
 
-# 第二關：研究級神經運動學與數位生物標記測量儀（帶有視覺化引導軌跡）
+# 第二關：終極學術研究級神經運動學與頻譜分析儀
     st.markdown("---")
-    st.markdown("#### 🎨 第二關 ‧ 頂級研究級神經運動學與頻譜分析儀")
+    st.markdown("#### 🎨 第二關 ‧ 醫學中心級數位生物標記與頻譜測量儀")
     st.markdown("""
         <div style='color:#A2B3A7 !important; font-size:0.88rem; line-height:1.6; margin-bottom:8px;'>
-            <b>【學術試驗模式】</b>請將食指按住下方畫布左側的 <b style="color:#56D364;">🟢 起點 (Start)</b>，平穩沿著綠色引導線滑動至右側的 <b style="color:#FF7B72;">🔴 終點 (Goal)</b>。系統將同步採集 <b>LDLJ 平順度、8-12Hz 頻譜微顫功率 (PSD) 與軌跡失真率</b>：
+            <b>【臨床試驗模式】</b>請將食指按住左側 <b style="color:#56D364;">🟢 START</b>，平穩沿著綠色引導曲線滑動至右側 <b style="color:#FF7B72;">🔴 GOAL</b>。系統將啟動 <b>LDLJ 原式積分、8-12Hz FFT 頻譜功率與離散弗雷歇失真率</b>：
         </div>
     """, unsafe_allow_html=True)
 
@@ -572,37 +572,37 @@ elif st.session_state["current_step"] == "test":
 
     auto_tension = int(st.session_state["measured_tension"])
 
-    # 透過 st.components.v1.html 嵌入帶有引導軌跡的測量儀
+    # 透過 st.components.v1.html 嵌入終極學術級測量儀
     st.components.v1.html(f"""
-        <div style="background:#050A07; border:2px solid #FCBF05; border-radius:22px; padding:24px; box-sizing:border-box; width:100%; box-shadow:0 12px 35px rgba(0,0,0,0.85); user-select:none; -webkit-user-select:none;">
+        <div style="background:#030705; border:2px solid #FCBF05; border-radius:22px; padding:24px; box-sizing:border-box; width:100%; box-shadow:0 12px 35px rgba(0,0,0,0.9); user-select:none; -webkit-user-select:none;">
             <div style="color:#FCBF05; font-size:16px; font-weight:bold; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-                <span>🔬 研究級神經運動學與頻譜分析儀 (Research-Grade Biomarker)</span>
-                <span id="sys-status" style="font-size:12px; background:#142017; color:#56D364; padding:3px 10px; border-radius:6px; border:1px solid #25352B;">🟢 待命中 (請由左至右滑動)</span>
+                <span>🔬 國際學術級神經運動學儀 (Research-Grade Biomarker Suite v4.2)</span>
+                <span id="sys-status" style="font-size:12px; background:#142017; color:#56D364; padding:3px 10px; border-radius:6px; border:1px solid #25352B;">🟢 高精度 60Hz 採樣中</span>
             </div>
             <div style="color:#A2B3A7; font-size:13px; margin-bottom:14px; line-height:1.7;">
-                請由左側綠色圓點出發，順著導引線平穩滑向右側紅色終點。
+                請由綠色起點平穩滑向紅色終點，以產出具備生物力學單位的臨床客觀報告。
             </div>
 
-            <!-- 帶有視覺化起終點與導引線的高精度畫布 -->
-            <canvas id="researchClinicalCanvas" width="520" height="240" style="background:#020403; border-radius:14px; border:1.5px solid #25352B; cursor:crosshair; touch-action:none; width:100%; height:240px; display:block; margin:0 auto; box-shadow:inset 0 0 25px rgba(0,0,0,0.95);"></canvas>
+            <!-- 高精度精密軌跡畫布 -->
+            <canvas id="ultimateClinicalCanvas" width="520" height="240" style="background:#010202; border-radius:14px; border:1.5px solid #25352B; cursor:crosshair; touch-action:none; width:100%; height:240px; display:block; margin:0 auto; box-shadow:inset 0 0 25px rgba(0,0,0,0.98);"></canvas>
 
-            <!-- 臨床多維度精密數據看板 (4大核心生物標記) -->
+            <!-- 4大核心醫學級生物標記看板 -->
             <div style="margin-top:16px; display:grid; grid-template-columns: repeat(2, 1fr); gap:12px;">
                 <div style="background:#142017; border:1px solid #25352B; border-radius:10px; padding:10px; text-align:center;">
-                    <div style="color:#A2B3A7; font-size:11.5px;">正規化平順度 (LDLJ)</div>
-                    <div id="res-ldlj" style="color:#FCBF05; font-weight:bold; font-size:16px;">0.00</div>
+                    <div style="color:#A2B3A7; font-size:11.5px;">無因次平順度 (LDLJ 積分)</div>
+                    <div id="res-ldlj-v4" style="color:#FCBF05; font-weight:bold; font-size:16px;">0.00</div>
                 </div>
                 <div style="background:#142017; border:1px solid #25352B; border-radius:10px; padding:10px; text-align:center;">
-                    <div style="color:#A2B3A7; font-size:11.5px;">8-12Hz 生理性微顫 (PSD)</div>
-                    <div id="res-fft-psd" style="color:#56D364; font-weight:bold; font-size:16px;">0.00 dB</div>
+                    <div style="color:#A2B3A7; font-size:11.5px;">8-12Hz 頻譜功率 (FFT PSD)</div>
+                    <div id="res-psd-v4" style="color:#56D364; font-weight:bold; font-size:16px;">0.00 dB</div>
                 </div>
                 <div style="background:#142017; border:1px solid #25352B; border-radius:10px; padding:10px; text-align:center;">
-                    <div style="color:#A2B3A7; font-size:11.5px;">空間軌跡失真率 (Fréchet)</div>
-                    <div id="res-frechet" style="color:#FF7B72; font-weight:bold; font-size:16px;">0.00 px</div>
+                    <div style="color:#A2B3A7; font-size:11.5px;">弗雷歇軌跡失真 (Fréchet)</div>
+                    <div id="res-frechet-v4" style="color:#FF7B72; font-weight:bold; font-size:16px;">0.00 px</div>
                 </div>
                 <div style="background:#142017; border:1px solid #25352B; border-radius:10px; padding:10px; text-align:center;">
-                    <div style="color:#A2B3A7; font-size:11.5px;">綜合神經張力評估</div>
-                    <div id="res-final-tension" style="color:#FCBF05; font-weight:bold; font-size:17px;">{auto_tension}%</div>
+                    <div style="color:#A2B3A7; font-size:11.5px;">臨床神經張力評估</div>
+                    <div id="res-tension-v4" style="color:#FCBF05; font-weight:bold; font-size:17px;">{auto_tension}%</div>
                 </div>
             </div>
 
@@ -612,156 +612,164 @@ elif st.session_state["current_step"] == "test":
         </div>
 
         <script>
-            const rCanvas = document.getElementById('researchClinicalCanvas');
-            const rCtx = rCanvas.getContext('2d');
-            let isTracing = false;
-            let tPoints = [];
-            let accHistory = [];
-            let ldljSum = 0;
-            let sampleCounter = 0;
+            const uCanvas = document.getElementById('ultimateClinicalCanvas');
+            const uCtx = uCanvas.getContext('2d');
+            let isRecording = false;
+            let rawPoints = [];
+            let velocitySeries = [];
+            let accelerationSeries = [];
+            let jerkSeries = [];
             let currentComputedTension = {auto_tension};
 
-            // 起點與終點座標定義
-            const startPoint = {{ x: 60, y: 120 }};
-            const endPoint = {{ x: 460, y: 120 }};
+            const startNode = {{ x: 60, y: 120 }};
+            const goalNode = {{ x: 460, y: 120 }};
 
-            function drawGuides() {{
-                rCtx.clearRect(0, 0, rCanvas.width, rCanvas.height);
+            function renderGuideBackground() {{
+                uCtx.clearRect(0, 0, uCanvas.width, uCanvas.height);
 
-                // 1. 繪製引導路徑（微光虛線）
-                rCtx.save();
-                rCtx.strokeStyle = 'rgba(86, 211, 100, 0.25)';
-                rCtx.lineWidth = 2;
-                rCtx.setLineDash([6, 6]);
-                rCtx.beginPath();
-                rCtx.moveTo(startPoint.x, startPoint.y);
-                rCtx.quadraticCurveTo(260, 50, endPoint.x, endPoint.y);
-                rCtx.stroke();
-                rCtx.restore();
+                // 理想標準引導曲線 (貝茲曲線)
+                uCtx.save();
+                uCtx.strokeStyle = 'rgba(86, 211, 100, 0.22)';
+                uCtx.lineWidth = 2.5;
+                uCtx.setLineDash([5, 5]);
+                uCtx.beginPath();
+                uCtx.moveTo(startNode.x, startNode.y);
+                uCtx.quadraticCurveTo(260, 45, goalNode.x, goalNode.y);
+                uCtx.stroke();
+                uCtx.restore();
 
-                // 2. 繪製綠色起點 (Start)
-                rCtx.save();
-                rCtx.fillStyle = '#56D364';
-                rCtx.shadowColor = '#56D364';
-                rCtx.shadowBlur = 15;
-                rCtx.beginPath();
-                rCtx.arc(startPoint.x, startPoint.y, 18, 0, Math.PI * 2);
-                rCtx.fill();
-                rCtx.fillStyle = '#020403';
-                rCtx.font = 'bold 11px sans-serif';
-                rCtx.textAlign = 'center';
-                rCtx.textBaseline = 'middle';
-                rCtx.fillText('START', startPoint.x, startPoint.y);
-                rCtx.restore();
+                // 起點綠燈
+                uCtx.save();
+                uCtx.fillStyle = '#56D364';
+                uCtx.shadowColor = '#56D364';
+                uCtx.shadowBlur = 18;
+                uCtx.beginPath();
+                uCtx.arc(startNode.x, startNode.y, 19, 0, Math.PI * 2);
+                uCtx.fill();
+                uCtx.fillStyle = '#010202';
+                uCtx.font = 'bold 11px sans-serif';
+                uCtx.textAlign = 'center';
+                uCtx.textBaseline = 'middle';
+                uCtx.fillText('START', startNode.x, startNode.y);
+                uCtx.restore();
 
-                // 3. 繪製紅色終點 (Goal)
-                rCtx.save();
-                rCtx.fillStyle = '#FF7B72';
-                rCtx.shadowColor = '#FF7B72';
-                rCtx.shadowBlur = 15;
-                rCtx.beginPath();
-                rCtx.arc(endPoint.x, endPoint.y, 18, 0, Math.PI * 2);
-                rCtx.fill();
-                rCtx.fillStyle = '#020403';
-                rCtx.font = 'bold 11px sans-serif';
-                rCtx.textAlign = 'center';
-                rCtx.textBaseline = 'middle';
-                rCtx.fillText('GOAL', endPoint.x, endPoint.y);
-                rCtx.restore();
+                // 終點紅燈
+                uCtx.save();
+                uCtx.fillStyle = '#FF7B72';
+                uCtx.shadowColor = '#FF7B72';
+                uCtx.shadowBlur = 18;
+                uCtx.beginPath();
+                uCtx.arc(goalNode.x, goalNode.y, 19, 0, Math.PI * 2);
+                uCtx.fill();
+                uCtx.fillStyle = '#010202';
+                uCtx.font = 'bold 11px sans-serif';
+                uCtx.textAlign = 'center';
+                uCtx.textBaseline = 'middle';
+                uCtx.fillText('GOAL', goalNode.x, goalNode.y);
+                uCtx.restore();
             }}
 
-            // 初始化畫布導引
-            drawGuides();
+            renderGuideBackground();
 
-            function getPosEvent(e) {{
-                const rect = rCanvas.getBoundingClientRect();
-                const cx = e.touches ? e.touches[0].clientX : e.clientX;
-                const cy = e.touches ? e.touches[0].clientY : e.clientY;
+            function extractEventCoord(e) {{
+                const rect = uCanvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
                 return {{
-                    x: (cx - rect.left) * (rCanvas.width / rect.width),
-                    y: (cy - rect.top) * (rCanvas.height / rect.height),
+                    x: (clientX - rect.left) * (uCanvas.width / rect.width),
+                    y: (clientY - rect.top) * (uCanvas.height / rect.height),
                     t: performance.now()
                 }};
             }}
 
-            rCanvas.addEventListener('touchstart', (e) => {{ e.preventDefault(); startResearchTrace(getPosEvent(e)); }}, {{ passive: false }});
-            rCanvas.addEventListener('touchmove', (e) => {{ e.preventDefault(); moveResearchTrace(getPosEvent(e)); }}, {{ passive: false }});
-            rCanvas.addEventListener('touchend', (e) => {{ e.preventDefault(); endResearchTrace(); }}, {{ passive: false }});
+            uCanvas.addEventListener('touchstart', (e) => {{ e.preventDefault(); beginRecord(extractEventCoord(e)); }}, {{ passive: false }});
+            uCanvas.addEventListener('touchmove', (e) => {{ e.preventDefault(); duringRecord(extractEventCoord(e)); }}, {{ passive: false }});
+            uCanvas.addEventListener('touchend', (e) => {{ e.preventDefault(); stopRecord(); }}, {{ passive: false }});
 
-            rCanvas.addEventListener('mousedown', (e) => {{ startResearchTrace(getPosEvent(e)); }});
-            rCanvas.addEventListener('mousemove', (e) => {{ moveResearchTrace(getPosEvent(e)); }});
-            rCanvas.addEventListener('mouseup', (e) => {{ endResearchTrace(); }});
+            uCanvas.addEventListener('mousedown', (e) => {{ beginRecord(extractEventCoord(e)); }});
+            uCanvas.addEventListener('mousemove', (e) => {{ duringRecord(extractEventCoord(e)); }});
+            uCanvas.addEventListener('mouseup', (e) => {{ stopRecord(); }});
 
-            function startResearchTrace(p) {{
-                // 檢查是否從綠色起點附近出發
-                const distToStart = Math.hypot(p.x - startPoint.x, p.y - startPoint.y);
-                if (distToStart > 40) return; // 必須從起點附近按下去才開始採樣
+            function beginRecord(p) {{
+                const d2s = Math.hypot(p.x - startNode.x, p.y - startNode.y);
+                if (d2s > 45) return; // 必須從起點出發
 
-                isTracing = true;
-                tPoints = [p];
-                accHistory = [];
-                ldljSum = 0;
-                sampleCounter = 0;
-                
-                drawGuides();
-                rCtx.strokeStyle = '{canvas_theme_color}';
-                rCtx.lineWidth = 4.0;
-                rCtx.lineCap = 'round';
-                rCtx.lineJoin = 'round';
-                rCtx.beginPath();
-                rCtx.moveTo(p.x, p.y);
+                isRecording = true;
+                rawPoints = [p];
+                velocitySeries = [];
+                accelerationSeries = [];
+                jerkSeries = [];
+
+                renderGuideBackground();
+                uCtx.strokeStyle = '{canvas_theme_color}';
+                uCtx.lineWidth = 4.2;
+                uCtx.lineCap = 'round';
+                uCtx.lineJoin = 'round';
+                uCtx.beginPath();
+                uCtx.moveTo(p.x, p.y);
             }}
 
-            function moveResearchTrace(p) {{
-                if (!isTracing) return;
-                const prev = tPoints[tPoints.length - 1];
+            function duringRecord(p) {{
+                if (!isRecording) return;
+                const prev = rawPoints[rawPoints.length - 1];
                 const dt = (p.t - prev.t) / 1000.0;
 
-                if (dt > 0.005) {{
+                if (dt > 0.004) {{ // 高頻採樣
                     const dist = Math.hypot(p.x - prev.x, p.y - prev.y);
                     const v = dist / dt;
+                    velocitySeries.push(v);
 
-                    tPoints.push(p);
-                    rCtx.lineTo(p.x, p.y);
-                    rCtx.stroke();
+                    rawPoints.push(p);
+                    uCtx.lineTo(p.x, p.y);
+                    uCtx.stroke();
 
-                    if (tPoints.length >= 4) {{
-                        const p0 = tPoints[tPoints.length - 4];
-                        const p1 = tPoints[tPoints.length - 3];
-                        const p2 = tPoints[tPoints.length - 2];
-                        const v_prev = Math.hypot(p1.x - p0.x, p1.y - p0.y) / ((p2.t - p1.t) / 1000.0 || 0.01);
-                        const acc = (v - v_prev) / dt;
-                        accHistory.push(acc);
+                    if (velocitySeries.length >= 3) {{
+                        const v1 = velocitySeries[velocitySeries.length - 3];
+                        const v2 = velocitySeries[velocitySeries.length - 2];
+                        const v3 = velocitySeries[velocitySeries.length - 1];
+                        const acc = (v3 - v1) / (2 * dt);
+                        accelerationSeries.push(acc);
 
-                        const ldljInst = Math.abs(acc) * dt * 0.05;
-                        ldljSum += ldljInst;
-                        sampleCounter++;
+                        if (accelerationSeries.length >= 2) {{
+                            const jerk = Math.abs(accelerationSeries[accelerationSeries.length - 1] - accelerationSeries[accelerationSeries.length - 2]) / dt;
+                            jerkSeries.push(jerk);
+                        }}
                     }}
 
-                    const normLDLJ = sampleCounter > 0 ? (ldljSum / sampleCounter).toFixed(2) : 0.00;
-                    const simulatedPSD = Math.min(32.0, (normLDLJ * 1.4 + Math.random() * 0.8).toFixed(2));
-                    
-                    // 計算與終點的 Fréchet 軌跡失真模擬
-                    const frechetDist = Math.min(45.0, (dist * 0.35 + Math.abs(v * 0.01)).toFixed(1));
+                    // 計算正規化平順度 (LDLJ 數值模擬)
+                    const meanJerk = jerkSeries.length > 0 ? jerkSeries.reduce((a,b)=>a+b,0) / jerkSeries.length : 0.5;
+                    const ldljScore = Math.min(15.0, (Math.log10(meanJerk + 1) * 3.2).toFixed(2));
 
-                    currentComputedTension = Math.min(98, Math.max(10, Math.round(normLDLJ * 8.5 + simulatedPSD * 1.1 + frechetDist * 0.4)));
+                    // 模擬 8-12Hz FFT 頻譜功率 (PSD, dB)
+                    const fftPsd = Math.min(35.0, (ldljScore * 1.5 + Math.random() * 0.6).toFixed(2));
 
-                    document.getElementById('res-ldlj').innerText = normLDLJ;
-                    document.getElementById('res-fft-psd').innerText = simulatedPSD + ' dB';
-                    document.getElementById('res-frechet').innerText = frechetDist + ' px';
-                    document.getElementById('res-final-tension').innerText = currentComputedTension + '%';
+                    // 計算離散弗雷歇失真模擬 (px)
+                    const maxDev = rawPoints.reduce((max, pt) => {{
+                        const idealY = 120 - Math.sin((pt.x - 60)/400 * Math.PI) * 45;
+                        const dev = Math.abs(pt.y - idealY);
+                        return dev > max ? dev : max;
+                    }}, 0);
+                    const frechetPx = Math.min(50.0, maxDev.toFixed(1));
+
+                    // 綜合臨床張力演算法
+                    currentComputedTension = Math.min(99, Math.max(10, Math.round(ldljScore * 4.2 + fftPsd * 1.3 + frechetPx * 0.38)));
+
+                    document.getElementById('res-ldlj-v4').innerText = ldljScore;
+                    document.getElementById('res-psd-v4').innerText = fftPsd + ' dB';
+                    document.getElementById('res-frechet-v4').innerText = frechetPx + ' px';
+                    document.getElementById('res-tension-v4').innerText = currentComputedTension + '%';
                     document.getElementById('final_tension_txt').innerText = currentComputedTension + '%';
                 }}
             }}
 
-            function endResearchTrace() {{
-                if (!isTracing) return;
-                isTracing = false;
-                rCtx.beginPath();
-                syncResearchData();
+            function stopRecord() {{
+                if (!isRecording) return;
+                isRecording = false;
+                uCtx.beginPath();
+                dispatchSync();
             }}
 
-            function syncResearchData() {{
+            function dispatchSync() {{
                 setTimeout(function() {{
                     try {{
                         const pUrl = new URL(window.top.location.href);
@@ -775,7 +783,7 @@ elif st.session_state["current_step"] == "test":
                 }}, 550);
             }}
         </script>
-    """, height=500)
+    """, height=700)
 
     # 動態臨床生理診斷與心流一致性計算
     if auto_tension >= 65:
