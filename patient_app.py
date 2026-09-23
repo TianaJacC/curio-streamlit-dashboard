@@ -903,7 +903,7 @@ elif st.session_state["current_step"] == "test":
         </div>
     """, unsafe_allow_html=True)
 
-rppg_transparent_component = """
+    rppg_transparent_component = """
     <div style="background:#030705; border:2px solid #FCBF05; border-radius:18px; padding:18px; text-align:center; box-sizing:border-box; width:100%; box-shadow:0 8px 25px rgba(0,0,0,0.8);">
         <div id="rppg-status-bar" style="color:#FCBF05; font-size:14px; margin-bottom:10px; font-weight:bold;">
             🟢 系統就緒：請將食指緊貼後置鏡頭與閃光燈
